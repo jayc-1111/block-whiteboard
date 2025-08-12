@@ -187,6 +187,9 @@ function addCardToCategory(categoryOrIndex, title = 'New Card', content = null, 
             const cardIndex = board.categories[categoryIndex].cards.length - 1;
             if (cardIndex >= 0 && board.categories[categoryIndex].cards[cardIndex]) {
                 board.categories[categoryIndex].cards[cardIndex].id = cardId;
+    if (!board.categories[categoryIndex].cards[cardIndex].bookmarks) {
+        board.categories[categoryIndex].cards[cardIndex].bookmarks = [];
+    }
             }
         }
     }
