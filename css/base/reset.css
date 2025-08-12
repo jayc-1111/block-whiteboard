@@ -1,0 +1,47 @@
+/* Core reset and base styles */
+
+/* CSS Reset */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* Base body styles */
+body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: var(--canvas-bg);
+    color: #707070;
+    overflow: hidden;
+    height: 100vh;
+}
+
+/* Base button styles */
+button {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-size: 0.72rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 36px;
+    border-radius: 10px;
+    padding: 0 16px;
+    color: var(--toolbar-button-text-color);
+    border: none;
+    cursor: pointer;
+    background: var(--toolbar-button-background);
+    transition: all 0.15s ease;
+    box-shadow: none;
+}
+
+button:hover {
+    background: var(--toolbar-button-background-hover);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+button:active {
+    transform: translateY(0);
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+}

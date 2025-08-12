@@ -1,0 +1,79 @@
+/* Reusable Button Classes */
+
+/* Toolbar Button Base */
+.toolbar-button-base {
+    background: var(--toolbar-button-background);
+    color: var(--toolbar-button-text-color);
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 16px;
+    height: 36px;
+    gap: 4px;
+}
+
+.toolbar-button-base:hover {
+    background: var(--toolbar-button-background-hover);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* Button Size Modifiers */
+.button-small {
+    padding: 4px 10px;
+    font-size: 8px;
+    font-weight: bold;
+    height: auto;
+}
+
+.button-mini {
+    padding: 2px 4px;
+    font-size: 5px;
+    min-width: 14px;
+    height: auto;
+}
+
+.button-compact {
+    padding: 4px 6px;
+    font-size: 9px;
+    font-weight: bold;
+    height: auto;
+}
+
+/* Button Style Modifiers */
+.button-transparent {
+    background: transparent;
+    box-shadow: none;
+}
+
+.button-save {
+    background: var(--toolbar-button-save-background) !important;
+    color: white !important;
+}
+
+.button-danger:hover {
+    background: #ff6b6b;
+    color: white;
+}
+
+.button-active {
+    background: #4a7c4a !important;
+    border-color: #5a9c5a !important;
+}
+
+/* Common Button Container */
+.button-group {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+}
+
+/* Grid Dot Spacing Utility */
+.grid-dot-spacing {
+    background-size: var(--grid-spacing) var(--grid-spacing);
+    background-position: 0 0;
+}

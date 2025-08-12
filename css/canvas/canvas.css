@@ -1,0 +1,69 @@
+/* Main layout structure */
+#whiteboard {
+    width: 100vw;
+    height: 100vh;
+    position: relative;
+    overflow: auto;
+    background: var(--bg-image), #1a1a1a;
+    background-attachment: fixed;
+    background-size: cover;
+    background-position: center;
+}
+
+#grid {
+    position: relative;
+    width: 2000px;
+    height: 2000px;
+    min-width: 100%;
+    min-height: 100%;
+    background-image: radial-gradient(circle, rgba(255,255,255,0.035) var(--grid-dot-size), transparent var(--grid-dot-size));
+    background-size: var(--grid-spacing) var(--grid-spacing);
+    background-position: 0 0;
+}
+
+
+/* Expand space buttons */
+.expand-space-btn {
+    position: fixed;
+    z-index: 100;
+    background: rgba(0, 0, 0, 0.6);
+    border: none;
+    border-radius: 50%;
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    backdrop-filter: blur(10px);
+}
+
+.expand-space-btn:hover {
+    background: rgba(0, 0, 0, 0.8);
+    transform: scale(1.1);
+}
+
+.expand-space-btn svg {
+    color: white;
+}
+
+.expand-right {
+    right: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.expand-right:hover {
+    transform: translateY(-50%) scale(1.1);
+}
+
+.expand-bottom {
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.expand-bottom:hover {
+    transform: translateX(-50%) scale(1.1);
+}

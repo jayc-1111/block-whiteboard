@@ -1,0 +1,52 @@
+{
+  "manifest_version": 2,
+  "name": "Zenban Screenshot Capture",
+  "version": "1.0",
+  "description": "Capture screenshots for Zenban whiteboard bookmarks",
+
+  "permissions": [
+    "activeTab",
+    "tabs",
+    "<all_urls>",
+    "storage",
+    "contextMenus",
+    "webNavigation"
+  ],
+
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["cropper.min.js", "element-picker.js", "crop-tool.js", "content-script.js"],
+      "run_at": "document_idle"
+    }
+  ],
+
+  "background": {
+    "scripts": ["background.js"],
+    "persistent": false
+  },
+  
+  "options_ui": {
+    "page": "options.html",
+    "open_in_tab": false
+  },
+
+  "browser_action": {
+    "default_title": "Zenban Screenshot",
+    "default_icon": {
+      "16": "icon-16.png",
+      "48": "icon-48.png",
+      "128": "icon-128.png"
+    }
+  },
+
+  "icons": {
+    "16": "icon-16.png",
+    "48": "icon-48.png",
+    "128": "icon-128.png"
+  },
+
+  "web_accessible_resources": ["cropper.min.js", "test-viewer.html", "concurrent-block.js", "element-picker.js"],
+
+  "content_security_policy": "script-src 'self' 'unsafe-eval'; object-src 'self'"
+}

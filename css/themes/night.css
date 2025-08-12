@@ -1,0 +1,15 @@
+/* Night theme */
+
+.night-mode {
+    background: #000;
+}
+
+.night-mode #whiteboard {
+    background: #000;
+}
+
+/* Night mode toolbar styling */
+.night-mode #topBar {
+    border: none; /* No border for cleaner look */
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.9); /* Deeper black shadow for definition */
+}

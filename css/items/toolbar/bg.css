@@ -1,0 +1,52 @@
+/* Top toolbar - base styles only */
+#topBar {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    z-index: 1000000;
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    padding: 8px;
+    border-radius: 16px;
+    width: calc(100% - 40px);
+    max-width: 1200px;
+}
+
+/* Default dark theme - apply to all non-themed modes */
+body:not(.frutiger-mode):not(.light-mode):not(.night-mode):not(.picnic-mode):not(.with-background) #topBar {
+    background: #0a0a0a;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* Night mode specific */
+body.night-mode #topBar {
+    background: #0a0a0a;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.9);
+    border: none;
+}
+
+/* Picnic mode specific */
+body.picnic-mode #topBar {
+    background: #0a0a0a;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* Light mode specific - moved from light.css for clarity */
+body.light-mode #topBar {
+    background: #fff;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    border: 1px solid #e5e7eb;
+}
+
+/* Lollipop/with-background mode */
+body.with-background #topBar {
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+}
+
+/* Frutiger mode - DO NOT SET BACKGROUND HERE */
+/* Frutiger styles are handled in frutiger.css */

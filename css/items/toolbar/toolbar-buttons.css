@@ -1,0 +1,140 @@
+/* Toolbar Button Styles */
+
+/* General toolbar button styles */
+#toolbar button,
+.add-button,
+.setting-btn,
+.save-button,
+#drawingModeBtn,
+#eraserModeBtn {
+    padding: 8px 16px;
+    background: #2a2a2a;
+    border: 3px solid #1a1a1a;  /* 3px border, darker by ~42 in RGB values */
+    color: #fff;
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-family: 'Claire Sans', 'Inter', sans-serif;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+/* Hover state */
+#toolbar button:hover,
+.add-button:hover,
+.setting-btn:hover,
+.save-button:hover,
+#drawingModeBtn:hover,
+#eraserModeBtn:hover {
+    background: #3a3a3a;
+    border-color: #2a2a2a;  /* Border stays darker on hover */
+    transform: translateY(-1px);
+}
+
+/* Active/pressed state */
+#toolbar button:active,
+.add-button:active,
+.setting-btn:active,
+.save-button:active,
+#drawingModeBtn:active,
+#eraserModeBtn:active {
+    transform: scale(0.98);
+}
+
+/* Save button specific (green) */
+.save-button {
+    background: #059669;
+    border-color: #047857;  /* Darker green by similar amount */
+}
+
+.save-button:hover {
+    background: #10b981;
+    border-color: #059669;
+}
+
+/* Drawing mode active state */
+#drawingModeBtn.active {
+    background: #5353ff;
+    border-color: #3838dd;  /* Darker purple */
+}
+
+/* Eraser mode active state */
+#eraserModeBtn.active {
+    background: #ff5353;
+    border-color: #dd3838;  /* Darker red */
+}
+
+/* Light mode button adjustments */
+.light-mode #toolbar button,
+.light-mode .add-button,
+.light-mode .setting-btn,
+.light-mode .save-button {
+    background: #fff;
+    border-color: #cbd5e1;  /* The exact color you referenced */
+    color: #333;
+}
+
+.light-mode #toolbar button:hover,
+.light-mode .add-button:hover,
+.light-mode .setting-btn:hover,
+.light-mode .save-button:hover {
+    background: #f3f4f6;
+    border-color: #9ca3af;
+}
+
+/* File structure and bookmark triggers */
+.file-structure-trigger,
+.bookmarks-trigger {
+    padding: 8px 16px;
+    background: #2a2a2a;
+    border: 3px solid #1a1a1a !important;  /* Override file-viewer.css */
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.file-structure-trigger:hover,
+.bookmarks-trigger:hover {
+    background: #3a3a3a;
+    border-color: #2a2a2a !important;
+    transform: translateY(-1px);
+}
+
+/* Board selector */
+.board-selector {
+    padding: 8px 16px;
+    background: #2a2a2a;
+    border: 3px solid #1a1a1a !important;  /* Override whiteboard-switcher.css */
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.board-selector:hover {
+    background: #3a3a3a;
+    border-color: #2a2a2a !important;
+}
+
+/* Light mode for file structure and bookmarks */
+.light-mode .file-structure-trigger,
+.light-mode .bookmarks-trigger,
+.light-mode .board-selector {
+    background: #fff;
+    border-color: #cbd5e1 !important;
+}
+
+.light-mode .file-structure-trigger:hover,
+.light-mode .bookmarks-trigger:hover,
+.light-mode .board-selector:hover {
+    background: #f3f4f6;
+    border-color: #9ca3af !important;
+}

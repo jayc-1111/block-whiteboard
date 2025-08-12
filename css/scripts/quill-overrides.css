@@ -1,0 +1,201 @@
+/* Quill Editor Overrides */
+
+/* Dark mode button styling */
+.ql-dark-mode {
+    width: auto !important;
+}
+
+.ql-dark-mode svg {
+    vertical-align: middle;
+}
+
+.ql-dark-mode.active svg {
+    fill: currentColor;
+}
+
+/* Dark mode styles */
+.ql-toolbar.dark-mode {
+    background: #2d2d2d !important;
+    border-color: #444 !important;
+}
+
+.ql-toolbar.dark-mode button {
+    color: #e0e0e0 !important;
+}
+
+.ql-toolbar.dark-mode button:hover {
+    color: white !important;
+}
+
+.ql-toolbar.dark-mode button.ql-active,
+.ql-toolbar.dark-mode .ql-picker-label.ql-active,
+.ql-toolbar.dark-mode .ql-picker-item.ql-selected {
+    color: #4a9eff !important;
+}
+
+.ql-toolbar.dark-mode .ql-stroke {
+    stroke: #e0e0e0 !important;
+}
+
+.ql-toolbar.dark-mode .ql-fill {
+    fill: #e0e0e0 !important;
+}
+
+.ql-toolbar.dark-mode .ql-picker {
+    color: #e0e0e0 !important;
+}
+
+.ql-editor.dark-mode {
+    background: #1e1e1e !important;
+    color: #e0e0e0 !important;
+}
+
+.ql-editor.dark-mode::before {
+    color: #999 !important;
+}
+
+.ql-container.ql-snow.dark-mode {
+    border-color: #444 !important;
+}
+
+.editor-container.dark-mode {
+    background: #1e1e1e !important;
+}
+
+/* Expanded card dark mode styles */
+.card.expanded.dark-mode {
+    background: #1a1a1a !important;
+}
+
+.expanded-card-content.dark-mode {
+    background: #1a1a1a !important;
+}
+
+.expanded-card-header.dark-mode {
+    background: #1a1a1a !important;
+}
+
+.expanded-card-main.dark-mode {
+    background: #1a1a1a !important;
+}
+
+.expanded-card-header.dark-mode .card-title {
+    color: #e0e0e0 !important;
+}
+
+/* Dark mode for sections */
+.dark-mode .editor-section {
+    background: #1a1a1a !important;
+}
+
+.dark-mode .bookmarks-section {
+    background: #1a1a1a !important;
+}
+
+/* Dark mode for bookmark cards */
+.dark-mode .bookmark-card {
+    background: #2d2d2d !important;
+    color: #e0e0e0 !important;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.5) !important;
+}
+
+.dark-mode .bookmark-title {
+    color: #e0e0e0 !important;
+}
+
+.dark-mode .bookmark-description {
+    color: #b0b0b0 !important;
+}
+
+.dark-mode .bookmark-url {
+    color: #4a9eff !important;
+}
+
+.dark-mode .bookmark-date {
+    color: #999 !important;
+}
+
+/* Rounded borders for Quill editor */
+.ql-container {
+    border: none !important;
+    border-radius: 0 0 8px 8px;
+    overflow: hidden;
+}
+
+.ql-toolbar.ql-snow {
+    border: none !important;
+    border-radius: 8px 8px 0 0;
+    background: white;
+}
+
+/* Remove snow theme borders */
+.ql-container.ql-snow {
+    border: none !important;
+}
+
+/* Full rounded container when no toolbar */
+.ql-container:first-child {
+    border-radius: 8px;
+}
+
+/* Expanded card specific styling */
+.card.expanded .ql-editor {
+    min-height: 400px;
+    padding: 20px;
+    font-size: 16px;
+    line-height: 1.8;
+    outline: none;
+}
+
+/* Remove focus outline */
+.ql-editor:focus {
+    outline: none;
+}
+
+/* Ensure placeholder is visible */
+.ql-editor.ql-blank::before {
+    color: #999;
+    content: attr(data-placeholder);
+    font-style: italic;
+    position: absolute;
+    pointer-events: none;
+}
+
+/* Remove double borders */
+.ql-snow.ql-toolbar + .ql-container.ql-snow {
+    border-top: 0;
+}
+
+/* Scrollbar styling */
+.ql-editor {
+    overflow-y: auto;
+}
+
+.ql-editor::-webkit-scrollbar {
+    width: 8px;
+}
+
+.ql-editor::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+}
+
+.ql-editor::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 4px;
+}
+
+/* Quill placeholder behavior */
+.ql-editor.ql-blank::before {
+    content: attr(data-placeholder);
+    position: absolute;
+    left: 20px;
+    top: 20px;
+    color: #adb5bd;
+    pointer-events: none;
+    font-style: normal;
+}
+
+.ql-editor:focus.ql-blank::before {
+    display: none;
+}

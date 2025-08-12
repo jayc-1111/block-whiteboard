@@ -1,0 +1,197 @@
+/* Full canvas drawing layer styles */
+
+.drawing-layer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 1; /* Behind categories but above grid */
+    pointer-events: none;
+    opacity: 0.8;
+}
+
+.drawing-layer.active {
+    pointer-events: auto;
+}
+
+/* Drawing mode indicator */
+.drawing-mode .category,
+.drawing-mode .canvas-header {
+    pointer-events: none;
+    opacity: 0.6;
+}
+
+/* Drawing mode button */
+#drawingModeBtn {
+    background: rgba(255, 255, 255, 0.1);
+    border: none;
+    padding: 8px;
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+#drawingModeBtn:hover {
+    background: rgba(255, 255, 255, 0.15);
+    transform: translateY(-1px);
+}
+
+#drawingModeBtn.active {
+    background: #3b82f6;
+    border: none;
+}
+
+#drawingModeBtn svg {
+    width: 20px;
+    height: 20px;
+    color: #ddd;
+}
+
+#drawingModeBtn.active svg {
+    color: white;
+}
+
+/* Dark mode */
+.night-mode #drawingModeBtn {
+    background: rgba(255, 255, 255, 0.05);
+    border: none;
+}
+
+.night-mode #drawingModeBtn:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+/* Light mode */
+.light-mode #drawingModeBtn {
+    background: white;
+    border: 1px solid #EFF1F3;
+}
+
+.light-mode #drawingModeBtn:hover {
+    background: #F5F7F9;
+}
+
+.light-mode #drawingModeBtn svg {
+    color: #374151;
+}
+
+.light-mode #drawingModeBtn.active {
+    background: #3b82f6;
+    border: 1px solid #3b82f6;
+}
+
+.light-mode #drawingModeBtn.active svg {
+    color: white;
+}
+
+/* Picnic mode */
+.picnic-mode #drawingModeBtn {
+    backdrop-filter: blur(3px);
+    background: rgba(255, 255, 255, 0.7);
+    border: none;
+}
+
+/* Frutiger mode */
+.frutiger-mode #drawingModeBtn {
+    backdrop-filter: blur(3px);
+    background: transparent;
+    border: none;
+}
+
+.frutiger-mode #drawingModeBtn svg {
+    color: white;
+    filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.3));
+}
+
+/* Lollipop mode */
+.lollipop-mode #drawingModeBtn {
+    background: #fff0f6;
+    border: none;
+}
+
+.lollipop-mode #drawingModeBtn svg {
+    color: #ff69b4;
+}
+
+.lollipop-mode #drawingModeBtn.active {
+    background: #ff69b4;
+    border: none;
+}
+
+.lollipop-mode #drawingModeBtn.active svg {
+    color: white;
+}
+
+/* Drawing cursor */
+.drawing-layer.active {
+    cursor: crosshair;
+}
+
+/* Animation */
+@keyframes drawingPulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
+
+#drawingModeBtn.active {
+    animation: drawingPulse 2s ease-in-out infinite;
+}
+
+/* Eraser mode button */
+#eraserModeBtn {
+    background: rgba(255, 255, 255, 0.1);
+    border: none;
+    padding: 8px;
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+#eraserModeBtn:hover {
+    background: rgba(255, 255, 255, 0.15);
+    transform: translateY(-1px);
+}
+
+#eraserModeBtn.active {
+    background: #ef4444;
+    border: none;
+}
+
+#eraserModeBtn svg {
+    width: 20px;
+    height: 20px;
+    color: #ddd;
+}
+
+#eraserModeBtn.active svg {
+    color: white;
+}
+
+/* Light mode eraser */
+.light-mode #eraserModeBtn {
+    background: white;
+    border: 1px solid #EFF1F3;
+}
+
+.light-mode #eraserModeBtn:hover {
+    background: #F5F7F9;
+}
+
+.light-mode #eraserModeBtn svg {
+    color: #374151;
+}
+
+.light-mode #eraserModeBtn.active {
+    background: #ef4444;
+    border: 1px solid #ef4444;
+}
+
+.light-mode #eraserModeBtn.active svg {
+    color: white;
+}

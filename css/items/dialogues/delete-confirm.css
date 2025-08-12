@@ -1,0 +1,49 @@
+/* Confirm deletion dialog styles */
+
+.confirm-dialog {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: #0a0a0a;
+    border: none;
+    border-radius: 5px;
+    padding: 15px;
+    z-index: 1000000;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.8);
+}
+
+.confirm-dialog h3 {
+    color: #f0f0f0;
+    margin: 0 0 10px 0;
+    font-size: 12px;
+}
+
+.confirm-dialog p {
+    color: #b0b0b0;
+    margin: 0 0 13px 0;
+    font-size: 9px;
+}
+
+.confirm-buttons {
+    display: flex;
+    gap: 7px;
+    justify-content: flex-end;
+}
+
+.confirm-btn {
+    padding: 5px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 9px;
+    transition: all 0.2s;
+}
+
+.confirm-yes {
+    background: #ff4444;
+    color: white;
+}
+
+.confirm-yes:hover {
+    background: #ff0000;
+}

@@ -1,0 +1,637 @@
+/* ===================================
+   TOOLBAR STYLES - COMPREHENSIVE
+   =================================== */
+
+/* ===================================
+   1. TOOLBAR CONTAINER
+   =================================== */
+#topBar {
+    position: fixed;
+    top: 20px;
+    left: 80px;  /* Make room for hamburger menu */
+    z-index: 1000000;
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    padding: 8px;
+    border-radius: 16px;
+    width: calc(100% - 40px);
+    max-width: 900px;
+}
+
+/* Default dark theme */
+body:not(.frutiger-mode):not(.light-mode):not(.night-mode):not(.picnic-mode):not(.with-background) #topBar {
+    background: #0a0a0a;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* Theme variations */
+body.night-mode #topBar {
+    background: #0a0a0a;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.9);
+    border: none;
+}
+
+body.picnic-mode #topBar {
+    background: #0a0a0a;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+body.light-mode #topBar {
+    background: #fff;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    border: 1px solid #e5e7eb;
+}
+
+body.with-background #topBar {
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+}
+
+/* ===================================
+   2. MAIN TOOLBAR BUTTONS
+   =================================== */
+#toolbar button,
+.add-button,
+.setting-btn,
+.save-button,
+#drawingModeBtn,
+#eraserModeBtn {
+    padding: 4px 6px;
+    background: transparent;
+    border: none;
+    color: #7e8590;
+    border-radius: 5px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease-out;
+    font-family: 'Nunito', 'Claire Sans', sans-serif !important;
+    display: flex;
+    align-items: center;
+    gap: 9px;
+}
+
+#toolbar button:hover,
+.add-button:hover,
+.setting-btn:hover,
+.save-button:hover,
+#drawingModeBtn:hover,
+#eraserModeBtn:hover {
+    background-color: #5353ff;
+    color: #ffffff;
+    transform: translate(1px, -1px);
+}
+
+#toolbar button:active,
+.add-button:active,
+.setting-btn:active,
+.save-button:active,
+#drawingModeBtn:active,
+#eraserModeBtn:active {
+    transform: scale(0.98);
+}
+
+/* Special button states */
+.save-button {
+    background: #059669;
+    border-color: #047857;
+}
+
+.save-button:hover {
+    background: #10b981;
+    border-color: #059669;
+}
+
+#drawingModeBtn.active {
+    background: #5353ff;
+    border-color: #3838dd;
+}
+
+#eraserModeBtn.active {
+    background: #ff5353;
+    border-color: #dd3838;
+}
+
+/* Light mode button adjustments */
+.light-mode #toolbar button,
+.light-mode .add-button,
+.light-mode .setting-btn,
+.light-mode .save-button {
+    background: #fff;
+    border-color: #cbd5e1 !important;
+    color: #333;
+}
+
+.light-mode #toolbar button:hover,
+.light-mode .add-button:hover,
+.light-mode .setting-btn:hover,
+.light-mode .save-button:hover {
+    background: #f3f4f6;
+    border-color: #9ca3af !important;
+}
+
+/* ===================================
+   3. BOARD SELECTOR
+   =================================== */
+#whiteboardSwitcher {
+    background: var(--toolbar-button-background);
+    padding: 0 16px;
+    border-radius: 10px;
+    border: none;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    position: relative;
+    transition: all 0.15s ease;
+}
+
+#whiteboardSwitcher:hover {
+    background: var(--toolbar-button-background-hover);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.board-selector {
+    padding: 8px 16px;
+    background: #2a2a2a;
+    border: 2px solid #1a1a1a !important;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    color: var(--toolbar-button-text-color);
+    font-size: 0.80rem;
+    font-weight: 600;
+    font-family: 'Nunito', sans-serif !important;
+    user-select: none;
+}
+
+.board-selector:hover {
+    background: #3a3a3a;
+    border-color: #2a2a2a !important;
+}
+
+.board-selector-text {
+    color: var(--toolbar-button-text-color);
+    font-family: 'Nunito', sans-serif !important;
+}
+
+.board-selector-arrow {
+    transition: transform 0.2s;
+    color: #999;
+}
+
+.board-selector.active .board-selector-arrow {
+    transform: rotate(180deg);
+}
+
+#boardName {
+    padding: 4px 8px;
+    border-radius: 6px;
+    cursor: text;
+    transition: background 0.2s;
+    font-size: 0.80rem;
+    color: var(--toolbar-button-text-color);
+    font-weight: 600;
+    font-family: 'Nunito', sans-serif !important;
+}
+
+#boardName:hover, 
+#boardName:focus {
+    background: rgba(255, 255, 255, 0.1);
+    outline: none;
+}
+
+/* Light mode board selector */
+.light-mode .board-selector {
+    background: #fff;
+    border-color: #cbd5e1 !important;
+}
+
+.light-mode .board-selector:hover {
+    background: #f3f4f6;
+    border-color: #9ca3af !important;
+}
+
+/* ===================================
+   4. FILE & BOOKMARK BUTTONS
+   =================================== */
+.file-structure-container, 
+.bookmarks-container {
+    position: relative;
+    display: inline-block;
+    z-index: 1000001;
+}
+
+.file-structure-trigger, 
+.bookmarks-trigger {
+    padding: 8px 16px;
+    background: #2a2a2a;
+    border: 2px solid #1a1a1a !important;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    height: 36px;
+}
+
+.file-structure-trigger:hover, 
+.bookmarks-trigger:hover {
+    background: #3a3a3a;
+    border-color: #2a2a2a !important;
+    transform: translateY(-1px);
+}
+
+.file-structure-trigger p, 
+.bookmarks-trigger p {
+    margin: 0;
+    color: var(--toolbar-button-text-color, #ddd);
+    font-size: 0.80rem;
+    font-weight: 600;
+    font-family: 'Nunito', sans-serif !important;
+}
+
+/* Light mode */
+.light-mode .file-structure-trigger,
+.light-mode .bookmarks-trigger {
+    background: #fff;
+    border-color: #cbd5e1 !important;
+}
+
+.light-mode .file-structure-trigger:hover,
+.light-mode .bookmarks-trigger:hover {
+    background: #f3f4f6;
+    border-color: #9ca3af !important;
+}
+
+/* ===================================
+   5. SETTINGS BUTTON
+   =================================== */
+.settings-container {
+    position: relative;
+}
+
+.setting-btn {
+    /* Inherits from main toolbar button styles above */
+}
+
+/* Settings button text */
+.setting-btn span {
+    font-family: 'Nunito', sans-serif !important;
+}
+
+/* Settings button animation parts */
+.bar {
+    width: 8px;
+    height: 1.5px;
+    background-color: rgb(229, 229, 229);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    border-radius: 2px;
+}
+
+.bar::before {
+    content: "";
+    width: 2px;
+    height: 2px;
+    background-color: rgb(60, 60, 60);
+    position: absolute;
+    border-radius: 50%;
+    border: 1.5px solid white;
+    transition: all 0.3s;
+    box-shadow: 0px 0px 3px white;
+}
+
+.bar1::before {
+    transform: translateX(-3px);
+}
+
+.bar2::before {
+    transform: translateX(3px);
+}
+
+.setting-btn:hover .bar1::before {
+    transform: translateX(3px);
+}
+
+.setting-btn:hover .bar2::before {
+    transform: translateX(-3px);
+}
+
+/* ===================================
+   6. DROPDOWN MENUS
+   =================================== */
+
+/* Board dropdown */
+.board-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    margin-top: 10px;
+    background: #000000;
+    border-radius: 9px;
+    padding: 14px 0;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+    flex-direction: column;
+    gap: 9px;
+    box-shadow: 0 4px 22px rgba(0, 0, 0, 0.4);
+    z-index: 1000002;
+    min-width: 180px;
+}
+
+#whiteboardSwitcher:hover .board-dropdown {
+    opacity: 1;
+    visibility: visible;
+    display: flex;
+}
+
+.board-dropdown .list {
+    list-style-type: none;
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+    padding: 0 9px;
+    margin: 0;
+}
+
+.board-dropdown .element {
+    display: flex;
+    align-items: center;
+    color: #7e8590;
+    gap: 9px;
+    transition: all 0.3s ease-out;
+    padding: 4px 6px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-family: 'Nunito', sans-serif !important;
+    font-size: 0.8rem;
+}
+
+.board-dropdown .element:hover {
+    background-color: #5353ff;
+    color: #ffffff;
+    transform: translate(1px, -1px);
+}
+
+.board-dropdown .element.active {
+    background-color: rgba(83, 83, 255, 0.2);
+    color: #bd89ff;
+}
+
+/* Hide separator completely */
+.board-dropdown .separator,
+.board-dropdown .seperator {
+    display: none !important;
+}
+
+/* Settings menu */
+.settings-menu {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    margin-top: 10px;
+    background: #000;
+    border-radius: 0.36rem;
+    padding: 0.9rem;
+    z-index: 1000002;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+    flex-direction: column;
+    gap: 0.72rem;
+    box-shadow: 0 0.45rem 0.9rem rgba(143, 142, 142, 0.15);
+    min-width: 180px;
+    display: flex;
+}
+
+.settings-container:hover .settings-menu {
+    opacity: 1;
+    visibility: visible;
+    display: flex;
+}
+
+.settings-option {
+    padding: 0.72rem;
+    border-radius: 0.27rem;
+    cursor: pointer;
+    transition: background 0.2s;
+    color: #ddd;
+    font-family: 'Nunito', sans-serif !important;
+    font-size: 0.81rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.settings-option:hover {
+    background: #2b2a2a;
+}
+
+.settings-option.separator {
+    border-top: 1px solid #2b2a2a;
+    margin: 0.36rem 0;
+    padding: 0;
+    cursor: default;
+}
+
+.settings-option.separator:hover {
+    background: transparent;
+}
+
+/* Add dropdown */
+.add-dropdown-container {
+    position: relative;
+}
+
+.add-button .dropdown-arrow {
+    margin-left: 4px;
+}
+
+.add-dropdown-menu {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    margin-top: 10px;
+    background: #0a0a0a;
+    border-radius: 9px;
+    padding: 14px 0;
+    min-width: 180px;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+    box-shadow: 0 4px 22px rgba(0, 0, 0, 0.4);
+    z-index: 1000002;
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+}
+
+.add-dropdown-container:hover .add-dropdown-menu {
+    opacity: 1;
+    visibility: visible;
+}
+
+.dropdown-item {
+    width: calc(100% - 18px);
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    padding: 4px 6px;
+    margin: 0 9px;
+    background: transparent;
+    border: none;
+    color: #7e8590;
+    text-align: left;
+    cursor: pointer;
+    border-radius: 5px;
+    transition: all 0.3s ease-out;
+    font-family: 'Nunito', sans-serif !important;
+    font-size: 0.8rem;
+    font-weight: 600;
+    height: auto;
+    justify-content: flex-start;
+}
+
+.dropdown-item:hover {
+    background-color: #5353ff;
+    color: #ffffff;
+    transform: translate(1px, -1px);
+}
+
+/* File structure dropdown */
+.file-structure-dropdown {
+    position: absolute;
+    left: 0;
+    margin-top: 10px;
+    width: 220px;
+    background: #000000;
+    border-radius: 9px;
+    box-shadow: 0 4px 22px rgba(0, 0, 0, 0.4);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+    z-index: 1000002;
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.file-structure-container:hover .file-structure-dropdown,
+.file-structure-dropdown:hover {
+    opacity: 1;
+    visibility: visible;
+}
+
+.file-structure-list {
+    padding: 16px;
+    margin: 0;
+    list-style: none;
+}
+
+.file-structure-list li {
+    padding: 6px 12px;
+    color: #7e8590;
+    font-size: 12px;
+    font-family: 'Nunito', sans-serif !important;
+    cursor: pointer;
+    transition: all 0.3s ease-out;
+    border-radius: 5px;
+    margin: 2px 0;
+}
+
+.file-structure-list li:hover {
+    background-color: #5353ff;
+    color: #ffffff;
+    transform: translate(1px, -1px);
+}
+
+.file-structure-list li.category-item {
+    padding-left: 32px;
+}
+
+.file-structure-list li.card-item {
+    padding-left: 52px;
+    font-size: 11px;
+    color: #9ca3af;
+}
+
+/* Customization submenu */
+.customization-submenu {
+    position: absolute;
+    left: calc(100% + 2px);
+    top: -0.9rem;
+    background: #000;
+    border-radius: 0.36rem;
+    padding: 0.9rem;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateX(-10px);
+    transition: opacity 0.15s ease, transform 0.15s ease, visibility 0s 0.3s;
+    display: flex;
+    flex-direction: column;
+    gap: 0.72rem;
+    box-shadow: 0 0.45rem 0.9rem rgba(143, 142, 142, 0.15);
+    min-width: 150px;
+    pointer-events: none;
+    z-index: 1001;
+}
+
+.settings-option.has-submenu:hover .customization-submenu,
+.customization-submenu:hover {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(0);
+    pointer-events: auto;
+    transition: opacity 0.15s ease, transform 0.15s ease, visibility 0s;
+}
+
+.bg-option {
+    padding: 0.72rem;
+    border-radius: 0.27rem;
+    cursor: pointer;
+    transition: background 0.2s;
+    color: #ddd;
+    font-size: 0.81rem;
+    font-family: 'Nunito', sans-serif !important;
+    user-select: none;
+    white-space: nowrap;
+}
+
+.bg-option:hover {
+    background: #2b2a2a;
+}
+
+.bg-option.active {
+    background: #2b2a2a;
+    font-weight: 600;
+}
+
+/* Light mode dropdown adjustments */
+.light-mode .add-dropdown-menu,
+.light-mode .settings-menu {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+}
+
+.light-mode .dropdown-item,
+.light-mode .settings-option {
+    color: #333;
+}
+
+.light-mode .dropdown-item:hover,
+.light-mode .settings-option:hover {
+    background-color: #5353ff;
+    color: #ffffff;
+}

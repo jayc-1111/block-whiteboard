@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Download CropperJS</title>
+</head>
+<body>
+    <h1>Download CropperJS</h1>
+    <p>Open this page and save the file as cropper.min.js in the extension folder:</p>
+    <a href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js" target="_blank">
+        Download CropperJS 1.6.1
+    </a>
+    <br><br>
+    <p>Or run this in the console:</p>
+    <pre>
+fetch('https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js')
+    .then(r => r.text())
+    .then(text => {
+        const a = document.createElement('a');
+        a.href = 'data:text/javascript;charset=utf-8,' + encodeURIComponent(text);
+        a.download = 'cropper.min.js';
+        a.click();
+    });
+    </pre>
+</body>
+</html>

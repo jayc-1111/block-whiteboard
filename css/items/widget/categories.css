@@ -1,0 +1,282 @@
+/* Category blocks */
+
+.category {
+    position: absolute;
+    background: var(--category-base-background);
+    border-radius: var(--category-base-border-radius);
+    padding: var(--category-base-padding);
+    min-width: 20px;
+    width: 261px;
+    transition: box-shadow 0.2s;
+    z-index: 1;
+}
+
+/* Category with background image borders */
+.with-background .category {
+    box-shadow: 
+        0 0 0 2px #000,
+        0 0 0 4px #e81cff,
+        0 0 20px rgba(232, 28, 255, 0.5);
+}
+
+/* Category hover effects */
+.category:hover {
+    box-shadow: 
+        0 0 16px rgba(64, 201, 255, 0.1),
+        0 0 32px rgba(64, 201, 255, 0.08),
+        0 0 48px rgba(64, 201, 255, 0.05),
+        0 0 64px rgba(64, 201, 255, 0.03),
+        0 0 80px rgba(64, 201, 255, 0.02);
+}
+
+/* Category dragging state */
+.category.dragging {
+    box-shadow: 
+        0 0 16px rgba(64, 201, 255, 0.15),
+        0 0 32px rgba(64, 201, 255, 0.1),
+        0 0 48px rgba(64, 201, 255, 0.07),
+        0 0 64px rgba(64, 201, 255, 0.04),
+        0 5px 80px rgba(64, 201, 255, 0.1);
+}
+
+/* Category selected state */
+.category.selected {
+    background: #2c2c2c !important;
+    border: none !important;
+    box-shadow: 
+        0 0 20px rgba(64, 201, 255, 0.2),
+        0 0 36px rgba(64, 201, 255, 0.15),
+        0 0 52px rgba(64, 201, 255, 0.1),
+        0 0 68px rgba(64, 201, 255, 0.06),
+        0 0 84px rgba(64, 201, 255, 0.03) !important;
+    z-index: 10000 !important;
+}
+
+/* Category header */
+.category-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 5px;
+    border-radius: 3px;
+    cursor: move;
+    min-height: 26px;  /* Explicit height to ensure proper alignment */
+    height: 26px;
+}
+
+.category-title {
+    color: #ffffff;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 3px;
+    padding: 3px;
+    border-radius: 2px;
+    cursor: text;
+}
+
+.category-title:focus {
+    outline: none;
+    background: #333;
+}
+
+/* Header buttons container */
+.header-buttons {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+    padding: 0 !important;  /* Remove any inherited padding */
+    margin: 0;  /* Ensure no margin */
+}
+
+.category-header button {
+    width: 20px !important;
+    height: 20px !important;
+    padding: 0 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-size: 14px;
+    line-height: 1;
+    position: relative;
+    border-radius: 50% !important;
+    background: rgba(255, 255, 255, 0.1) !important;
+    color: #ffffff;
+    border: none;
+}
+
+.category-header button:hover {
+    background: rgba(255, 255, 255, 0.2) !important;
+    transform: none !important;
+    box-shadow: 0 0 10px rgba(64, 201, 255, 0.3) !important;
+}
+
+/* Specific adjustments for SVG icons */
+.category-header .add-card-btn svg {
+    width: 16px;
+    height: 16px;
+    display: block;
+    transition: transform 0.2s ease;
+}
+
+.category-header .add-card-btn:hover svg {
+    transform: scale(1.1);
+}
+
+.category-header .delete-btn svg {
+    width: 12px;
+    height: 12px;
+    display: block;
+    transition: transform 0.2s ease;
+}
+
+.category-header .delete-btn:hover svg {
+    transform: scale(1.1) rotate(90deg);
+}
+
+/* Light mode adjustments for category buttons */
+.light-mode .category-header button {
+    background: rgba(0, 0, 0, 0.05) !important;
+    color: #333;
+    border: none;
+}
+
+.light-mode .category-header button:hover {
+    background: rgba(0, 0, 0, 0.1) !important;
+    box-shadow: 0 0 8px rgba(0, 0, 0, 0.15) !important;
+}
+
+/* Cards grid layout */
+.cards-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 5px;
+    min-height: 38px;
+}
+
+.category.collapsed .cards-grid {
+    /* Keep grid visible but limit to 2 rows (4 cards) */
+}
+
+/* Hide cards after the 4th one when collapsed */
+.category.collapsed .cards-grid .card-slot:nth-child(n+5) {
+    display: none;
+}
+
+.category.collapsed .cards-grid .card:nth-child(n+5) {
+    display: none;
+}
+
+.category.collapsed .category-bottom {
+    margin-top: 0;
+    padding-top: 8px;
+    border-top: none;
+}
+
+/* Category bottom section */
+.category-bottom {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Toggle button styles */
+.category-bottom .toggle-btn {
+    width: 30px !important;
+    height: 20px !important;
+    padding: 2px 5px !important;
+    background: rgba(255, 255, 255, 0.05) !important;
+    border: none;
+    border-radius: 4px !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.category-bottom .toggle-btn:hover {
+    background: rgba(255, 255, 255, 0.1) !important;
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+.category-bottom .toggle-btn svg {
+    width: 16px;
+    height: 16px;
+    display: block;
+    transition: transform 0.3s ease;
+    /* No rotation needed - using different SVGs */
+}
+
+.category.collapsed .toggle-btn svg {
+    /* No rotation needed - using different SVGs */
+}
+
+/* Light mode adjustments for toggle button */
+.light-mode .category-bottom {
+    border-top-color: rgba(0, 0, 0, 0.1);
+}
+
+.light-mode .category-bottom .toggle-btn {
+    background: rgba(0, 0, 0, 0.02) !important;
+    border: none;
+    color: #333;
+}
+
+.light-mode .category-bottom .toggle-btn:hover {
+    background: rgba(0, 0, 0, 0.05) !important;
+    border-color: rgba(0, 0, 0, 0.15);
+}
+
+/* Card slots */
+.card-slot {
+    min-height: 87px;
+    border: 2px dashed #121212;
+    border-radius: 4px;
+    transition: all 0.2s;
+    background: rgba(7, 7, 7, 0.03);
+}
+
+.card-slot.drag-over {
+    border-color: #60a5fa;
+    background: #1a2332;
+}
+
+/* Glow effect for categories */
+@keyframes categoryGlow {
+    0% {
+        box-shadow: 0 0 5px rgba(59, 130, 246, 0.5);
+    }
+    50% {
+        box-shadow: 0 0 20px rgba(59, 130, 246, 0.8), 0 0 30px rgba(59, 130, 246, 0.4);
+    }
+    100% {
+        box-shadow: 0 0 5px rgba(59, 130, 246, 0.5);
+    }
+}
+
+.category.glow-effect {
+    animation: categoryGlow 1s ease-in-out infinite;
+    z-index: 1000;
+}
+
+/* Light mode glow */
+.light-mode .category.glow-effect {
+    animation: categoryGlowLight 1s ease-in-out infinite;
+}
+
+@keyframes categoryGlowLight {
+    0% {
+        box-shadow: 0 0 5px rgba(59, 130, 246, 0.3);
+    }
+    50% {
+        box-shadow: 0 0 25px rgba(59, 130, 246, 0.6), 0 0 35px rgba(59, 130, 246, 0.3);
+    }
+    100% {
+        box-shadow: 0 0 5px rgba(59, 130, 246, 0.3);
+    }
+}

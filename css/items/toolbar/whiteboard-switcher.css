@@ -1,0 +1,63 @@
+/* Whiteboard switcher */
+#whiteboardSwitcher {
+    background: var(--toolbar-button-background);
+    padding: 0 16px;
+    border-radius: 10px;
+    border: none;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    position: relative;
+    transition: all 0.15s ease;
+}
+
+#whiteboardSwitcher:hover {
+    background: var(--toolbar-button-background-hover);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.board-selector {
+    background: transparent;
+    color: var(--toolbar-button-text-color);
+    border: none;
+    padding: 0;
+    font-size: 0.72rem;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    position: relative;
+    user-select: none;
+}
+
+.board-selector-text {
+    color: var(--toolbar-button-text-color);
+}
+
+.board-selector-arrow {
+    transition: transform 0.2s;
+    color: #999;
+}
+
+.board-selector.active .board-selector-arrow {
+    transform: rotate(180deg);
+}
+
+#boardName {
+    padding: 4px 8px;
+    border-radius: 6px;
+    cursor: text;
+    transition: background 0.2s;
+    font-size: 0.72rem;
+    color: var(--toolbar-button-text-color);
+    font-weight: 600;
+}
+
+#boardName:hover, #boardName:focus {
+    background: rgba(255, 255, 255, 0.1);
+    outline: none;
+}

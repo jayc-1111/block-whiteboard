@@ -1,0 +1,356 @@
+/* Frutiger Aero theme - Vista/7 era glassy style */
+
+.frutiger-mode #whiteboard {
+    background: url("https://images.unsplash.com/photo-1743220879914-14adc4afdaa3?q=80&w=3540&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D");
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    position: relative;
+}
+
+/* Grid with subtle dot pattern and frosted overlay */
+.frutiger-mode #grid {
+    position: relative;
+    background-image: radial-gradient(circle, rgba(255, 255, 255, 0.3) var(--grid-dot-size), transparent var(--grid-dot-size));
+    background-size: var(--grid-spacing) var(--grid-spacing);
+}
+
+/* Frosted glass overlay that covers the entire canvas */
+.frutiger-mode #grid::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.25);
+    backdrop-filter: blur(10px) brightness(1.2) saturate(1.5);
+    -webkit-backdrop-filter: blur(10px) brightness(1.2) saturate(1.5);
+    pointer-events: none;
+    z-index: -1;
+}
+
+/* Glassy categories with frosted effect */
+.frutiger-mode .category {
+    background: rgba(255, 255, 255, 0.3);
+    backdrop-filter: blur(90px) saturate(140%) brightness(1);
+    -webkit-backdrop-filter: blur(10px) saturate(140%) brightness(1);
+    border: 2.5px solid rgba(255, 255, 255, 0.5);
+    box-shadow: 
+        0 8px 32px rgba(31, 38, 135, 0.2),
+        inset 0 1px 1px rgba(255, 255, 255, 0.7);
+    /* GPU acceleration hint */
+    transform: translateZ(0);
+    will-change: transform;
+}
+
+.frutiger-mode .category:hover {
+    background: rgba(255, 255, 255, 0.35);
+    border-color: rgba(255, 255, 255, 0.7);
+    box-shadow: 
+        0 12px 48px rgba(31, 38, 135, 0.3),
+        inset 0 2px 3px rgba(255, 255, 255, 0.8);
+}
+
+.frutiger-mode .category-title {
+    color: #1a5490;
+    text-shadow: 0 1px 0 rgba(255, 255, 255, 0.8);
+}
+
+/* Glassy cards */
+.frutiger-mode .card {
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(3px);
+    -webkit-backdrop-filter: blur(3px);
+    border: 1px solid rgba(255, 255, 255, 0.7);
+    box-shadow: 
+        0 2px 6px rgba(0, 0, 0, 0.1),
+        inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+.frutiger-mode .card:hover {
+    background: rgba(255, 255, 255, 0.8);
+    box-shadow: 
+        0 4px 12px rgba(0, 0, 0, 0.15),
+        inset 0 1px 0 rgba(255, 255, 255, 0.95);
+}
+
+.frutiger-mode .card-title {
+    color: #1a5490;
+    text-shadow: 0 1px 0 rgba(255, 255, 255, 0.7);
+}
+
+.frutiger-mode .card-content {
+    color: #2d5a8e;
+}
+
+/* Aero glass canvas headers with enhanced blur */
+.frutiger-mode .canvas-header {
+    background: rgba(255, 255, 255, 0.15) !important;
+    backdrop-filter: blur(10px) saturate(160%) !important;
+    -webkit-backdrop-filter: blur(10px) saturate(160%) !important;
+    border: 1px solid rgba(255, 255, 255, 0.45) !important;
+    box-shadow: 
+        0 4px 16px rgba(0, 0, 0, 0.15),
+        inset 0 1px 2px rgba(255, 255, 255, 0.5) !important;
+    color: #6b7280 !important;
+    text-shadow: none !important;
+}
+
+/* Aero toolbar with pure glass effect - MAXIMUM SPECIFICITY */
+html body.frutiger-mode div#topBar {
+    /* Pure transparent glass background */
+    background-color: transparent !important;
+    background-image: none !important;
+    background: rgba(255, 255, 255, 0.1) !important;
+    
+    /* Strong blur effect for glass appearance */
+    backdrop-filter: blur(20px) saturate(150%) brightness(1.1) !important;
+    -webkit-backdrop-filter: blur(20px) saturate(150%) brightness(1.1) !important;
+    
+    /* Glass-like border */
+    border: 1px solid rgba(255, 255, 255, 0.3) !important;
+    box-shadow: 
+        0 8px 32px rgba(0, 0, 0, 0.1),
+        inset 0 2px 4px rgba(255, 255, 255, 0.6),
+        inset 0 -1px 2px rgba(0, 0, 0, 0.05) !important;
+    
+    /* Ensure proper rendering */
+    transform: translateZ(0) !important;
+    will-change: backdrop-filter !important;
+}
+
+/* Also target with attribute selector for extra specificity */
+body.frutiger-mode [id="topBar"] {
+    background: rgba(255, 255, 255, 0.1) !important;
+    backdrop-filter: blur(20px) saturate(150%) brightness(1.1) !important;
+    -webkit-backdrop-filter: blur(20px) saturate(150%) brightness(1.1) !important;
+}
+
+/* Toolbar buttons - transparent buttons on pure glass */
+.frutiger-mode #toolbar button {
+    background: transparent;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: white;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+    transition: all 0.2s ease;
+}
+
+.frutiger-mode #toolbar button:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.4);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    transform: translateY(-1px);
+}
+
+/* Save button special style - transparent with green border */
+.frutiger-mode #toolbar .save-button {
+    background: transparent !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    border: 1px solid #10b981 !important;
+    color: white !important;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2) !important;
+}
+
+.frutiger-mode #toolbar .save-button:hover {
+    background: rgba(16, 185, 129, 0.15) !important;
+    border-color: #059669 !important;
+    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.25) !important;
+}
+
+/* Settings button and Add Actions button - transparent buttons */
+.frutiger-mode .setting-btn,
+.frutiger-mode .add-button {
+    background: transparent !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    color: white !important;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.frutiger-mode .setting-btn:hover,
+.frutiger-mode .add-button:hover {
+    background: rgba(255, 255, 255, 0.1) !important;
+    border-color: rgba(255, 255, 255, 0.4) !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
+}
+
+.frutiger-mode .setting-btn span,
+.frutiger-mode .add-button span {
+    color: white !important;
+}
+
+/* Category header buttons */
+.frutiger-mode .category-header button {
+    background: rgba(255, 255, 255, 0.3);
+    backdrop-filter: blur(2px);
+    -webkit-backdrop-filter: blur(2px);
+    color: #1a5490;
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.frutiger-mode .category-header button:hover {
+    background: rgba(255, 255, 255, 0.5);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    transform: translateY(-1px);
+}
+
+/* Expand space buttons */
+.frutiger-mode .expand-space-btn {
+    background: rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.frutiger-mode .expand-space-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+    border-color: rgba(255, 255, 255, 0.6);
+    box-shadow: 
+        0 6px 20px rgba(0, 0, 0, 0.3),
+        inset 0 1px 2px rgba(255, 255, 255, 0.5);
+}
+
+.frutiger-mode .expand-space-btn svg {
+    color: white;
+}
+
+/* Board switcher - transparent button on pure glass */
+.frutiger-mode #whiteboardSwitcher {
+    background: transparent;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: white;
+}
+
+.frutiger-mode #whiteboardSwitcher:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.4);
+}
+
+.frutiger-mode .board-selector-text {
+    color: white;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.frutiger-mode .board-selector-arrow {
+    color: white;
+}
+
+/* Board name editable text - white for glass */
+.frutiger-mode #boardName {
+    color: white;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.frutiger-mode #boardName:focus {
+    background: rgba(255, 255, 255, 0.1);
+    outline: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+/* Dropdowns with enhanced blur */
+.frutiger-mode .board-dropdown,
+.frutiger-mode .file-structure-dropdown {
+    background: rgba(255, 255, 255, 0.85) !important;
+    backdrop-filter: blur(12px) saturate(150%) !important;
+    -webkit-backdrop-filter: blur(12px) saturate(150%) !important;
+    border: 1px solid rgba(255, 255, 255, 0.5) !important;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2) !important;
+}
+
+/* File structure trigger button - transparent button on pure glass */
+.frutiger-mode .file-structure-trigger {
+    background: transparent !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    color: white !important;
+}
+
+.frutiger-mode .file-structure-trigger:hover {
+    background: rgba(255, 255, 255, 0.1) !important;
+    border-color: rgba(255, 255, 255, 0.4) !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
+}
+
+.frutiger-mode .file-structure-trigger svg {
+    stroke: white !important;
+}
+
+.frutiger-mode .file-structure-trigger p {
+    color: white !important;
+}
+
+/* Settings menu and other dropdowns */
+.frutiger-mode .settings-menu,
+.frutiger-mode .add-dropdown-menu {
+    background: rgba(255, 255, 255, 0.85) !important;
+    backdrop-filter: blur(12px) saturate(150%) !important;
+    -webkit-backdrop-filter: blur(12px) saturate(150%) !important;
+    border: 1px solid rgba(255, 255, 255, 0.5) !important;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2) !important;
+}
+
+/* All dropdown menu items */
+.frutiger-mode .settings-option,
+.frutiger-mode .bg-option,
+.frutiger-mode .dropdown-item {
+    color: #1a5490 !important;
+}
+
+.frutiger-mode .settings-option:hover,
+.frutiger-mode .bg-option:hover,
+.frutiger-mode .dropdown-item:hover {
+    background: rgba(30, 144, 255, 0.1) !important;
+    color: #1a5490 !important;
+}
+
+.frutiger-mode .board-dropdown .element,
+.frutiger-mode .file-structure-list li {
+    color: #1a5490;
+}
+
+.frutiger-mode .board-dropdown .element:hover,
+.frutiger-mode .file-structure-list li:hover {
+    background: rgba(30, 144, 255, 0.1);
+}
+
+/* Context menu */
+.frutiger-mode .context-menu {
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+}
+
+.frutiger-mode .context-menu .element {
+    color: #1a5490;
+}
+
+.frutiger-mode .context-menu .element:hover {
+    background: rgba(30, 144, 255, 0.1);
+}
+
+/* Auth buttons - transparent buttons */
+.frutiger-mode .auth-button {
+    background: transparent;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: white;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.frutiger-mode .auth-button:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.4);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}

@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Extension Debug Dashboard</title>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+            background: #f5f5f5;
+        }
+        .dashboard {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        .panel {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 30px;
+        }
+        h2 {
+            color: #5353ff;
+            font-size: 18px;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #f0f0f0;
+            padding-bottom: 10px;
+        }
+        button {
+            background: #5353ff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #4040dd;
+        }
+        .success { background: #28a745; }
+        .warning { background: #ffc107; color: #333; }
+        .danger { background: #dc3545; }
+        
+        .log {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 10px;
+            margin: 10px 0;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        .status {
+            padding: 5px 10px;
+            border-radius: 4px;
+            display: inline-block;
+            margin: 5px 0;
+        }
+        .status.ready { background: #d4edda; color: #155724; }
+        .status.error { background: #f8d7da; color: #721c24; }
+        .status.warning { background: #fff3cd; color: #856404; }
+        .bookmark-preview {
+            border: 2px solid #e0e0e0;
+            border-radius: 4px;
+            padding: 10px;
+            margin: 10px 0;
+        }
+        .bookmark-preview img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 4px;
+        }
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin: 15px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔧 Extension Debug Dashboard</h1>
+    
+    <div class="dashboard">
+        <!-- Extension Status Panel -->
+        <div class="panel">
+            <h2>Extension Status</h2>
+            <div class="controls">
+                <button onclick="checkExtensionStatus()">Check Status</button>
+                <button onclick="clearAllBookmarks()">Clear All Bookmarks</button>
+            </div>
+            <div id="extension-status" class="log">
+                Click "Check Status" to begin...
+            </div>
+        </div>
+        
+        <!-- localStorage Monitor -->
+        <div class="panel">
+            <h2>localStorage Monitor</h2>
+            <div class="controls">
+                <button onclick="refreshLocalStorage()">Refresh</button>
+                <button onclick="clearBookmarksOnly()">Clear Bookmarks</button>
+            </div>
+            <div id="localstorage-monitor" class="log">
+                No bookmarks in localStorage
+            </div>
+        </div>
+        
+        <!-- Test Bookmark Creation -->
+        <div class="panel">
+            <h2>Test Bookmark Creation</h2>
+            <div class="controls">
+                <button onclick="createTestBookmark()">Create Test Bookmark</button>
+                <button onclick="simulateExtensionBookmark()">Simulate Extension</button>
+            </div>
+            <div id="test-results" class="log">
+                Ready for testing...
+            </div>
+        </div>
+        
+        <!-- Function Availability -->
+        <div class="panel">
+            <h2>Function Availability</h2>
+            <div class="controls">
+                <button onclick="checkFunctions()">Check All Functions</button>
+            </div>
+            <div id="function-check" class="log">
+                Functions not checked yet...
+            </div>
+        </div>
+        
+        <!-- Live Event Monitor -->
+        <div class="panel">
+            <h2>Live Event Monitor</h2>
+            <div class="controls">
+                <button onclick="clearEventLog()">Clear Log</button>
+                <button onclick="toggleEventMonitor()">Toggle Monitor</button>
+            </div>
+            <div id="event-monitor" class="log">
+                Monitoring storage events...
+            </div>
+        </div>
+        
+        <!-- Current Board Info -->
+        <div class="panel">
+            <h2>Current Board Info</h2>
+            <div class="controls">
+                <button onclick="checkBoardState()">Check Board State</button>
+            </div>
+            <div id="board-info" class="log">
+                Board info will appear here...
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        let eventMonitorActive = true;
+        
+        // Monitor storage events
+        window.addEventListener('storage', function(event) {
+            if (!eventMonitorActive) return;
+            
+            const monitor = document.getElementById('event-monitor');
+            const timestamp = new Date().toLocaleTimeString();
+            
+            if (event.key && event.key.startsWith('zenban_bookmark_')) {
+                const entry = `[${timestamp}] 📌 Bookmark event: ${event.key}\n`;
+                monitor.textContent = entry + monitor.textContent;
+                
+                // Also refresh localStorage monitor
+                refreshLocalStorage();
+            }
+        });
+        
+        function checkExtensionStatus() {
+            const status = document.getElementById('extension-status');
+            let html = 'Extension Status Check:\n\n';
+            
+            // Check if extension bridge is loaded
+            if (window.testExtensionBridge) {
+                html += '✅ Extension Bridge: Loaded\n';
+            } else {
+                html += '❌ Extension Bridge: Not found\n';
+            }
+            
+            // Check if handleBookmarkData exists
+            if (window.handleBookmarkData) {
+                html += '✅ handleBookmarkData: Available\n';
+            } else {
+                html += '❌ handleBookmarkData: Not found\n';
+            }
+            
+            // Check if bookmark destination selector is loaded
+            if (window.showBookmarkDestination) {
+                html += '✅ Bookmark Destination: Available\n';
+            } else {
+                html += '❌ Bookmark Destination: Not found\n';
+            }
+            
+            // Check localStorage for pending bookmarks
+            let bookmarkCount = 0;
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if (key && key.startsWith('zenban_bookmark_')) {
+                    bookmarkCount++;
+                }
+            }
+            html += `\n📦 Pending Bookmarks: ${bookmarkCount}`;
+            
+            status.textContent = html;
+        }
+        
+        function refreshLocalStorage() {
+            const monitor = document.getElementById('localstorage-monitor');
+            let html = 'localStorage Bookmarks:\n\n';
+            let count = 0;
+            
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if (key && key.startsWith('zenban_bookmark_')) {
+                    count++;
+                    try {
+                        const data = JSON.parse(localStorage.getItem(key));
+                        const timestamp = key.replace('zenban_bookmark_', '');
+                        const date = new Date(parseInt(timestamp)).toLocaleTimeString();
+                        html += `📌 [${date}] ${data.title || 'Untitled'}\n`;
+                    } catch (e) {
+                        html += `❌ ${key} (invalid JSON)\n`;
+                    }
+                }
+            }
+            
+            if (count === 0) {
+                html = 'No bookmarks in localStorage';
+            } else {
+                html = `Found ${count} bookmark(s):\n\n` + html;
+            }
+            
+            monitor.textContent = html;
+        }
+        
+        function clearBookmarksOnly() {
+            let count = 0;
+            const keys = [];
+            
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if (key && key.startsWith('zenban_bookmark_')) {
+                    keys.push(key);
+                }
+            }
+            
+            keys.forEach(key => {
+                localStorage.removeItem(key);
+                count++;
+            });
+            
+            refreshLocalStorage();
+            alert(`Cleared ${count} bookmark(s) from localStorage`);
+        }
+        
+        function clearAllBookmarks() {
+            clearBookmarksOnly();
+        }
+        
+        function createTestBookmark() {
+            const results = document.getElementById('test-results');
+            const timestamp = new Date().toISOString();
+            
+            const testData = {
+                title: 'Test Bookmark - ' + new Date().toLocaleTimeString(),
+                url: window.location.href,
+                description: 'Created from debug dashboard',
+                screenshot: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==',
+                timestamp: timestamp
+            };
+            
+            const key = 'zenban_bookmark_' + Date.now();
+            localStorage.setItem(key, JSON.stringify(testData));
+            
+            // Trigger storage event
+            window.dispatchEvent(new StorageEvent('storage', {
+                key: key,
+                newValue: JSON.stringify(testData),
+                url: window.location.href,
+                storageArea: localStorage
+            }));
+            
+            results.textContent = `Created test bookmark:\nKey: ${key}\nTitle: ${testData.title}\n\n✅ Check if modal appeared!`;
+            refreshLocalStorage();
+        }
+        
+        function simulateExtensionBookmark() {
+            if (window.testExtensionBridge) {
+                window.testExtensionBridge();
+                const results = document.getElementById('test-results');
+                results.textContent = 'Simulated extension bookmark!\n\n✅ Check if modal appeared!';
+            } else {
+                alert('Extension bridge not loaded!');
+            }
+        }
+        
+        function checkFunctions() {
+            const check = document.getElementById('function-check');
+            const functions = [
+                'handleBookmarkData',
+                'showBookmarkDestination',
+                'testExtensionBridge',
+                'addCardToCategory',
+                'addCategory',
+                'expandCard',
+                'AppState',
+                'syncService'
+            ];
+            
+            let html = 'Function Availability:\n\n';
+            functions.forEach(fn => {
+                const exists = typeof window[fn] !== 'undefined';
+                const type = typeof window[fn];
+                html += `${exists ? '✅' : '❌'} ${fn}: ${type}\n`;
+            });
+            
+            check.textContent = html;
+        }
+        
+        function clearEventLog() {
+            document.getElementById('event-monitor').textContent = 'Event log cleared\n';
+        }
+        
+        function toggleEventMonitor() {
+            eventMonitorActive = !eventMonitorActive;
+            const monitor = document.getElementById('event-monitor');
+            monitor.textContent = eventMonitorActive ? 
+                'Monitor: ON - Watching for events...\n' : 
+                'Monitor: OFF - Not watching\n';
+        }
+        
+        function checkBoardState() {
+            const info = document.getElementById('board-info');
+            let html = 'Board State:\n\n';
+            
+            const canvas = document.getElementById('canvas');
+            if (canvas) {
+                const categories = canvas.querySelectorAll('.category');
+                html += `Categories: ${categories.length}\n`;
+                
+                let totalCards = 0;
+                categories.forEach((cat, idx) => {
+                    const cards = cat.querySelectorAll('.card');
+                    const title = cat.querySelector('.category-title')?.textContent || 'Untitled';
+                    totalCards += cards.length;
+                    html += `  [${idx + 1}] ${title}: ${cards.length} cards\n`;
+                });
+                
+                html += `\nTotal Cards: ${totalCards}\n`;
+                
+                const expandedCard = document.querySelector('.card.expanded');
+                if (expandedCard) {
+                    html += '\n⚡ Card is currently expanded!';
+                }
+            } else {
+                html += '❌ Canvas not found!';
+            }
+            
+            info.textContent = html;
+        }
+        
+        // Initial checks on load
+        window.addEventListener('load', function() {
+            checkExtensionStatus();
+            refreshLocalStorage();
+            checkFunctions();
+            checkBoardState();
+        });
+        
+        // Auto-refresh localStorage monitor every 2 seconds
+        setInterval(refreshLocalStorage, 2000);
+    </script>
+</body>
+</html>

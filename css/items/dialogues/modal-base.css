@@ -1,0 +1,192 @@
+/* Base modal styles */
+
+/* Dialog overlay */
+.dialog-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 999999;
+}
+
+/* Modal Overlay */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+}
+
+/* Modal base */
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 30000;
+}
+
+.modal-content {
+    background: #1e1e1e;
+    border-radius: 12px;
+    padding: 2.5rem;
+    max-width: 400px;
+    width: 90%;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+    text-align: center;
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.modal-header h2 {
+    margin: 0;
+    color: #fff;
+}
+
+.modal-close {
+    background: none;
+    border: none;
+    color: #999;
+    font-size: 28px;
+    cursor: pointer;
+    padding: 0;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-close:hover {
+    color: #fff;
+}
+
+/* Common modal content styles */
+.modal-content h2 {
+    color: #fff;
+    margin: 0 0 1rem 0;
+    font-size: 1.8rem;
+}
+
+.modal-content p {
+    color: #aaa;
+    margin-bottom: 1.5rem;
+}
+
+/* Modal buttons */
+.modal-buttons {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+}
+
+.btn-primary, .btn-secondary {
+    padding: 0.75rem 2rem;
+    border: none;
+    border-radius: 6px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-primary {
+    background: #4a7c4a;
+    color: white;
+}
+
+.btn-primary:hover {
+    background: #5a8c5a;
+}
+
+.btn-secondary {
+    background: #444;
+    color: #ddd;
+}
+
+.btn-secondary:hover {
+    background: #555;
+}
+
+/* Onboarding Modal Styles */
+.onboarding-modal {
+    max-width: 500px;
+    background: #fff;
+    color: #333;
+}
+
+.onboarding-modal h2 {
+    color: #333;
+    font-size: 24px;
+    margin-bottom: 0.5rem;
+}
+
+.onboarding-modal p {
+    color: #666;
+    margin-bottom: 2rem;
+    font-size: 16px;
+}
+
+.onboarding-steps {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+    text-align: left;
+}
+
+.step {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.step-number {
+    width: 32px;
+    height: 32px;
+    background: #40c9ff;
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    flex-shrink: 0;
+}
+
+.step span:last-child {
+    color: #333;
+    font-size: 15px;
+    line-height: 1.5;
+}
+
+.step strong {
+    color: #000;
+    font-weight: 600;
+}
+
+.onboarding-modal .btn-primary {
+    background: #40c9ff;
+    width: 100%;
+}
+
+.onboarding-modal .btn-primary:hover {
+    background: #2ba7dd;
+}

@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Zenban Extension Test Page</title>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            padding: 40px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            min-height: 100vh;
+        }
+        .test-content {
+            max-width: 600px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 40px;
+            border-radius: 12px;
+            backdrop-filter: blur(10px);
+        }
+        h1 {
+            margin-top: 0;
+        }
+        .test-button {
+            background: white;
+            color: #667eea;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+        .test-button:hover {
+            transform: scale(1.05);
+        }
+    </style>
+</head>
+<body>
+    <div class="test-content">
+        <h1>Zenban Extension Test</h1>
+        <p>This is a simple test page to verify the screenshot extension works.</p>
+        <p>Click the extension icon in your toolbar to capture this page.</p>
+        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
+        
+        <button class="test-button" onclick="testMessage()">Send Test Message</button>
+        
+        <div id="status" style="margin-top: 20px;"></div>
+    </div>
+    
+    <script>
+        // Listen for screenshot ready messages
+        window.addEventListener('message', function(event) {
+            if (event.data.type === 'BOOKMARK_SCREENSHOT_READY') {
+                document.getElementById('status').innerHTML = 
+                    '<p style="color: #90EE90;">✓ Screenshot captured successfully!</p>';
+            }
+        });
+        
+        function testMessage() {
+            // Simulate the bookmark request
+            window.postMessage({
+                type: 'CAPTURE_SCREENSHOT_REQUEST',
+                url: window.location.href
+            }, '*');
+            
+            document.getElementById('status').innerHTML = 
+                '<p>Screenshot request sent... Check extension popup.</p>';
+        }
+    </script>
+</body>
+</html>

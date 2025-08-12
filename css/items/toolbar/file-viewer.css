@@ -1,0 +1,33 @@
+/* File Structure Container */
+.file-structure-container, .bookmarks-container {
+    position: relative;
+    display: inline-block;
+    z-index: 1000001;
+}
+
+.file-structure-trigger, .bookmarks-trigger {
+    background: var(--toolbar-button-background);
+    padding: 0 16px;
+    border-radius: 10px;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    height: 36px;
+    transition: all 0.15s ease;
+}
+
+.file-structure-trigger:hover, .bookmarks-trigger:hover {
+    background: var(--toolbar-button-background-hover);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.file-structure-trigger p, .bookmarks-trigger p {
+    margin: 0;
+    color: var(--toolbar-button-text-color);
+    font-size: 0.72rem;
+    font-weight: 600;
+}

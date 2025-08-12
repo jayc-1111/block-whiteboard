@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- CSP temporarily disabled for Firebase Auth debugging -->
+    <!-- <meta http-equiv="Content-Security-Policy" content="..."> -->
+    <title>Zenban</title>
+    
+    <!-- Simple favicon to prevent 404 -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔥</text></svg>">
+    
+    <!-- Google Fonts - Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Google Fonts - Nunito for toolbar -->
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- TipTap Editor -->
+
+    <!-- CSS Files -->
+    
+    <!-- Base CSS -->
+    <link rel="stylesheet" href="css/base/reset.css">
+    <link rel="stylesheet" href="css/base/variables.css">
+    <link rel="stylesheet" href="css/base/classes.css">
+    <link rel="stylesheet" href="css/base/notification-button.css">
+    <link rel="stylesheet" href="css/base/custom-fonts.css">
+    
+    <!-- Canvas CSS -->
+    <link rel="stylesheet" href="css/canvas/grid.css">
+    <link rel="stylesheet" href="css/canvas/canvas.css">
+    
+    <!-- Widgets CSS -->
+    <link rel="stylesheet" href="css/items/widget/categories.css">
+    <link rel="stylesheet" href="css/items/widget/cards.css">
+    <link rel="stylesheet" href="css/items/widget/canvas-headers.css">
+    <link rel="stylesheet" href="css/items/widget/bookmark-editor-widget.css">
+    <link rel="stylesheet" href="css/items/widget/bookmark-destination-modal.css">
+    <link rel="stylesheet" href="css/items/widget/bookmarks-modal.css">
+    <link rel="stylesheet" href="css/items/widget/file-tree-dropdown.css">
+
+    
+    <!-- Canvas extras -->
+    <link rel="stylesheet" href="css/canvas/select.css">
+    <link rel="stylesheet" href="css/canvas/rightclick.css">
+    
+    <!-- Toolbar CSS -->
+    <link rel="stylesheet" href="css/items/toolbar/hamburger.css">
+    <link rel="stylesheet" href="css/items/toolbar/toolbar.css">
+    <link rel="stylesheet" href="css/items/toolbar/dropdowns.css">
+    <link rel="stylesheet" href="css/items/toolbar/auth-button.css">
+    
+    <!-- Dialogues CSS -->
+    <link rel="stylesheet" href="css/items/dialogues/modal-base.css">
+    <link rel="stylesheet" href="css/items/dialogues/delete-confirm.css">
+    <link rel="stylesheet" href="css/items/dialogues/upgrade-base.css">
+    <link rel="stylesheet" href="css/items/dialogues/upgrade-details.css">
+    <link rel="stylesheet" href="css/items/dialogues/auth.css">
+    
+    <!-- Scripts CSS -->
+    <!-- Quill CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/quill@2.0.2/dist/quill.snow.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/quill@2.0.2/dist/quill.bubble.css" rel="stylesheet">
+    
+    <!-- Syntax Highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+    
+    <!-- KaTeX for Math -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    
+    <link rel="stylesheet" href="css/scripts/quill-overrides.css">
+    <link rel="stylesheet" href="css/scripts/lenis-smooth-scroll.css">
+    
+    <!-- Instructions CSS -->
+    <link rel="stylesheet" href="css/items/instructions/instructions.css">
+    <link rel="stylesheet" href="css/items/instructions/arrow-keys.css">
+    
+    <!-- Effects CSS -->
+    <link rel="stylesheet" href="css/items/effects/animate.css">
+    
+    <!-- Notifications CSS -->
+    <link rel="stylesheet" href="css/items/notifiers/save-status.css">
+    
+    <!-- Dev Mode CSS -->
+    <!-- REMOVED: <link rel="stylesheet" href="css/dev-mode/live-sync-indicator.css"> -->
+    <!-- REMOVED: <link rel="stylesheet" href="css/dev-mode/live-sync.css"> -->
+    
+    <!-- Theme CSS -->
+    <link rel="stylesheet" href="css/themes/picnic.css">
+    <link rel="stylesheet" href="css/themes/night.css">
+    <link rel="stylesheet" href="css/themes/light.css">
+    <link rel="stylesheet" href="css/themes/frutiger.css">
+    <link rel="stylesheet" href="css/themes/lollipop.css">
+    
+    <!-- Lenis CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/lenis@1.1.13/dist/lenis.css">
+    
+    <!-- Drawing CSS -->
+    <link rel="stylesheet" href="css/items/widget/canvas-drawing.css">
+</head>
+<body>
+    <!-- Hamburger Menu -->
+    <div id="hamburgerMenu">
+        <button class="hamburger-btn">
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
+        <div class="hamburger-dropdown">
+            <div class="hamburger-item" id="yourFilesItem">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+                </svg>
+                <span>Your Files</span>
+                <div class="file-structure-dropdown">
+                    <ul class="file-structure-list"></ul>
+                </div>
+            </div>
+            <div class="hamburger-item" id="yourBookmarksItem">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
+                </svg>
+                <span>Your Bookmarks</span>
+            </div>
+            <div class="hamburger-separator"></div>
+            <div class="hamburger-item has-submenu" id="settingsItem">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="3"></circle>
+                    <path d="M12 1v6m0 6v6m4.22-13.22l4.24 4.24M1.54 9.96l4.24 4.24M12 23v-6m0-6V5m-4.22 13.22l-4.24-4.24m18.92-4.02l-4.24-4.24"></path>
+                </svg>
+                <span>Settings</span>
+                <svg class="submenu-arrow" xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="9 18 15 12 9 6"></polyline>
+                </svg>
+                <div class="settings-menu" id="settingsMenu">
+                    <div class="settings-option" id="devModeOption">
+                        <span>Dev Mode</span>
+                    </div>
+                    <div class="settings-option" id="gridSnapOption">
+                        <span>Grid Snap</span>
+                        <span class="toggle-indicator" style="margin-left: auto;">ON</span>
+                    </div>
+                    <div class="settings-option" id="recoveryOption">
+                        <span>Recover Board Data</span>
+                        <span style="margin-left: auto;">🔄</span>
+                    </div>
+                    <div class="settings-option" id="clearBoardOption">
+                        <span>Clear Board</span>
+                        <span style="margin-left: auto;">🗑️</span>
+                    </div>
+                    <div class="settings-option separator"></div>
+                    <div class="settings-option has-submenu">
+                        <span>Customization</span>
+                        <span style="margin-left: auto;">›</span>
+                        <div class="customization-submenu" id="customizationSubmenu">
+                            <div class="bg-option active">Default</div>
+                            <div class="bg-option">Night Mode</div>
+                            <div class="bg-option">Light Mode</div>
+                            <div class="bg-option">Lollipop Mode</div>
+                            <div class="bg-option">Frutiger Aero</div>
+                            <div class="bg-option">Picnic Mode</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Bookmark Destination Modal -->
+    <div id="bookmarkDestinationModal" class="bookmark-destination-modal">
+        <div class="bookmark-destination-content">
+            <div class="bookmark-destination-header">
+                <h3>Select Card for Bookmark</h3>
+            </div>
+            <div class="bookmark-preview">
+                <div class="bookmark-preview-title">Loading...</div>
+                <div class="bookmark-preview-url"></div>
+            </div>
+            <div class="bookmark-destination-tree">
+                <!-- Tree will be populated here -->
+            </div>
+            <div class="bookmark-destination-footer">
+                <button class="bookmark-destination-cancel">Cancel</button>
+                <button class="bookmark-destination-add" disabled>Add Bookmark</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Toolbar -->
+    <div id="topBar">
+        <div id="whiteboardSwitcher">
+            <div id="boardSelector" class="board-selector">
+                <span class="board-selector-text">Board 1</span>
+                <svg class="board-selector-arrow" xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="6 9 12 15 18 9"></polyline>
+                </svg>
+            </div>
+            <div class="board-dropdown" id="boardDropdown">
+                <ul class="list" id="boardDropdownList"></ul>
+            </div>
+            <span id="boardName" contenteditable="true">Board 1</span>
+        </div>
+        <div id="toolbar" style="display: flex; gap: 8px;">
+            <div class="add-dropdown-container">
+                <button class="add-button">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="12" y1="5" x2="12" y2="19"></line>
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                    </svg>
+                    Add
+                    <svg class="dropdown-arrow" xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="6 9 12 15 18 9"></polyline>
+                    </svg>
+                </button>
+                <div class="add-dropdown-menu">
+                    <button class="dropdown-item" id="addWhiteboardBtn">New Whiteboard</button>
+                    <button class="dropdown-item" id="addSuperHeaderBtn">Add Header</button>
+                    <button class="dropdown-item" id="addCategoryBtn">Add Category</button>
+                </div>
+            </div>
+            <button id="drawingModeBtn" title="Toggle Drawing Mode">
+                <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
+                    <path fill-rule="evenodd" d="M14 4.182A4.136 4.136 0 0 1 16.9 3c1.087 0 2.13.425 2.899 1.182A4.01 4.01 0 0 1 21 7.037c0 1.068-.43 2.092-1.194 2.849L18.5 11.214l-5.8-5.71 1.287-1.31.012-.012Zm-2.717 2.763L6.186 12.13l2.175 2.141 5.063-5.218-2.141-2.108Zm-6.25 6.886-1.98 5.849a.992.992 0 0 0 .245 1.026 1.03 1.03 0 0 0 1.043.242L10.282 19l-5.25-5.168Zm6.954 4.01 5.096-5.186-2.218-2.183-5.063 5.218 2.185 2.15Z" clip-rule="evenodd"/>
+                </svg>
+            </button>
+            <button id="eraserModeBtn" title="Toggle Eraser Mode">
+                <svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 122.88 103.38" style="enable-background:new 0 0 122.88 103.38" xml:space="preserve"><style type="text/css">.st0{fill:white;fill-rule:evenodd;clip-rule:evenodd;}</style><g><path class="st0" d="M27.66,93.53h32.49l9.1-9.08c1.4-1.4,1.41-3.7,0.01-5.1l-27.02-27.1c-1.4-1.4-3.7-1.41-5.1-0.01L14.3,75.03 c-1.41,1.4-1.41,3.7-0.01,5.1L27.66,93.53L27.66,93.53z M71.03,93.53h51.84v9.85H61.16H50.28h-12.8H25.7h-0.35L1.05,79.01 c-1.4-1.4-1.4-3.7,0.01-5.1L74.11,1.05c1.41-1.4,3.7-1.4,5.1,0.01l39.62,39.72c1.4,1.4,1.4,3.7-0.01,5.1L71.03,93.53L71.03,93.53z"/></g></svg>
+            </button>
+            <button id="saveWhiteboardBtn" class="save-button" style="display: inline-block;" data-shortcut="Ctrl+S" title="Save Whiteboard (Ctrl+S or Shift+→)">Save</button>
+        </div>
+        
+        <!-- Live Sync Status (Hidden - now in dev overlay) -->
+        <div class="live-sync-controls" style="display: none;">
+            <div class="live-sync-status" id="liveSyncStatus">
+                <div class="live-sync-pulse"></div>
+                <span>Live Sync: OFF</span>
+            </div>
+            <div class="user-presence" id="userPresence"></div>
+        </div>
+    </div>
+    
+    <!-- Bookmarks Modal -->
+    <div class="bookmarks-modal" id="bookmarksModal">
+        <div class="bookmarks-modal-content">
+            <div class="bookmarks-modal-header">
+                <h2>Your Bookmarks</h2>
+                <div class="bookmarks-modal-controls">
+                    <button class="bookmarks-dark-mode-btn" id="bookmarksDarkModeBtn" title="Toggle dark mode">
+                        <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+                            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                        </svg>
+                    </button>
+                    <button class="bookmarks-modal-close" id="bookmarksModalClose">&times;</button>
+                </div>
+            </div>
+            <div class="bookmarks-modal-body">
+                <!-- Sidebar with tree -->
+                <div class="bookmarks-sidebar">
+                    <ul class="bookmarks-tree">
+                        <li class="bookmarks-tree-item">
+                            <div class="bookmarks-tree-folder expanded">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="9 18 15 12 9 6"></polyline>
+                                </svg>
+                                <span>Work</span>
+                            </div>
+                            <ul class="bookmarks-tree-children expanded">
+                                <li class="bookmarks-tree-item">
+                                    <div class="bookmarks-tree-folder">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <polyline points="9 18 15 12 9 6"></polyline>
+                                        </svg>
+                                        <span>Projects</span>
+                                    </div>
+                                    <ul class="bookmarks-tree-children">
+                                        <li class="bookmarks-tree-leaf">Dashboard Design</li>
+                                        <li class="bookmarks-tree-leaf">API Documentation</li>
+                                    </ul>
+                                </li>
+                                <li class="bookmarks-tree-leaf">Team Resources</li>
+                                <li class="bookmarks-tree-leaf">Company Wiki</li>
+                            </ul>
+                        </li>
+                        <li class="bookmarks-tree-item">
+                            <div class="bookmarks-tree-folder">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="9 18 15 12 9 6"></polyline>
+                                </svg>
+                                <span>Research</span>
+                            </div>
+                            <ul class="bookmarks-tree-children">
+                                <li class="bookmarks-tree-leaf">AI Papers</li>
+                                <li class="bookmarks-tree-leaf">Technical Blogs</li>
+                                <li class="bookmarks-tree-leaf">Case Studies</li>
+                            </ul>
+                        </li>
+                        <li class="bookmarks-tree-item">
+                            <div class="bookmarks-tree-folder">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="9 18 15 12 9 6"></polyline>
+                                </svg>
+                                <span>Personal</span>
+                            </div>
+                            <ul class="bookmarks-tree-children">
+                                <li class="bookmarks-tree-leaf">Reading List</li>
+                                <li class="bookmarks-tree-leaf">Recipes</li>
+                                <li class="bookmarks-tree-leaf">Travel Ideas</li>
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
+                <!-- Main content area -->
+                <div class="bookmarks-content">
+                    <h3 style="margin-top: 0; color: #111827;">Select a category to view bookmarks</h3>
+                    <p style="color: #6b7280;">Your bookmarks will appear here when you select a folder from the sidebar.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    
+    <!-- Bookmark Sidebar -->
+    
+    <!-- Instructions -->
+    <div class="instructions">
+        Use Ctrl + Scroll to zoom in/out. Press middle mouse button to pan.
+    </div>
+    
+    <!-- Arrow Keys Instructions -->
+    <div class="arrow-keys-instructions">
+        <div class="arrow-keys-layout">
+            <div class="arrow-key-row">
+                <div class="arrow-key up" title="Add Super Header">↑</div>
+            </div>
+            <div class="arrow-key-row">
+                <div class="arrow-key left" title="Add Whiteboard">←</div>
+                <div class="arrow-key down" title="Add Category">↓</div>
+                <div class="arrow-key right" title="Save Whiteboard">→</div>
+            </div>
+        </div>
+        <div class="arrow-keys-text">Navigate</div>
+    </div>
+    
+    <!-- Main Grid -->
+    <div id="whiteboard">
+        <div id="grid"></div>
+    </div>
+
+
+    
+    <!-- Lenis -->
+    <script src="https://unpkg.com/lenis@1.1.13/dist/lenis.min.js"></script>
+    
+    <!-- Syntax Highlighting -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    
+    <!-- KaTeX for Math -->
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    
+    <!-- Quill Editor -->
+    <script src="https://cdn.jsdelivr.net/npm/quill@2.0.2/dist/quill.js"></script>
+
+    <!-- Context Menu -->
+    <div class="context-menu" id="contextMenu">
+        <ul class="list" id="contextMenuList">
+            <li class="element" data-action="rename">
+                <svg xmlns="http://www.w3.org/2000/svg" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#7e8590" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"></path>
+                    <path d="m15 5 4 4"></path>
+                </svg>
+                <p class="label">Rename</p>
+            </li>
+            <li class="element" data-action="duplicate">
+                <svg xmlns="http://www.w3.org/2000/svg" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#7e8590" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect width="14" height="14" x="8" y="8" rx="2" ry="2"/>
+                    <path d="M4 16c-1.11 0-2-.9-2-2V4c0-1.11.89-2 2-2h10c1.11 0 2 .89 2 2"/>
+                </svg>
+                <p class="label">Duplicate</p>
+            </li>
+        </ul>
+        <ul class="list">
+            <li class="element" data-action="export">
+                <svg xmlns="http://www.w3.org/2000/svg" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#7e8590" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                    <polyline points="7 10 12 15 17 10"/>
+                    <line x1="12" x2="12" y1="15" y2="3"/>
+                </svg>
+                <p class="label">Export</p>
+            </li>
+            <li class="element delete" data-action="delete">
+                <svg xmlns="http://www.w3.org/2000/svg" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#7e8590" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M3 6h18"></path>
+                    <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
+                    <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path>
+                    <line y2="17" y1="11" x2="10" x1="10"></line>
+                    <line y2="17" y1="11" x2="14" x1="14"></line>
+                </svg>
+                <p class="label">Remove</p>
+            </li>
+        </ul>
+    </div>
+    
+    <!-- Payment Modal -->
+    <div id="paymentModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <h2>Upgrade to Pro</h2>
+            <p>Unlock unlimited whiteboards with Pro!</p>
+            <div class="pricing">
+                <div class="price">$9.99/month</div>
+                <ul class="features">
+                    <li>✓ Unlimited whiteboards</li>
+                    <li>✓ Advanced features</li>
+                    <li>✓ Priority support</li>
+                </ul>
+            </div>
+            <div class="modal-buttons">
+                <button class="btn-primary" type="button">Upgrade Now</button>
+                <button class="btn-secondary" type="button">Maybe Later</button>
+            </div>
+        </div>
+    </div>
+    
+    
+    <!-- Onboarding Modal -->
+    <div id="onboardingModal" class="modal" style="display: none;">
+        <div class="modal-content onboarding-modal">
+            <h2>Welcome to Your Whiteboard!</h2>
+            <p>Start building your workspace:</p>
+            <div class="onboarding-steps">
+                <div class="step">
+                    <span class="step-number">1</span>
+                    <span>Click the <strong>Actions</strong> button in the toolbar</span>
+                </div>
+                <div class="step">
+                    <span class="step-number">2</span>
+                    <span>Select <strong>Add Category</strong> to create containers</span>
+                </div>
+                <div class="step">
+                    <span class="step-number">3</span>
+                    <span>Click the <strong>+</strong> button in categories to add cards</span>
+                </div>
+            </div>
+            <button class="btn-primary" onclick="closeOnboardingModal()">Get Started</button>
+        </div>
+    </div>
+    
+    
+    <!-- Load Debug System First -->
+    <script src="js/constants.js"></script>
+    <script src="js/debug.js"></script>
+    
+    <!-- Firebase Modules -->
+    <script type="module">
+        import './firebase/firebase-error-handler.js'; // Initialize error handling first
+        // REMOVED: import './firebase/auth-reset-utility.js'; // Auth debugging utility
+        // REMOVED: import './firebase/popup-test-utility.js'; // Popup blocking test
+        // REMOVED: import './firebase/auth-status-checker.js'; // Complete auth status checker
+        import { authUI } from './firebase/auth-ui.js';
+        import { syncService, addSaveIndicator } from './firebase/sync-service.js';
+        // REMOVED: import { liveSyncService } from './firebase/live-sync-service.js';
+        // REMOVED: import { liveSyncUI } from './firebase/live-sync-ui.js';
+        import './firebase/guest-auth-init.js'; // Initialize guest auth automatically
+        
+        // Disable live sync globally
+        window.LIVE_SYNC_DISABLED = true;
+        
+        // Initialize Firebase services after DOM is ready
+        document.addEventListener('DOMContentLoaded', () => {
+            Debug.firebase.info('Initializing simplified Firebase services');
+            
+            // Initialize auth UI first
+            authUI.init();
+            
+            // Initialize sync service (wait a bit for core functions to load)
+            setTimeout(() => {
+                syncService.init();
+                
+                // LIVE SYNC DISABLED - Using event-based saves only
+                // setTimeout(() => {
+                //     liveSyncService.init();
+                // }, 1000);
+                
+            }, 500);
+            
+            // Add save indicator after a delay to ensure toolbar exists
+            setTimeout(() => {
+            addSaveIndicator();
+        }, 1000);
+        });
+    </script>
+    
+    <!-- Load JavaScript files -->
+    <script src="js/theme.js"></script>
+    <script src="js/state.js"></script>
+    <script src="js/clear-board.js"></script>
+    <script src="js/clear-grid.js"></script>
+    <script src="js/dev-overlay.js"></script>
+    <script src="js/dev-mode-controls.js"></script>
+    <!-- REMOVED: <script src="js/live-sync-ui.js"></script> -->
+    <!-- REMOVED: <script src="js/backup-recovery-ui.js"></script> -->
+    <script src="js/mode.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/dialogs.js"></script>
+    <script src="js/grid-utils.js"></script>
+    <script src="js/cards.js"></script>
+    <script src="js/categories.js"></script>
+    <script src="js/drag-smoothing.js"></script>
+    <script src="js/drag-drop.js"></script>
+    <script src="js/selection.js"></script>
+    <script src="js/canvas-headers.js"></script>
+    <script src="js/context-menu.js"></script>
+    <script src="js/ui-controls.js"></script>
+    <script src="js/smooth-scroll.js"></script>
+    <script src="js/pan.js"></script>
+    <script src="js/boards.js"></script>
+    <script src="js/bookmarks-modal.js"></script>
+    <script src="js/bookmark-destination-selector.js"></script>
+    <script src="js/extension-bridge.js"></script>
+    <script src="js/hamburger-menu.js"></script>
+    <script src="js/payment-modal-handler.js"></script>
+    <script src="js/simple-notifications.js"></script>
+    
+    <script type="module" src="js/drawing/canvas-drawing.js"></script>
+    <script src="js/init.js"></script>
+</body>
+</html>

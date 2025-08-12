@@ -1,0 +1,75 @@
+/* Context Menu */
+.context-menu {
+    position: fixed;
+    background: #000000;
+    border-radius: 9px;
+    padding: 14px 0;
+    display: none;
+    flex-direction: column;
+    gap: 9px;
+    box-shadow: 0 4px 22px rgba(0, 0, 0, 0.4);
+    z-index: 100000;
+    width: 180px;
+}
+
+.context-menu.active {
+    display: flex;
+}
+
+.context-menu .list {
+    list-style-type: none;
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+    padding: 0 9px;
+    margin: 0;
+}
+
+.context-menu .element {
+    display: flex;
+    align-items: center;
+    color: #7e8590;
+    gap: 9px;
+    transition: all 0.3s ease-out;
+    padding: 4px 6px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.context-menu .element svg {
+    width: 17px;
+    height: 17px;
+    transition: all 0.3s ease-out;
+}
+
+.context-menu .element .label {
+    font-weight: 600;
+    font-size: 12px;
+}
+
+.context-menu .element:hover {
+    background-color: #5353ff;
+    color: #ffffff;
+    transform: translate(1px, -1px);
+}
+
+.context-menu .delete:hover {
+    background-color: #8e2a2a;
+}
+
+.context-menu .element:active {
+    transform: scale(0.99);
+}
+
+.context-menu .element:hover svg {
+    stroke: #ffffff;
+}
+
+.context-menu .delete:hover svg {
+    stroke: #ff4444;
+}
+
+.context-menu .separator {
+    border-top: 1.5px solid #42434a;
+    margin: 0;
+}

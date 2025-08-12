@@ -1,0 +1,136 @@
+/* Save Status Notification - Extends notification-button-base */
+
+/* Guest ID pill button styling override */
+.guest-id-button {
+    background: rgba(255, 255, 255, 0.1) !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    border-radius: 20px !important;
+    font-style: italic;
+    opacity: 0.9;
+}
+
+.guest-id-button:hover {
+    background: rgba(255, 255, 255, 0.15) !important;
+    border-color: rgba(255, 255, 255, 0.3) !important;
+    opacity: 1;
+}
+
+/* Save status styling for toolbar */
+.save-status {
+    display: inline-block;
+    padding: 6px 16px;
+    border-radius: 20px;
+    font-size: 0.85em;
+    font-weight: 500;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: #ddd;
+    margin-right: 8px;
+    transition: all 0.3s ease;
+}
+
+.save-status:hover {
+    transform: translateX(0) scale(1.02);
+}
+
+.save-status:active {
+    transform: translateX(0) scale(0.98);
+}
+
+.save-status.saving,
+.save-status.saved,
+.save-status.unsaved {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+.save-status.saving {
+    background: var(--notification-button-1);
+}
+
+.save-status.saved {
+    background: #10b981; /* Green for saved */
+}
+
+.save-status.unsaved {
+    background: #f59e0b; /* Orange for unsaved */
+}
+
+.save-status.error {
+    background: #ef4444; /* Red for error */
+    opacity: 1;
+    transform: translateX(0);
+}
+
+/* Icon animations */
+.save-status::after {
+    content: '•';
+    margin-left: 4px;
+    animation: pulse 1.5s infinite;
+}
+
+.save-status.saving::after {
+    content: '⟳';
+    animation: spin 1s linear infinite;
+}
+
+.save-status.saved::after {
+    content: '✓';
+    animation: none;
+}
+
+.save-status.unsaved::after {
+    content: '!';
+    animation: none;
+}
+
+.save-status.error::after {
+    content: '✕';
+    animation: none;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 0.6; }
+    50% { opacity: 1; }
+}
+
+/* Auto-hide after 3 seconds for saved status */
+.save-status.saved {
+    animation: fadeOutDelay 3s forwards;
+}
+
+@keyframes fadeOutDelay {
+    0%, 80% {
+        opacity: 1;
+        transform: translateX(0);
+    }
+    100% {
+        opacity: 0;
+        transform: translateX(100px);
+    }
+}
+
+/* User info display in toolbar */
+.user-info {
+    display: inline-block;
+    margin-left: 15px;
+    padding-left: 15px;
+    border-left: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.guest-indicator {
+    color: var(--text-muted);
+    font-style: italic;
+    font-size: 0.9em;
+    opacity: 0.8;
+}
+
+.user-email {
+    color: var(--text-secondary);
+    font-size: 0.9em;
+}

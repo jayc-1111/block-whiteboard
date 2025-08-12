@@ -1,0 +1,28 @@
+/* Grid layout */
+
+/* Main whiteboard container */
+#whiteboard {
+    width: 100vw;
+    height: 100vh;
+    position: relative;
+    overflow: auto;
+    background: var(--bg-image), var(--grid-bg);
+    background-attachment: fixed;
+    background-size: cover;
+    background-position: center;
+}
+
+/* Grid surface */
+#grid {
+    position: relative;
+    width: var(--grid-element-size);
+    height: var(--grid-element-size);
+    min-width: 100%;
+    min-height: 100%;
+    background-image: radial-gradient(circle, var(--canvas-dot-color) var(--grid-dot-size), transparent var(--grid-dot-size));
+    background-size: var(--grid-spacing) var(--grid-spacing);
+    background-position: 0 0;
+    /* Force GPU acceleration */
+    will-change: transform;
+    transform: translateZ(0);
+}

@@ -1,0 +1,66 @@
+/* Claire Sans Font Declarations */
+
+@font-face {
+    font-family: 'Claire Sans';
+    src: url('../../fonts/claire-sans-light.otf') format('opentype');
+    font-weight: 300; /* light */
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Claire Sans';
+    src: url('../../fonts/claire-sans.otf') format('opentype');
+    font-weight: 400; /* regular */
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Claire Sans';
+    src: url('../../fonts/claire-sans-bold.otf') format('opentype');
+    font-weight: 700; /* bold */
+    font-style: normal;
+    font-display: swap;
+}
+
+/* Apply custom font globally */
+.custom-font {
+    font-family: 'Claire Sans', 'Inter', sans-serif !important;
+}
+
+/* Apply to specific elements */
+.custom-font-headers {
+    .category-title,
+    .canvas-header,
+    .card-title {
+        font-family: 'Claire Sans', 'Inter', sans-serif !important;
+    }
+}
+
+/* Apply to entire app by default */
+body {
+    font-family: 'Claire Sans', 'Inter', sans-serif !important;
+    
+    /* Apply to all text elements */
+    * {
+        font-family: inherit !important;
+    }
+}
+
+/* Override Quill editor font */
+.ql-editor {
+    font-family: 'Claire Sans', 'Inter', sans-serif !important;
+}
+
+/* Ensure bold text uses the bold font */
+b,
+strong,
+.ql-editor strong {
+    font-weight: 700;
+}
+
+/* Ensure light text uses the light font */
+.light-text {
+    font-weight: 300;
+}

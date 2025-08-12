@@ -1,0 +1,89 @@
+/* Premium modal styles */
+
+.premium-card {
+    max-width: 320px;
+    display: flex;
+    flex-direction: column;
+    border-radius: 1.5rem;
+    background-color: rgba(0, 0, 0, 1);
+    padding: 1.5rem;
+    margin: auto;
+}
+
+.premium-price {
+    font-size: 3rem;
+    line-height: 1;
+    font-weight: 300;
+    letter-spacing: -0.025em;
+    color: rgba(255, 255, 255, 1);
+    margin: 0;
+}
+
+.premium-lists {
+    margin-top: 2.5rem;
+    display: flex;
+    flex-direction: column;
+    grid-row-gap: 0.75rem;
+    row-gap: 0.75rem;
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+    color: rgba(255, 255, 255, 1);
+    list-style: none;
+    padding: 0;
+}
+
+.premium-list {
+    display: flex;
+    align-items: center;
+}
+
+.premium-list svg {
+    height: 1rem;
+    width: 1rem;
+    flex-shrink: 0;
+}
+
+.premium-list span {
+    margin-left: 1rem;
+}
+
+.premium-action {
+    margin-top: 2rem;
+    width: 100%;
+    border: 2px solid rgba(255, 255, 255, 1);
+    border-radius: 9999px;
+    background-color: rgba(255, 255, 255, 1);
+    padding: 0.625rem 1.5rem;
+    text-align: center;
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+    color: rgba(0, 0, 0, 1);
+    outline: none;
+    transition: all .2s ease;
+    cursor: pointer;
+    font-weight: 600;
+    text-decoration: none;
+    display: block;
+}
+
+.premium-action:hover {
+    color: rgba(255, 255, 255, 1);
+    background-color: transparent;
+}
+
+.premium-cancel {
+    margin-top: 1rem;
+    width: 100%;
+    border: none;
+    background: transparent;
+    color: #666;
+    padding: 0.625rem 1.5rem;
+    text-align: center;
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: all .2s ease;
+}
+
+.premium-cancel:hover {
+    color: #999;
+}

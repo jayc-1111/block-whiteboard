@@ -1,0 +1,73 @@
+/* Lollipop theme - Colorful theme with frosted glass categories */
+
+/* Background image is set via theme.js */
+.with-background #whiteboard {
+    position: relative;
+}
+
+.with-background #grid {
+    /* Keep grid visible over background */
+    position: relative;
+    background-color: transparent;
+    background-image: radial-gradient(circle, rgba(255, 255, 255, 0.2) var(--grid-dot-size), transparent var(--grid-dot-size));
+    background-size: var(--grid-spacing) var(--grid-spacing);
+}
+
+/* Dark frosted glass categories - same as cosmic mode */
+.with-background .category {
+    background: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Category titles with white text for dark background */
+.with-background .category-title {
+    color: #fff;
+}
+
+/* Dark frosted glass cards - same as cosmic mode */
+.with-background .card {
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* White text for dark cards */
+.with-background .card-title {
+    color: #fff;
+}
+
+.with-background .card-content {
+    color: #ddd;
+}
+
+/* Canvas headers with frosted glass effect */
+.with-background .canvas-header {
+    background: rgba(255, 255, 255, 0.25);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    color: #333;
+    text-shadow: 0 1px 2px rgba(255, 255, 255, 0.8);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+}
+
+/* Semi-transparent toolbar */
+.with-background #topBar {
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+}
+
+/* Adjust buttons for better visibility */
+.with-background button {
+    background: rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.with-background button:hover {
+    background: rgba(255, 255, 255, 0.3);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}

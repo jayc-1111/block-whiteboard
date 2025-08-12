@@ -1,0 +1,259 @@
+/* Auth Modal Styles */
+.auth-modal-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.8);
+    z-index: 1000001;
+    align-items: center;
+    justify-content: center;
+}
+
+.auth-modal {
+    background: #000;
+    border-radius: 12px;
+    width: 400px;
+    max-width: 90vw;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+}
+
+.auth-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 24px;
+    border-bottom: 1px solid #222;
+}
+
+.auth-header h2 {
+    margin: 0;
+    color: #fff;
+    font-size: 20px;
+}
+
+.auth-close {
+    background: none;
+    border: none;
+    color: #666;
+    font-size: 28px;
+    cursor: pointer;
+    padding: 0;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    transition: all 0.2s;
+}
+
+.auth-close:hover {
+    background: #222;
+    color: #fff;
+}
+
+.auth-form {
+    padding: 24px;
+}
+
+.auth-tabs {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 24px;
+}
+
+.auth-tab {
+    flex: 1;
+    padding: 10px;
+    background: transparent;
+    border: 1px solid #333;
+    color: #666;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+    border-radius: 6px;
+}
+
+.auth-tab.active {
+    background: #222;
+    color: #fff;
+    border-color: #444;
+}
+
+.auth-input-group {
+    margin-bottom: 16px;
+}
+
+.auth-input-group input {
+    width: 100%;
+    padding: 12px 16px;
+    background: #111;
+    border: 1px solid #333;
+    border-radius: 6px;
+    color: #fff;
+    font-size: 14px;
+    transition: all 0.2s;
+}
+
+.auth-input-group input:focus {
+    outline: none;
+    border-color: #40c9ff;
+    box-shadow: 0 0 0 2px rgba(64, 201, 255, 0.2);
+}
+
+.auth-submit {
+    width: 100%;
+    padding: 12px;
+    background: #40c9ff;
+    color: #000;
+    border: none;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.auth-submit:hover {
+    background: #2ba7dd;
+}
+
+.auth-submit:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.auth-divider {
+    position: relative;
+    text-align: center;
+    margin: 24px 0;
+}
+
+.auth-divider::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: #333;
+}
+
+.auth-divider span {
+    position: relative;
+    padding: 0 16px;
+    background: #000;
+    color: #666;
+    font-size: 12px;
+}
+
+.auth-google {
+    width: 100%;
+    padding: 12px;
+    background: #fff;
+    color: #000;
+    border: none;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    transition: all 0.2s;
+}
+
+.auth-google:hover {
+    background: #f0f0f0;
+}
+
+.auth-error {
+    display: none;
+    margin-top: 16px;
+    padding: 12px;
+    background: rgba(255, 68, 68, 0.1);
+    border: 1px solid rgba(255, 68, 68, 0.3);
+    border-radius: 6px;
+    color: #ff4444;
+    font-size: 13px;
+}
+
+/* Auth button in top bar */
+.auth-button-container {
+    display: flex;
+    align-items: center;
+    margin-right: 8px;
+    flex-shrink: 0;
+}
+
+.auth-button {
+    background: #40c9ff;
+    color: #000;
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.auth-button:hover {
+    background: #2ba7dd;
+}
+
+.user-menu {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.user-menu span {
+    color: #888;
+    font-size: 13px;
+}
+
+.user-menu button {
+    background: transparent;
+    color: #888;
+    padding: 6px 12px;
+    border: 1px solid #333;
+    border-radius: 4px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.user-menu button:hover {
+    border-color: #666;
+    color: #fff;
+}
+
+/* Save indicator */
+.save-indicator {
+    position: absolute;
+    top: 60px;
+    left: 13px;
+    font-size: 12px;
+}
+
+.save-status {
+    color: #666;
+    transition: all 0.2s;
+}
+
+.save-status.saving {
+    color: #40c9ff;
+}
+
+.save-status.saved {
+    color: #4caf50;
+}
+
+.save-status.error {
+    color: #ff4444;
+}

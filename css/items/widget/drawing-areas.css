@@ -1,0 +1,236 @@
+/* Drawing areas - interactive canvases with perfect-freehand */
+
+.drawing-area {
+    position: absolute;
+    background: rgba(255, 255, 255, 0.95);
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    cursor: move;
+    min-width: 200px;
+    min-height: 150px;
+    transition: box-shadow 0.2s ease;
+}
+
+.drawing-area:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Drawing area header */
+.drawing-area-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 12px;
+    background: rgba(0, 0, 0, 0.03);
+    border-bottom: 1px solid #e0e0e0;
+    height: 40px;
+    cursor: move;
+}
+
+.drawing-area-title {
+    font-size: 14px;
+    font-weight: 500;
+    color: #374151;
+    user-select: none;
+}
+
+.drawing-area-controls {
+    display: flex;
+    gap: 6px;
+}
+
+.drawing-area-controls button {
+    background: transparent;
+    border: none;
+    padding: 4px;
+    cursor: pointer;
+    color: #6b7280;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.drawing-area-controls button:hover {
+    background: rgba(0, 0, 0, 0.05);
+    color: #374151;
+}
+
+.drawing-clear-btn:hover {
+    color: #ef4444;
+}
+
+.drawing-close-btn:hover {
+    color: #ef4444;
+}
+
+/* Canvas container */
+.drawing-canvas-container {
+    position: relative;
+    width: 100%;
+    height: calc(100% - 40px);
+    overflow: hidden;
+    background: white;
+}
+
+.drawing-canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    cursor: crosshair;
+    touch-action: none;
+}
+
+/* Resize handle */
+.drawing-resize-handle {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 20px;
+    height: 20px;
+    cursor: se-resize;
+    background: linear-gradient(135deg, transparent 50%, #d1d5db 50%);
+    border-radius: 0 0 8px 0;
+}
+
+/* Dark mode styles */
+.night-mode .drawing-area {
+    background: rgba(30, 30, 30, 0.95);
+    border-color: #3f3f3f;
+}
+
+.night-mode .drawing-area-header {
+    background: rgba(255, 255, 255, 0.03);
+    border-color: #3f3f3f;
+}
+
+.night-mode .drawing-area-title {
+    color: #e5e5e5;
+}
+
+.night-mode .drawing-area-controls button {
+    color: #9ca3af;
+}
+
+.night-mode .drawing-area-controls button:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: #e5e5e5;
+}
+
+.night-mode .drawing-canvas-container {
+    background: #1a1a1a;
+}
+
+.night-mode .drawing-resize-handle {
+    background: linear-gradient(135deg, transparent 50%, #4b5563 50%);
+}
+
+/* Light mode specific */
+.light-mode .drawing-area {
+    background: #F5F7F9;
+    border: 1px solid #EFF1F3;
+    box-shadow: none;
+}
+
+.light-mode .drawing-area:hover {
+    box-shadow: none;
+}
+
+.light-mode .drawing-area-header {
+    background: rgba(0, 0, 0, 0.02);
+    border-color: #EFF1F3;
+}
+
+.light-mode .drawing-canvas-container {
+    background: #FAFBFC;
+}
+
+/* Picnic mode */
+.picnic-mode .drawing-area {
+    backdrop-filter: blur(3px);
+    background: rgba(255, 255, 255, 0.85);
+}
+
+/* Frutiger mode */
+.frutiger-mode .drawing-area {
+    backdrop-filter: blur(5px) saturate(150%);
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.frutiger-mode .drawing-area-header {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+.frutiger-mode .drawing-area-title {
+    color: white;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.frutiger-mode .drawing-area-controls button {
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.frutiger-mode .drawing-area-controls button:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+}
+
+.frutiger-mode .drawing-canvas-container {
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(3px);
+}
+
+/* Lollipop mode */
+.lollipop-mode .drawing-area {
+    background: #fff0f6;
+    border-color: #ffc0cb;
+    box-shadow: 0 2px 8px rgba(255, 192, 203, 0.3);
+}
+
+.lollipop-mode .drawing-area:hover {
+    box-shadow: 0 4px 12px rgba(255, 192, 203, 0.4);
+}
+
+.lollipop-mode .drawing-area-header {
+    background: rgba(255, 192, 203, 0.1);
+    border-color: #ffc0cb;
+}
+
+.lollipop-mode .drawing-canvas-container {
+    background: #fffafa;
+}
+
+/* Drawing in progress */
+.drawing-area.drawing-active .drawing-canvas {
+    cursor: grabbing;
+}
+
+/* Selected state */
+.drawing-area.selected {
+    box-shadow: 0 0 0 2px #3b82f6;
+}
+
+.night-mode .drawing-area.selected {
+    box-shadow: 0 0 0 2px #60a5fa;
+}
+
+/* Animation for creation */
+@keyframes drawingAreaFadeIn {
+    from {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.drawing-area {
+    animation: drawingAreaFadeIn 0.2s ease-out;
+}

@@ -1,0 +1,15 @@
+/* Utility helper classes */
+
+/* Instructions overlay */
+.instructions {
+    position: fixed;
+    top: 14px;
+    right: 14px;
+    color: #707070;
+    font-size: 12px;
+    z-index: 100;
+    background: rgba(26, 26, 26, 0.8);
+    padding: 8px 12px;
+    border-radius: 4px;
+    border: 1px solid #2a2a2a;
+}

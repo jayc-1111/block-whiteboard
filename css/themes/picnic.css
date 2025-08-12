@@ -1,0 +1,49 @@
+/* Picnic theme */
+
+.picnic-mode #whiteboard {
+    background-color: #2a2a72;
+}
+
+.picnic-mode #grid {
+    position: relative;
+    background: 
+        radial-gradient(circle, rgba(255, 255, 255, 0.2) var(--grid-dot-size), transparent var(--grid-dot-size)),
+        repeating-linear-gradient(
+            45deg,
+            transparent 0,
+            transparent 35px,
+            rgba(255, 255, 255, 0.15) 35px,
+            rgba(255, 255, 255, 0.15) 70px
+        ),
+        repeating-linear-gradient(
+            -45deg,
+            transparent 0,
+            transparent 35px,
+            rgba(255, 255, 255, 0.15) 35px,
+            rgba(255, 255, 255, 0.15) 70px
+        ),
+        linear-gradient(90deg, #009ffd, #2a2a72);
+    background-size: 
+        var(--grid-spacing) var(--grid-spacing),
+        auto,
+        auto,
+        auto;
+    background-attachment: local;
+}
+
+/* Picnic mode adjustments */
+.picnic-mode .category {
+    background: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(3px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.picnic-mode .card {
+    background: rgba(0, 0, 0, 0.7);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.picnic-mode .canvas-header {
+    color: #40c9ff;
+    text-shadow: 0 0 20px rgba(64, 201, 255, 0.8);
+}
