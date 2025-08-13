@@ -91,6 +91,7 @@ function addCardToCategory(categoryOrIndex, title = 'New Card', content = null, 
     // Store initial content on the card for later use
     card.initialContent = content;
     card.bookmarks = bookmarks || []; // Store bookmarks on card
+    card.sections = []; // Store sections on card
     
     // Debug bookmark restoration
     if (bookmarks && bookmarks.length > 0) {
@@ -300,6 +301,11 @@ function expandCard(card) {
                             card.bookmarks = savedCard.bookmarks;
                             console.log(`💚 EXPAND: Restored ${savedCard.bookmarks.length} bookmarks from AppState`);
                         }
+                        // Restore sections from AppState if available
+                        if (savedCard.sections) {
+                            card.sections = savedCard.sections;
+                            console.log(`💚 EXPAND: Restored ${savedCard.sections.length} sections from AppState`);
+                        }
                         break;
                     }
                 }
@@ -487,38 +493,47 @@ function expandCard(card) {
     mainContent.className = 'expanded-card-main';
     if (card.darkModeEnabled) mainContent.classList.add('dark-mode');
     
-    // Editor section (left)
-    const editorSection = document.createElement('div');
-    editorSection.className = 'editor-section';
-    editorSection.appendChild(card.editorContainer);
+    // Create sections from card data
+    if (card.sections && card.sections.length > 0) {
+        // Create sections from saved data
+        card.sections.forEach((sectionData, index) => {
+            const section = createSection(card, sectionData.bookmarks);
+            // Update section title
+            const sectionTitle = section.querySelector('.section-title');
+            if (sectionTitle) {
+                sectionTitle.textContent = sectionData.title;
+            }
+            mainContent.appendChild(section);
+        });
+    } else {
+        // Create first section with editor and bookmarks
+        const firstSection = createSection(card, card.bookmarks);
+        mainContent.appendChild(firstSection);
+    }
     
-    // Bookmarks section (right)
-    const bookmarksSection = document.createElement('div');
-    bookmarksSection.className = 'bookmarks-section';
+    // Create add section button container
+    const addSectionContainer = document.createElement('div');
+    addSectionContainer.className = 'add-section-container';
     
-    // Display real bookmarks if card has them, otherwise show placeholder
-    if (card.bookmarks && card.bookmarks.length > 0) {
-        console.log('💚 EXPAND: Loading', card.bookmarks.length, 'bookmarks');
-            card.bookmarks.forEach((bookmark, index) => {
-                const bookmarkCard = createBookmarkCard(
-                    bookmark.title,
-                    bookmark.description || bookmark.url,
-                    bookmark.url,
-                    bookmark.timestamp || new Date(),
-                    bookmark.screenshot || bookmark.image,
-                    index,
-                    card
-                );
-                bookmarksSection.appendChild(bookmarkCard);
-            });
-        } else {
-            // Create sample bookmark card
-            const bookmarkCard = createBookmarkCard('Example Bookmark', 'This is a sample bookmark description that shows how bookmarks will appear.', 'https://example.com', new Date(), null, 0, card);
-            bookmarksSection.appendChild(bookmarkCard);
+    // Create add section button
+    const addSectionBtn = document.createElement('button');
+    addSectionBtn.className = 'add-section-btn';
+    addSectionBtn.textContent = 'Add Section';
+    
+    // Add click handler to create new section
+    addSectionBtn.onclick = () => {
+        const newSection = createSection(card, []);
+        mainContent.insertBefore(newSection, addSectionContainer);
+        
+        // Save to Firebase
+        if (window.syncService) {
+            window.syncService.saveAfterAction('section added');
         }
+    };
     
-    mainContent.appendChild(editorSection);
-    mainContent.appendChild(bookmarksSection);
+    // Add the button to container and container to main content
+    addSectionContainer.appendChild(addSectionBtn);
+    mainContent.appendChild(addSectionContainer);
     
     console.log('💚 EXPAND: Assembling wrapper components...');
     wrapper.appendChild(buttonRow);
@@ -1135,14 +1150,157 @@ console.log('🔌 EXTENSION: Block Whiteboard ready for bookmarks');
 console.log('🔌 EXTENSION: processBookmarkOnce available:', typeof window.processBookmarkOnce);
 console.log('🔌 EXTENSION: handleBookmarkData available:', typeof window.handleBookmarkData);
 
+// Create a section with editor and bookmarks
+function createSection(card, bookmarks = []) {
+    // Create section container
+    const section = document.createElement('div');
+    section.className = 'card-section';
+    section.style.display = 'flex';
+    section.style.flexDirection = 'column';
+    section.style.gap = '20px';
+    section.style.marginBottom = '20px';
+    section.style.padding = '20px';
+    section.style.backgroundColor = '#f8f9fa';
+    section.style.borderRadius = '8px';
+    section.style.border = '1px solid #e9ecef';
+    
+    // Create section title
+    const sectionTitle = document.createElement('div');
+    sectionTitle.className = 'section-title';
+    sectionTitle.contentEditable = true;
+    sectionTitle.textContent = 'Section Title';
+    sectionTitle.style.fontSize = '22px';
+    sectionTitle.style.fontWeight = '600';
+    sectionTitle.style.color = '#111827';
+    sectionTitle.style.marginBottom = '15px';
+    sectionTitle.style.padding = '0 5px';
+    
+    // Create content container for editor and bookmarks
+    const contentContainer = document.createElement('div');
+    contentContainer.style.display = 'flex';
+    contentContainer.style.gap = '20px';
+    
+    // Create editor container
+    const editorContainer = document.createElement('div');
+    editorContainer.className = 'editor-container';
+    editorContainer.style.flex = '3';
+    editorContainer.style.height = '100%';
+    
+    // Create bookmarks container
+    const bookmarksSection = document.createElement('div');
+    bookmarksSection.className = 'bookmarks-section';
+    bookmarksSection.style.flex = '1';
+    bookmarksSection.style.height = '100%';
+    
+    // Add title to section
+    section.appendChild(sectionTitle);
+    
+    // Add editor to content container
+    contentContainer.appendChild(editorContainer);
+    
+    // Add bookmarks to content container
+    contentContainer.appendChild(bookmarksSection);
+    
+    // Add content container to section
+    section.appendChild(contentContainer);
+    
+    // Create section data object
+    const sectionData = {
+        id: `section-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+        title: sectionTitle.textContent,
+        content: null,
+        bookmarks: bookmarks || []
+    };
+    
+    // Store section data on the section element
+    section.sectionData = sectionData;
+    
+    // Add section to card's sections array
+    if (!card.sections) {
+        card.sections = [];
+    }
+    card.sections.push(sectionData);
+    
+    // Store a reference to the section element on the section data
+    sectionData.element = section;
+    
+    // Initialize editor in this section
+    initializeEditorJS(card, editorContainer);
+    
+    // Add bookmarks to section
+    if (bookmarks && bookmarks.length > 0) {
+        bookmarks.forEach((bookmark, index) => {
+            const bookmarkCard = createBookmarkCard(
+                bookmark.title,
+                bookmark.description || bookmark.url,
+                bookmark.url,
+                bookmark.timestamp || new Date(),
+                bookmark.screenshot || bookmark.image,
+                index,
+                card
+            );
+            bookmarksSection.appendChild(bookmarkCard);
+        });
+    } else {
+        // Create sample bookmark card
+        const bookmarkCard = createBookmarkCard('Example Bookmark', 'This is a sample bookmark description that shows how bookmarks will appear.', 'https://example.com', new Date(), null, 0, card);
+        bookmarksSection.appendChild(bookmarkCard);
+    }
+    
+    // Update section title listener to save changes
+    sectionTitle.addEventListener('blur', function() {
+        if (card.appStateLocation) {
+            const boards = AppState.get('boards');
+            const currentBoardId = AppState.get('currentBoardId');
+            const board = boards.find(b => b.id === currentBoardId);
+            
+            if (board && board.categories) {
+                const { categoryIndex, cardIndex } = card.appStateLocation;
+                if (board.categories[categoryIndex] && board.categories[categoryIndex].cards[cardIndex]) {
+                    // Find and update this section in the board data
+                    if (!board.categories[categoryIndex].cards[cardIndex].sections) {
+                        board.categories[categoryIndex].cards[cardIndex].sections = [];
+                    }
+                    
+                    // Update or add section
+                    const sectionIndex = board.categories[categoryIndex].cards[cardIndex].sections.findIndex(s => s.id === sectionData.id);
+                    if (sectionIndex !== -1) {
+                        board.categories[categoryIndex].cards[cardIndex].sections[sectionIndex].title = this.textContent;
+                    } else {
+                        board.categories[categoryIndex].cards[cardIndex].sections.push({
+                            id: sectionData.id,
+                            title: this.textContent,
+                            content: null,
+                            bookmarks: []
+                        });
+                    }
+                    
+                    AppState.set('boards', boards);
+                    console.log('🔖 SECTION: Updated AppState with section title');
+                    
+                    // Save to Firebase
+                    if (window.syncService) {
+                        window.syncService.saveAfterAction('section title edited');
+                    }
+                }
+            }
+        }
+    });
+    
+    return section;
+}
+
 // Initialize Quill Editor in expanded card
-async function initializeEditorJS(card) {
-    if (!card.editorContainer) {
+async function initializeEditorJS(card, container = null) {
+    // Use provided container or default to card's editorContainer
+    const editorContainer = container || card.editorContainer;
+    
+    if (!editorContainer) {
         console.error('No editor container found on card');
         return;
     }
     
-    console.log('Initializing Quill in container:', card.editorContainer.id);
+    console.log('Initializing Quill in container:', editorContainer.id || 'dynamic');
     
     // Wait for Quill to be available
     let attempts = 0;
@@ -1153,18 +1311,19 @@ async function initializeEditorJS(card) {
     
     if (!window.Quill) {
         console.error('Quill not loaded');
-        card.editorContainer.innerHTML = '<div class="editor-error">Editor not available. Please refresh the page.</div>';
+        editorContainer.innerHTML = '<div class="editor-error">Editor not available. Please refresh the page.</div>';
         return;
     }
     
     // Clear the container first
-    card.editorContainer.innerHTML = '';
+    editorContainer.innerHTML = '';
     
     // Create editor div inside the container
     const editorDiv = document.createElement('div');
     editorDiv.id = `quill-${Date.now()}`;
     editorDiv.style.height = '100%';
-    card.editorContainer.appendChild(editorDiv);
+    editorDiv.style.minHeight = '200px';
+    editorContainer.appendChild(editorDiv);
     
     // Initialize Quill according to documentation
     const quill = new Quill(editorDiv, {
