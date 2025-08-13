@@ -580,6 +580,21 @@ function createBookmarkCard(title, description, url, date, imageData, bookmarkIn
         reorderBookmark(expandedCard, bookmarkIndex, bookmarkIndex + 1);
     };
     
+    // Remove button
+    const removeBtn = document.createElement('button');
+    removeBtn.className = 'bookmark-remove-btn';
+    removeBtn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M3 6h18"></path>
+        <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
+        <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path>
+    </svg>`;
+    removeBtn.title = 'Remove bookmark';
+    removeBtn.style.cssText = 'padding: 2px 4px; background: #dc2626; border: 1px solid #ef4444; border-radius: 4px; cursor: pointer; color: #fff; transition: all 0.2s; height: 22px; display: flex; align-items: center;';
+    
+    removeBtn.onclick = () => {
+        removeBookmark(expandedCard, bookmarkIndex);
+    };
+    
     // Add hover effects
     [moveUpBtn, moveDownBtn].forEach(btn => {
         if (!btn.disabled) {
@@ -594,8 +609,19 @@ function createBookmarkCard(title, description, url, date, imageData, bookmarkIn
         }
     });
     
+    // Add hover effect for remove button
+    removeBtn.onmouseenter = () => {
+        removeBtn.style.background = '#ef4444';
+        removeBtn.style.transform = 'scale(1.05)';
+    };
+    removeBtn.onmouseleave = () => {
+        removeBtn.style.background = '#dc2626';
+        removeBtn.style.transform = 'scale(1)';
+    };
+    
     controlsRow.appendChild(moveUpBtn);
     controlsRow.appendChild(moveDownBtn);
+    controlsRow.appendChild(removeBtn);
     card.appendChild(controlsRow);
     
     // Image or placeholder
@@ -634,6 +660,90 @@ function createBookmarkCard(title, description, url, date, imageData, bookmarkIn
     card.appendChild(cardDate);
     
     return card;
+}
+
+// Function to remove a bookmark
+function removeBookmark(expandedCard, bookmarkIndex) {
+    if (!expandedCard || !expandedCard.bookmarks) return;
+    
+    const bookmarks = expandedCard.bookmarks;
+    if (bookmarkIndex < 0 || bookmarkIndex >= bookmarks.length) return;
+    
+    // Get the bookmark being removed for potential confirmation
+    const removedBookmark = bookmarks[bookmarkIndex];
+    
+    // Show confirmation dialog
+    showConfirmDialog(
+        'Remove Bookmark',
+        `Are you sure you want to remove "${removedBookmark.title}"?`,
+        () => {
+            // Remove the bookmark from the array
+            bookmarks.splice(bookmarkIndex, 1);
+            
+            // Update AppState immediately
+            if (expandedCard.appStateLocation) {
+                const boards = AppState.get('boards');
+                const currentBoardId = AppState.get('currentBoardId');
+                const board = boards.find(b => b.id === currentBoardId);
+                
+                if (board && board.categories) {
+                    const { categoryIndex, cardIndex } = expandedCard.appStateLocation;
+                    if (board.categories[categoryIndex] && board.categories[categoryIndex].cards[cardIndex]) {
+                        board.categories[categoryIndex].cards[cardIndex].bookmarks = [...expandedCard.bookmarks];
+                        AppState.set('boards', boards);
+                        console.log('🗑️ BOOKMARK: Updated AppState after removing bookmark');
+                    }
+                }
+            }
+            
+            // Remove any existing dialogs first to prevent stacking
+            const existingDialogs = document.querySelectorAll('.dialog-overlay, .confirm-dialog');
+            existingDialogs.forEach(dialog => dialog.remove());
+            
+            // Refresh the bookmarks display
+            const bookmarksSection = expandedCard.querySelector('.bookmarks-section');
+            if (bookmarksSection) {
+                bookmarksSection.innerHTML = '';
+                
+                // Re-create all bookmark cards with updated indices
+                if (bookmarks.length > 0) {
+                    bookmarks.forEach((bookmark, index) => {
+                        const bookmarkCard = createBookmarkCard(
+                            bookmark.title,
+                            bookmark.description || bookmark.url,
+                            bookmark.url,
+                            bookmark.timestamp || new Date(),
+                            bookmark.screenshot || bookmark.image,
+                            index,
+                            expandedCard
+                        );
+                        bookmarksSection.appendChild(bookmarkCard);
+                    });
+                } else {
+                    // Show placeholder when no bookmarks remain
+                    const bookmarkCard = createBookmarkCard('Example Bookmark', 'This is a sample bookmark description that shows how bookmarks will appear.', 'https://example.com', new Date(), null, 0, expandedCard);
+                    bookmarksSection.appendChild(bookmarkCard);
+                }
+            }
+            
+            // Save the updated bookmarks
+            if (window.syncService) {
+                const expandedBeforeSync = AppState.get('expandedCard');
+                console.log('🔧 SYNC DEBUG: Before sync - expandedCard:', expandedBeforeSync);
+                window.syncService.saveAfterAction('bookmark removed').then(() => {
+                    console.log('🔧 SYNC DEBUG: Sync complete - restoring expandedCard:', expandedBeforeSync);
+                    AppState.set('expandedCard', expandedBeforeSync);
+                }).catch(err => {
+                    console.error('🔧 SYNC DEBUG: Sync failed:', err);
+                });
+            }
+            
+            // Show success notification
+            if (window.simpleNotifications) {
+                window.simpleNotifications.showNotification(`Bookmark removed: ${removedBookmark.title}`);
+            }
+        }
+    );
 }
 
 // Function to reorder bookmarks
@@ -685,7 +795,14 @@ function reorderBookmark(expandedCard, fromIndex, toIndex) {
     
     // Save the reordered bookmarks
     if (window.syncService) {
-        window.syncService.saveAfterAction('bookmarks reordered');
+        const expandedBeforeSync = AppState.get('expandedCard');
+        console.log('🔧 SYNC DEBUG: Before sync - expandedCard:', expandedBeforeSync);
+        window.syncService.saveAfterAction('bookmarks reordered').then(() => {
+            console.log('🔧 SYNC DEBUG: Sync complete - restoring expandedCard:', expandedBeforeSync);
+            AppState.set('expandedCard', expandedBeforeSync);
+        }).catch(err => {
+            console.error('🔧 SYNC DEBUG: Sync failed:', err);
+        });
     }
 }
 

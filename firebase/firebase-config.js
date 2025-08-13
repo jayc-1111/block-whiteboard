@@ -329,6 +329,19 @@ export const dbService = {
             boardName: boardData.name
         });
 
+        // Enhanced console logging for debugging
+        console.log('[FIRESTORE DEBUG] Starting board save:', {
+            timestamp: new Date().toISOString(),
+            userId: currentUser.uid,
+            isGuest: currentUser.isAnonymous,
+            boardId: boardData.id,
+            boardName: boardData.name,
+            hasCategories: boardData.categories?.length > 0,
+            hasHeaders: boardData.canvasHeaders?.length > 0,
+            categoryCount: boardData.categories?.length || 0,
+            headerCount: boardData.canvasHeaders?.length || 0
+        });
+
         try {
             // Additional validation - don't save empty boards
             const hasContent = (
@@ -339,6 +352,7 @@ export const dbService = {
             
             if (!hasContent) {
                 Debug.firebase.step('Skipping save - board is empty');
+                console.log('[FIRESTORE DEBUG] Save skipped - board is empty');
                 return { success: true, skipped: true };
             }
             
@@ -351,33 +365,99 @@ export const dbService = {
             
             Debug.firebase.detail('Document path', { path: `users/${currentUser.uid}/boards/${boardData.id}` });
             
+            // Log the actual data being saved (truncated for large objects)
+            const dataPreview = {
+                ...saveData,
+                categories: saveData.categories?.map(cat => ({
+                    title: cat.title,
+                    cardCount: cat.cards?.length || 0
+                })) || [],
+                canvasHeaders: saveData.canvasHeaders?.map(h => ({ text: h.text })) || []
+            };
+            console.log('[FIRESTORE DEBUG] Data to save:', dataPreview);
+            
+            // Check data size before attempting save
+            const dataSize = JSON.stringify(saveData).length;
+            console.log('[FIRESTORE DEBUG] Data size:', dataSize, 'bytes');
+            
+            if (dataSize > 900000) { // 900KB limit
+                console.error('[FIRESTORE ERROR] Data too large for Firestore:', dataSize, 'bytes');
+                return { success: false, error: 'Board data too large for Firestore' };
+            }
+            
             // Retry logic for Firebase write errors
             let retries = 3;
             let lastError = null;
             
             while (retries > 0) {
                 try {
+                    console.log(`[FIRESTORE DEBUG] Attempting save (retries left: ${retries})`);
                     await setDoc(boardRef, saveData);
+                    console.log('[FIRESTORE DEBUG] Board saved successfully');
                     Debug.firebase.step('Board saved to Firestore successfully');
                     break; // Success, exit loop
                 } catch (error) {
                     lastError = error;
                     retries--;
                     
+                    // Enhanced error logging
+                    console.error('[FIRESTORE ERROR] Write failed:', {
+                        code: error.code,
+                        message: error.message,
+                        name: error.name,
+                        stack: error.stack,
+                        details: error.details || 'No additional details',
+                        retriesLeft: retries,
+                        timestamp: new Date().toISOString()
+                    });
+                    
+                    // Log detailed error information
+                    Debug.firebase.stepError(`Firebase write error (retries left: ${retries})`, {
+                        code: error.code,
+                        message: error.message,
+                        name: error.name,
+                        stack: error.stack,
+                        details: error.details || 'No additional details'
+                    });
+                    
+                    // Handle specific error types
                     if (error.code === 'aborted' || error.message?.includes('NS_BINDING_ABORTED')) {
+                        console.warn('[FIRESTORE WARN] Write aborted, retrying...');
                         Debug.firebase.stepError(`Firebase write aborted, retries left: ${retries}`, error);
                         if (retries > 0) {
-                            // Wait before retry
-                            await new Promise(resolve => setTimeout(resolve, 1000));
+                            // Wait before retry with exponential backoff
+                            const delay = Math.pow(2, (3 - retries)) * 1000; // 1s, 2s, 4s
+                            console.log(`[FIRESTORE DEBUG] Waiting ${delay}ms before retry...`);
+                            Debug.firebase.detail(`Waiting ${delay}ms before retry...`);
+                            await new Promise(resolve => setTimeout(resolve, delay));
+                            continue;
+                        }
+                    } else if (error.code === 'permission-denied' || error.code === 'unauthenticated') {
+                        console.error('[FIRESTORE ERROR] Authentication error - stopping retries');
+                        Debug.firebase.stepError('Authentication error - stopping retries', error);
+                        break; // Don't retry auth errors
+                    } else if (error.code === 'invalid-argument' || error.code === 'failed-precondition') {
+                        console.error('[FIRESTORE ERROR] Data validation error - stopping retries');
+                        Debug.firebase.stepError('Data validation error - stopping retries', error);
+                        break; // Don't retry validation errors
+                    } else {
+                        // For other errors, retry with exponential backoff
+                        console.warn('[FIRESTORE WARN] Unknown error, retrying...');
+                        if (retries > 0) {
+                            const delay = Math.pow(2, (3 - retries)) * 1000;
+                            console.log(`[FIRESTORE DEBUG] Unknown error, waiting ${delay}ms before retry...`);
+                            Debug.firebase.detail(`Unknown error, waiting ${delay}ms before retry...`);
+                            await new Promise(resolve => setTimeout(resolve, delay));
                             continue;
                         }
                     }
                     
-                    throw error; // Re-throw if not a retriable error
+                    throw error; // Re-throw if not a retriable error or no retries left
                 }
             }
             
             if (retries === 0 && lastError) {
+                console.error('[FIRESTORE ERROR] All retries failed:', lastError);
                 throw lastError;
             }
             

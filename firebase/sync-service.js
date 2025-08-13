@@ -23,6 +23,7 @@ export const syncService = {
     lastKnownGoodState: null, // Store last known good state for recovery
     
     init() {
+        console.log('[SYNC DEBUG] Initializing sync service');
         Debug.sync.start();
         Debug.sync.step('Initializing sync service');
         
@@ -31,6 +32,14 @@ export const syncService = {
         
         // Listen for auth state changes
         authService.onAuthStateChange((user) => {
+            console.log('[SYNC DEBUG] Auth state changed:', {
+                hasUser: !!user,
+                isGuest: user?.isAnonymous,
+                userId: user?.uid?.slice(-6).toUpperCase(),
+                email: user?.email,
+                timestamp: new Date().toISOString()
+            });
+            
             if (user) {
                 Debug.sync.step(`User authenticated (${user.isAnonymous ? 'guest' : user.email})`);
                 // Load initial boards only once at startup
@@ -62,6 +71,10 @@ export const syncService = {
     startQueueProcessor() {
         setInterval(() => {
             if (!this.isProcessingQueue && this.saveQueue.length > 0 && !this.isLoadingFromFirebase) {
+                console.log('[SYNC DEBUG] Processing save queue:', {
+                    queueLength: this.saveQueue.length,
+                    timestamp: new Date().toISOString()
+                });
                 this.processQueue();
             }
         }, 500);
@@ -71,24 +84,33 @@ export const syncService = {
         if (this.isProcessingQueue || this.saveQueue.length === 0) return;
         
         this.isProcessingQueue = true;
+        console.log('[SYNC DEBUG] Starting queue processing:', {
+            queueLength: this.saveQueue.length,
+            timestamp: new Date().toISOString()
+        });
         Debug.sync.step(`Processing save queue (${this.saveQueue.length} items)`);
         
         while (this.saveQueue.length > 0) {
             const saveTask = this.saveQueue.shift();
             try {
+                console.log('[SYNC DEBUG] Processing save task from queue');
                 await saveTask();
                 // Wait between saves to avoid overwhelming Firebase
+                console.log('[SYNC DEBUG] Save task completed, waiting 200ms');
                 await new Promise(resolve => setTimeout(resolve, 200));
             } catch (error) {
+                console.error('[SYNC ERROR] Queue processing error:', error);
                 Debug.sync.stepError('Queue processing error', error);
                 // If save fails, restore last known good state
                 if (this.lastKnownGoodState) {
+                    console.log('[SYNC DEBUG] Restoring last known good state');
                     AppState.set('boards', JSON.parse(this.lastKnownGoodState));
                 }
             }
         }
         
         this.isProcessingQueue = false;
+        console.log('[SYNC DEBUG] Queue processing completed');
     },
     
     clearQueue() {
@@ -171,11 +193,13 @@ export const syncService = {
         
         // Check if already loading or loaded
         if (this.isLoadingInitialBoard) {
+            console.log('[SYNC DEBUG] Initial board load already in progress - skipping duplicate');
             Debug.sync.step('Initial board load already in progress - skipping duplicate');
             return;
         }
         
         this.isLoadingInitialBoard = true;
+        console.log('[SYNC DEBUG] Loading initial board from Firebase');
         Debug.sync.step('Loading initial board');
         
         // Store current state before loading (might be from localStorage)
@@ -492,6 +516,7 @@ export const syncService = {
     
     // Manual save function for expanded cards
     async manualSave() {
+        console.log('[SYNC DEBUG] Manual save triggered by user');
         Debug.sync.step('Manual save triggered');
         this.pendingChanges = true;
         this.isManualSave = true; // Set flag for manual save
@@ -508,6 +533,11 @@ export const syncService = {
         
         // Don't save if no user, already saving, or actively dragging/editing
         if (!user || this.isSaving || this.isDragging || this.isEditing) {
+            console.log('[SYNC DEBUG] Skipping save:', { 
+                reason: !user ? 'No user' : this.isSaving ? 'Already saving' : 
+                        this.isDragging ? 'Currently dragging' : 'Currently editing',
+                timestamp: new Date().toISOString()
+            });
             Debug.sync.detail('Skipping save', { 
                 reason: !user ? 'No user' : this.isSaving ? 'Already saving' : 
                         this.isDragging ? 'Currently dragging' : 'Currently editing'
@@ -515,15 +545,26 @@ export const syncService = {
             return;
         }
         
+        console.log('[SYNC DEBUG] Starting save process:', {
+            userId: user.isAnonymous ? 'Guest: ' + user.uid.slice(-6).toUpperCase() : user.email,
+            isManualSave: this.isManualSave,
+            isAutoSave: this.isAutoSave,
+            isDragging: this.isDragging,
+            isEditing: this.isEditing,
+            timestamp: new Date().toISOString()
+        });
+        
         Debug.sync.detail('User saving', { user: user.isAnonymous ? 'Guest: ' + user.uid.slice(-6).toUpperCase() : user.email });
         
         // Don't save if user is actively editing (skip check for manual/auto saves)
         if (!this.isManualSave && !this.isAutoSave && !this.isUserIdle()) {
+            console.log('[SYNC DEBUG] User is actively editing, postponing save');
             Debug.sync.detail('User is actively editing, postponing save');
             return;
         }
         
         this.isSaving = true;
+        console.log('[SYNC DEBUG] Save process started');
         Debug.sync.step('Saving current board to Firebase');
         
         try {
@@ -534,7 +575,7 @@ export const syncService = {
             
             const boards = AppState.get('boards');
             const currentBoardId = AppState.get('currentBoardId');
-            const board = boards.find(b => b.id === currentBoardId);
+            let board = boards.find(b => b.id === currentBoardId);
             
             Debug.sync.detail('Board data before save', {
                 boardId: board?.id,
@@ -564,6 +605,12 @@ export const syncService = {
                 }
                 
                 if (!hasCategories && !hasHeaders && !hasDrawings) {
+                    console.log('[SYNC DEBUG] Skipping save - board is empty:', {
+                        categories: board.categories?.length || 0,
+                        headers: board.canvasHeaders?.length || 0,
+                        drawings: board.drawingPaths?.length || 0,
+                        bookmarks: totalBookmarks
+                    });
                     Debug.sync.step('Skipping save - board is empty');
                     Debug.sync.detail('Empty board check', {
                         categories: board.categories?.length || 0,
@@ -593,6 +640,20 @@ export const syncService = {
                 // Add timestamp
                 board.lastModified = Date.now();
                 
+                // Clean up bookmark data before serialization
+                board = await this.cleanBookmarkData(board);
+                
+                // Check if board data is too large
+                if (this.isBoardDataTooLarge(board)) {
+                    console.error('[SYNC ERROR] Board data too large for Firestore - skipping save');
+                    Debug.sync.stepError('Board data too large for Firestore - skipping save');
+                    if (window.simpleNotifications) {
+                        window.simpleNotifications.showError('Board data too large - please remove some content');
+                    }
+                    updateSaveStatus('error');
+                    return;
+                }
+                
                 // Serialize board data for Firebase
                 const serializedBoard = this.serializeBoardForFirebase(board);
                 Debug.sync.detail('Serialized board preview', {
@@ -603,11 +664,20 @@ export const syncService = {
                 
                 const result = await dbService.saveBoard(serializedBoard);
                 
+                console.log('[SYNC DEBUG] Save result:', {
+                    success: result.success,
+                    skipped: result.skipped,
+                    error: result.error,
+                    timestamp: new Date().toISOString()
+                });
+                
                 if (result.success) {
                     if (result.skipped) {
+                        console.log('[SYNC DEBUG] Save skipped - board is empty');
                         Debug.sync.step('Save skipped - board is empty');
                         updateSaveStatus('saved');
                     } else {
+                        console.log('[SYNC DEBUG] Board saved successfully:', board.name);
                         Debug.sync.step(`Board "${board.name}" saved to Firebase`);
                         updateSaveStatus('saved');
                     }
@@ -630,17 +700,60 @@ export const syncService = {
                         }
                     }
                 } else {
-                    Debug.sync.stepError('Failed to save board', result.error);
+                    // Enhanced error logging with more details
+                    console.error('[SYNC ERROR] Failed to save board:', {
+                        error: result.error,
+                        boardId: board.id,
+                        boardName: board.name,
+                        timestamp: new Date().toISOString(),
+                        hasCategories: board.categories?.length > 0,
+                        hasHeaders: board.canvasHeaders?.length > 0,
+                        hasDrawings: board.drawingPaths?.length > 0,
+                        totalBookmarks: this.countBookmarks(board)
+                    });
+                    
+                    // Enhanced error logging with more details
+                    Debug.sync.stepError('Failed to save board', {
+                        error: result.error,
+                        boardId: board.id,
+                        boardName: board.name,
+                        timestamp: new Date().toISOString(),
+                        hasCategories: board.categories?.length > 0,
+                        hasHeaders: board.canvasHeaders?.length > 0,
+                        hasDrawings: board.drawingPaths?.length > 0,
+                        totalBookmarks: this.countBookmarks(board)
+                    });
+                    
+                    // Show user-friendly error message
+                    if (window.simpleNotifications) {
+                        let errorMessage = 'Failed to save to cloud';
+                        if (result.error?.includes('permission-denied') || result.error?.includes('unauthenticated')) {
+                            errorMessage = 'Authentication error - please sign in again';
+                        } else if (result.error?.includes('network')) {
+                            errorMessage = 'Network error - please check your connection';
+                        } else if (result.error?.includes('invalid-argument') || result.error?.includes('failed-precondition')) {
+                            errorMessage = 'Data validation error - some content may be too large';
+                        }
+                        console.log('[SYNC DEBUG] Showing error notification:', errorMessage);
+                        window.simpleNotifications.showError(errorMessage);
+                    }
+                    
                     updateSaveStatus('error');
                 }
             } else {
                 Debug.sync.stepError('No board found to save');
             }
         } catch (error) {
+            console.error('[SYNC ERROR] Exception during save:', {
+                error: error.message,
+                stack: error.stack,
+                timestamp: new Date().toISOString()
+            });
             Debug.sync.stepError('Error saving board', error);
             updateSaveStatus('error');
         } finally {
             this.isSaving = false;
+            console.log('[SYNC DEBUG] Save process completed');
         }
     },
     
@@ -791,6 +904,14 @@ export const syncService = {
     
     // Event-based save with debouncing for rapid actions
     async saveAfterAction(actionName = 'unknown') {
+        console.log('[SYNC DEBUG] Event-based save triggered:', {
+            action: actionName,
+            timestamp: new Date().toISOString(),
+            pendingChanges: this.pendingChanges,
+            isSaving: this.isSaving,
+            queueLength: this.saveQueue.length
+        });
+        
         Debug.sync.step(`Event-based save triggered after: ${actionName}`);
         
         // Store the action name
@@ -803,10 +924,21 @@ export const syncService = {
         
         // Debounce saves by 300ms to batch rapid actions
         this.saveDebounceTimer = setTimeout(() => {
+            console.log('[SYNC DEBUG] Executing debounced save:', {
+                action: actionName,
+                timestamp: new Date().toISOString()
+            });
+            
             // Queue the save instead of executing directly
             const saveTask = async () => {
+                console.log('[SYNC DEBUG] Processing save from queue:', {
+                    action: actionName,
+                    timestamp: new Date().toISOString()
+                });
+                
                 // Validate board state before saving
                 if (!this.validateBoardState()) {
+                    console.error('[SYNC ERROR] Board validation failed - skipping save');
                     Debug.sync.stepError('Board validation failed - skipping save');
                     return;
                 }
@@ -820,17 +952,21 @@ export const syncService = {
             
             // Add to queue
             this.saveQueue.push(saveTask);
+            console.log(`[SYNC DEBUG] Save queued for: ${actionName} (${this.saveQueue.length} in queue)`);
             Debug.sync.detail(`Save queued for: ${actionName} (${this.saveQueue.length} in queue)`);
         }, 300);
     },
     
     // Validate board state before saving
     validateBoardState() {
+        console.log('[SYNC DEBUG] Validating board state before save');
+        
         const boards = AppState.get('boards');
         const currentBoardId = AppState.get('currentBoardId');
         const board = boards?.find(b => b.id === currentBoardId);
         
         if (!board) {
+            console.error('[SYNC ERROR] No board found for validation');
             Debug.sync.stepError('No board found for validation');
             return false;
         }
@@ -852,7 +988,338 @@ export const syncService = {
             }
         }
         
+        // Validate bookmark data structure
+        if (board.categories) {
+            for (const category of board.categories) {
+                if (category.cards) {
+                    for (const card of category.cards) {
+                        if (card.bookmarks && Array.isArray(card.bookmarks)) {
+                            for (const bookmark of card.bookmarks) {
+                                // Check for required bookmark fields
+                                if (!bookmark.title || !bookmark.url) {
+                                    console.error('[SYNC ERROR] Invalid bookmark structure - missing title or url:', bookmark);
+                                    Debug.sync.stepError('Invalid bookmark structure - missing title or url', bookmark);
+                                    return false;
+                                }
+                                
+                                // Check for excessively large data
+                                const bookmarkSize = JSON.stringify(bookmark).length;
+                                if (bookmarkSize > 1000000) { // 1MB limit per bookmark
+                                    console.error('[SYNC ERROR] Bookmark too large:', {
+                                        title: bookmark.title,
+                                        url: bookmark.url,
+                                        size: bookmarkSize
+                                    });
+                                    Debug.sync.stepError(`Bookmark too large: ${bookmarkSize} bytes`, {
+                                        title: bookmark.title,
+                                        url: bookmark.url
+                                    });
+                                    return false;
+                                }
+                                
+                                // Check for valid URL format
+                                try {
+                                    new URL(bookmark.url);
+                                } catch (e) {
+                                    console.error('[SYNC ERROR] Invalid bookmark URL format:', {
+                                        url: bookmark.url,
+                                        error: e.message
+                                    });
+                                    Debug.sync.stepError('Invalid bookmark URL format', {
+                                        url: bookmark.url,
+                                        error: e.message
+                                    });
+                                    return false;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        
+        console.log('[SYNC DEBUG] Board validation passed');
         return true;
+    },
+    
+    // Enhanced check if board data is too large for Firestore with detailed analysis
+    isBoardDataTooLarge(board) {
+        // Firestore has a 1MB limit per document
+        const MAX_SIZE = 900000; // 900KB to be safe
+        
+        try {
+            const serialized = JSON.stringify(board);
+            const size = serialized.length;
+            
+            if (size > MAX_SIZE) {
+                // Analyze what's causing the size issue
+                const analysis = this.analyzeBoardSize(board);
+                console.error('[SYNC ERROR] Board data too large for Firestore:', {
+                    totalSize: size,
+                    limit: MAX_SIZE,
+                    excess: size - MAX_SIZE,
+                    analysis: analysis,
+                    timestamp: new Date().toISOString()
+                });
+                
+                // Provide specific recommendations
+                let recommendations = [];
+                if (analysis.largestBookmarkSize > 100000) {
+                    recommendations.push('Large bookmark images/screenshots detected');
+                }
+                if (analysis.totalBookmarks > 50) {
+                    recommendations.push('Too many bookmarks - consider splitting into multiple cards');
+                }
+                if (analysis.largeDescriptions > 10) {
+                    recommendations.push('Long descriptions detected');
+                }
+                if (analysis.totalCards > 20) {
+                    recommendations.push('Too many cards - consider splitting into multiple categories');
+                }
+                
+                if (recommendations.length > 0) {
+                    console.error('[SYNC ERROR] Recommendations:', recommendations);
+                }
+                
+                Debug.sync.stepError(`Board data too large: ${size} bytes (limit: ${MAX_SIZE})`);
+                return true;
+            }
+            
+            Debug.sync.detail(`Board data size: ${size} bytes`);
+            return false;
+        } catch (error) {
+            Debug.sync.stepError('Error checking board data size', error);
+            return true; // Assume too large if we can't check
+        }
+    },
+    
+    // Analyze board size to identify what's causing bloat
+    analyzeBoardSize(board) {
+        const analysis = {
+            totalBookmarks: 0,
+            totalCards: 0,
+            totalCategories: 0,
+            largestBookmarkSize: 0,
+            largestBookmarkTitle: '',
+            largeDescriptions: 0,
+            largeImages: 0,
+            sizeByCategory: {},
+            bookmarkSizes: []
+        };
+        
+        if (board.categories) {
+            analysis.totalCategories = board.categories.length;
+            
+            board.categories.forEach(category => {
+                let categorySize = 0;
+                
+                if (category.cards) {
+                    analysis.totalCards += category.cards.length;
+                    
+                    category.cards.forEach(card => {
+                        if (card.bookmarks && Array.isArray(card.bookmarks)) {
+                            card.bookmarks.forEach(bookmark => {
+                                analysis.totalBookmarks++;
+                                
+                                const bookmarkSize = JSON.stringify(bookmark).length;
+                                analysis.bookmarkSizes.push(bookmarkSize);
+                                categorySize += bookmarkSize;
+                                
+                                if (bookmarkSize > analysis.largestBookmarkSize) {
+                                    analysis.largestBookmarkSize = bookmarkSize;
+                                    analysis.largestBookmarkTitle = bookmark.title || 'Untitled';
+                                }
+                                
+                                if (bookmark.description && bookmark.description.length > 1000) {
+                                    analysis.largeDescriptions++;
+                                }
+                                
+                                if ((bookmark.screenshot && bookmark.screenshot.length > 50000) || 
+                                    (bookmark.image && bookmark.image.length > 50000)) {
+                                    analysis.largeImages++;
+                                }
+                            });
+                        }
+                    });
+                }
+                
+                analysis.sizeByCategory[category.title || 'Untitled'] = categorySize;
+            });
+        }
+        
+        return analysis;
+    },
+    
+    // Enhanced compression and cleanup for bookmark data before saving
+    async cleanBookmarkData(board) {
+        if (!board.categories) return board;
+        
+        let cleaned = false;
+        let totalSizeBefore = 0;
+        let totalSizeAfter = 0;
+        
+        // Calculate initial size
+        try {
+            totalSizeBefore = JSON.stringify(board).length;
+        } catch (e) {
+            console.error('[SYNC ERROR] Could not calculate initial board size:', e);
+        }
+        
+        for (const category of board.categories) {
+            if (category.cards) {
+                for (const card of category.cards) {
+                    if (card.bookmarks && Array.isArray(card.bookmarks)) {
+                        // Filter out invalid bookmarks
+                        const validBookmarks = card.bookmarks.filter(bookmark => {
+                            // Check required fields
+                            if (!bookmark.title || !bookmark.url) {
+                                Debug.sync.detail('Filtering out invalid bookmark - missing title or url');
+                                cleaned = true;
+                                return false;
+                            }
+                            
+                            return true;
+                        });
+                        
+                        if (validBookmarks.length !== card.bookmarks.length) {
+                            card.bookmarks = validBookmarks;
+                            cleaned = true;
+                        }
+                        
+                        // 6. Limit number of bookmarks per card to prevent bloat
+                        if (card.bookmarks.length > 20) { // Max 20 bookmarks per card
+                            Debug.sync.detail(`Limiting bookmarks per card from ${card.bookmarks.length} to 20`);
+                            card.bookmarks = card.bookmarks.slice(0, 20);
+                            cleaned = true;
+                        }
+                    }
+                }
+            }
+        }
+        
+        // Process async compression for all bookmarks
+        for (const category of board.categories) {
+            if (category.cards) {
+                for (const card of category.cards) {
+                    if (card.bookmarks && Array.isArray(card.bookmarks)) {
+                        for (const bookmark of card.bookmarks) {
+                            // 1. Compress screenshots - reduce to 100KB max
+                            if (bookmark.screenshot && bookmark.screenshot.length > 100000) { // 100KB limit
+                                Debug.sync.detail('Compressing screenshot data');
+                                bookmark.screenshot = await this.compressImageData(bookmark.screenshot, 100);
+                                cleaned = true;
+                            }
+                            
+                            // 2. Compress images - reduce to 50KB max
+                            if (bookmark.image && bookmark.image.length > 50000) { // 50KB limit
+                                Debug.sync.detail('Compressing image data');
+                                bookmark.image = await this.compressImageData(bookmark.image, 50);
+                                cleaned = true;
+                            }
+                            
+                            // 3. Compress description - reduce to 1KB max
+                            if (bookmark.description && bookmark.description.length > 1000) { // 1K limit
+                                Debug.sync.detail('Compressing description');
+                                bookmark.description = this.compressText(bookmark.description, 1000);
+                                cleaned = true;
+                            }
+                            
+                            // 4. Compress title - reduce to 100 chars max
+                            if (bookmark.title && bookmark.title.length > 100) { // 100 char limit
+                                Debug.sync.detail('Compressing title');
+                                bookmark.title = this.compressText(bookmark.title, 100);
+                                cleaned = true;
+                            }
+                            
+                            // 5. Clean up unnecessary fields
+                            const unnecessaryFields = ['favicon', 'timestamp', 'domain', 'excerpt', 'author', 'tags'];
+                            for (const field of unnecessaryFields) {
+                                if (bookmark[field] !== undefined) {
+                                    delete bookmark[field];
+                                    cleaned = true;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        
+        // Calculate final size
+        try {
+            totalSizeAfter = JSON.stringify(board).length;
+            console.log('[SYNC DEBUG] Compression results:', {
+                sizeBefore: totalSizeBefore,
+                sizeAfter: totalSizeAfter,
+                reduction: totalSizeBefore - totalSizeAfter,
+                percentReduction: ((totalSizeBefore - totalSizeAfter) / totalSizeBefore * 100).toFixed(2) + '%'
+            });
+        } catch (e) {
+            console.error('[SYNC ERROR] Could not calculate final board size:', e);
+        }
+        
+        if (cleaned) {
+            Debug.sync.step('Enhanced compression applied to bookmark data');
+        }
+        
+        return board;
+    },
+    
+    // Compress image data using CompressorJS
+    async compressImageData(imageData, maxSizeKB = 50) {
+        return new Promise((resolve) => {
+            if (!imageData || !imageData.startsWith('data:image/')) {
+                resolve(imageData);
+                return;
+            }
+            
+            const originalSize = Math.round(imageData.length / 1024); // KB
+            
+            // Convert data URL to Blob
+            fetch(imageData)
+                .then(res => res.blob())
+                .then(blob => {
+                    new Compressor(blob, {
+                        quality: maxSizeKB / 500, // Adjust quality based on target size
+                        maxWidth: 800,
+                        maxHeight: 600,
+                        convertSize: maxSizeKB * 1024, // Target size in bytes
+                        success(result) {
+                            // Convert compressed blob back to data URL
+                            const reader = new FileReader();
+                            reader.onload = () => {
+                                const compressedSize = Math.round(reader.result.length / 1024);
+                                const reduction = originalSize - compressedSize;
+                                const percentReduction = ((reduction / originalSize) * 100).toFixed(1);
+                                
+                                console.log(`[COMPRESSION] ${originalSize}KB → ${compressedSize}KB (${percentReduction}% reduction)`);
+                                resolve(reader.result);
+                            };
+                            reader.readAsDataURL(result);
+                        },
+                        error(err) {
+                            console.warn('[COMPRESSION] Failed to compress image:', err);
+                            resolve(imageData); // Fallback to original
+                        },
+                    });
+                })
+                .catch(() => resolve(imageData)); // Fallback to original
+        });
+    },
+    
+    // Compress text by truncating and cleaning
+    compressText(text, maxLength) {
+        if (!text || typeof text !== 'string') return text;
+        
+        // Remove extra whitespace and normalize
+        let compressed = text.trim().replace(/\s+/g, ' ');
+        
+        // Truncate if still too long
+        if (compressed.length > maxLength) {
+            compressed = compressed.substring(0, maxLength - 3) + '...';
+        }
+        
+        return compressed;
     },
     
     // Count total bookmarks in a board
@@ -891,8 +1358,17 @@ export const syncService = {
     
     // Execute the actual save
     async executeSave(actionName) {
+        console.log('[SYNC DEBUG] Executing save:', {
+            action: actionName,
+            timestamp: new Date().toISOString(),
+            isSaving: this.isSaving,
+            isDragging: this.isDragging,
+            isEditing: this.isEditing
+        });
+        
         // Queue the save instead of skipping if already saving
         if (this.isSaving) {
+            console.log('[SYNC DEBUG] Save in progress - queueing for next save');
             Debug.sync.detail('Save in progress - queueing for next save');
             this.pendingChanges = true;
             // Retry after current save completes
@@ -906,6 +1382,7 @@ export const syncService = {
         
         // Don't save if dragging or editing
         if (this.isDragging || this.isEditing) {
+            console.log('[SYNC DEBUG] Save postponed - action in progress');
             Debug.sync.detail('Save postponed - action in progress');
             return;
         }

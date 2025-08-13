@@ -62,6 +62,54 @@ window.simpleNotifications = {
                 setTimeout(() => notification.remove(), 300);
             }, 2000);
         }
+    },
+    
+    showError(message) {
+        // Remove any existing notifications
+        const existing = document.querySelector('.save-notification');
+        if (existing) {
+            existing.remove();
+        }
+        
+        // Create error notification element
+        const notification = document.createElement('div');
+        notification.className = 'save-notification error';
+        notification.textContent = message;
+        
+        // Error styles
+        notification.style.position = 'fixed';
+        notification.style.top = '80px';
+        notification.style.right = '20px';
+        notification.style.padding = '12px 20px';
+        notification.style.borderRadius = '8px';
+        notification.style.color = 'white';
+        notification.style.fontSize = '14px';
+        notification.style.fontWeight = '500';
+        notification.style.zIndex = '1000001';
+        notification.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
+        notification.style.background = '#ef4444'; // Red
+        notification.style.opacity = '0';
+        notification.style.transform = 'translateX(100px)';
+        notification.style.transition = 'all 0.3s ease';
+        notification.style.maxWidth = '300px';
+        notification.style.whiteSpace = 'normal';
+        notification.style.lineHeight = '1.4';
+        
+        // Add to page
+        document.body.appendChild(notification);
+        
+        // Animate in
+        requestAnimationFrame(() => {
+            notification.style.opacity = '1';
+            notification.style.transform = 'translateX(0)';
+        });
+        
+        // Auto-hide after 4 seconds (longer for errors)
+        setTimeout(() => {
+            notification.style.opacity = '0';
+            notification.style.transform = 'translateX(100px)';
+            setTimeout(() => notification.remove(), 300);
+        }, 4000);
     }
 };
 

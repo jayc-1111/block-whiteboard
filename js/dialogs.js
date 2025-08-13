@@ -1,5 +1,9 @@
 // Dialog functionality
 function showConfirmDialog(title, message, onConfirm) {
+    // Remove any existing dialogs first to prevent stacking
+    const existingDialogs = document.querySelectorAll('.dialog-overlay, .confirm-dialog');
+    existingDialogs.forEach(dialog => dialog.remove());
+    
     const overlay = document.createElement('div');
     overlay.className = 'dialog-overlay';
     
@@ -24,10 +28,20 @@ function showConfirmDialog(title, message, onConfirm) {
     };
     
     dialog.querySelector('.confirm-yes').onclick = () => {
-        onConfirm();
-        removeDialog();
+        try {
+            onConfirm();
+        } catch (error) {
+            console.error('Error in confirm dialog callback:', error);
+        } finally {
+            removeDialog();
+        }
     };
     
     dialog.querySelector('.confirm-btn:not(.confirm-yes)').onclick = removeDialog;
     overlay.onclick = removeDialog;
+    
+    // Prevent dialog from closing when clicking inside it
+    dialog.onclick = (e) => {
+        e.stopPropagation();
+    };
 }

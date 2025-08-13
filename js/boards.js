@@ -56,7 +56,7 @@ async function saveCurrentBoard() {
     }
     
     const currentBoardId = AppState.get('currentBoardId');
-    const board = boards.find(b => b.id === currentBoardId);
+    let board = boards.find(b => b.id === currentBoardId);
     if (!board) {
         Debug.board.error('Current board not found', { boardId: currentBoardId });
         return;
