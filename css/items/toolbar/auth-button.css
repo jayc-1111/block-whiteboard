@@ -20,7 +20,7 @@
     font-weight: 500;
     cursor: pointer;
     transition: all 0.3s ease;
-    font-family: 'Inter', sans-serif;
+    font-family: 'Nunito', sans-serif;
 }
 
 .auth-button:hover {
@@ -39,6 +39,7 @@
 #userEmail {
     color: #40c9ff;
     font-size: 14px;
+    font-family: Nunito;
     font-weight: 700;
     opacity: 0.9;
 }
@@ -52,7 +53,7 @@
     font-size: 13px;
     cursor: pointer;
     transition: all 0.3s ease;
-    font-family: 'Inter', sans-serif;
+    font-family: 'Nunito', sans-serif;
 }
 
 #signOutBtn:hover {

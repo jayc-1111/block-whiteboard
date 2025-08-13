@@ -139,7 +139,7 @@ body.with-background #topBar {
    =================================== */
 #whiteboardSwitcher {
     background: var(--toolbar-button-background);
-    padding: 0 16px;
+    padding-right: 16px;
     border-radius: 10px;
     border: none;
     height: 36px;
