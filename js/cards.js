@@ -752,7 +752,17 @@ function reorderBookmark(expandedCard, fromIndex, toIndex) {
     
     const bookmarks = expandedCard.bookmarks;
     if (toIndex < 0 || toIndex >= bookmarks.length) return;
-    
+
+    const wasExpanded = expandedCard.classList.contains('expanded');
+    let cardContentToRestore = null;
+
+    if (wasExpanded && expandedCard.quillEditor) {
+        cardContentToRestore = {
+            content: expandedCard.quillEditor.root.innerHTML
+        };
+        console.log('🔖 BOOKMARK: Storing Quill content before reorder.');
+    }
+
     // Reorder the bookmarks array
     const [movedBookmark] = bookmarks.splice(fromIndex, 1);
     bookmarks.splice(toIndex, 0, movedBookmark);
@@ -792,14 +802,33 @@ function reorderBookmark(expandedCard, fromIndex, toIndex) {
             bookmarksSection.appendChild(bookmarkCard);
         });
     }
-    
+
     // Save the reordered bookmarks
     if (window.syncService) {
-        const expandedBeforeSync = AppState.get('expandedCard');
-        console.log('🔧 SYNC DEBUG: Before sync - expandedCard:', expandedBeforeSync);
+        console.log('🔧 SYNC DEBUG: Initiating saveAfterAction for bookmarks reordered.');
         window.syncService.saveAfterAction('bookmarks reordered').then(() => {
-            console.log('🔧 SYNC DEBUG: Sync complete - restoring expandedCard:', expandedBeforeSync);
-            AppState.set('expandedCard', expandedBeforeSync);
+            console.log('🔧 SYNC DEBUG: Sync complete.');
+            
+            // Only attempt to restore expanded state if it was expanded before
+            if (wasExpanded) {
+                console.log('🔖 BOOKMARK: Card was expanded before sync, ensuring it remains expanded.');
+                
+                // Use requestAnimationFrame to ensure DOM is stable before re-expanding
+                requestAnimationFrame(() => {
+                    // Check if card is still in DOM and needs re-expansion
+                    if (document.body.contains(expandedCard) && !expandedCard.classList.contains('expanded')) {
+                        console.log('🔖 BOOKMARK: Re-expanding card after sync to maintain state.');
+                        expandCard(expandedCard);
+                        
+                        // Restore editor content after re-expansion
+                        if (cardContentToRestore && expandedCard.quillEditor) {
+                            console.log('🔖 BOOKMARK: Restoring Quill content after re-expansion.');
+                            expandedCard.quillEditor.root.innerHTML = cardContentToRestore.content;
+                            expandedCard.initialContent = cardContentToRestore;
+                        }
+                    }
+                });
+            }
         }).catch(err => {
             console.error('🔧 SYNC DEBUG: Sync failed:', err);
         });
