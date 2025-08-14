@@ -853,6 +853,49 @@ function reorderBookmark(expandedCard, fromIndex, toIndex) {
 function collapseCard(card) {
     if (!card || !card.classList.contains('expanded')) return;
     
+    // Save sections data before collapsing
+    if (card.sections && card.appStateLocation) {
+        const boards = AppState.get('boards');
+        const currentBoardId = AppState.get('currentBoardId');
+        const board = boards.find(b => b.id === currentBoardId);
+        
+        if (board && board.categories) {
+            const { categoryIndex, cardIndex } = card.appStateLocation;
+            if (board.categories[categoryIndex] && board.categories[categoryIndex].cards[cardIndex]) {
+                // Initialize sections array if it doesn't exist
+                if (!board.categories[categoryIndex].cards[cardIndex].sections) {
+                    board.categories[categoryIndex].cards[cardIndex].sections = [];
+                }
+                
+                // Update sections in board data
+                card.sections.forEach(sectionData => {
+                    // Find existing section or add new one
+                    const sectionIndex = board.categories[categoryIndex].cards[cardIndex].sections.findIndex(s => s.id === sectionData.id);
+                    if (sectionIndex !== -1) {
+                        // Update existing section
+                        board.categories[categoryIndex].cards[cardIndex].sections[sectionIndex] = {
+                            id: sectionData.id,
+                            title: sectionData.title,
+                            content: sectionData.content,
+                            bookmarks: sectionData.bookmarks
+                        };
+                    } else {
+                        // Add new section
+                        board.categories[categoryIndex].cards[cardIndex].sections.push({
+                            id: sectionData.id,
+                            title: sectionData.title,
+                            content: sectionData.content,
+                            bookmarks: sectionData.bookmarks
+                        });
+                    }
+                });
+                
+                AppState.set('boards', boards);
+                console.log('🔖 SECTION: Saved sections to AppState before collapse');
+            }
+        }
+    }
+    
     // Wait for any pending saves
     if (window.syncService && window.syncService.isSaving) {
         setTimeout(() => collapseCard(card), 100);
@@ -1049,9 +1092,25 @@ window.handleBookmarkData = function(data) {
         return;
     }
     
-    // Initialize bookmarks array if doesn't exist
-    if (!expandedCard.bookmarks) {
-        expandedCard.bookmarks = [];
+    // Get the active section (the one that was selected in the modal)
+    const activeSection = expandedCard.querySelector('.card-section.active') || 
+                         expandedCard.querySelector('.card-section:first-child');
+    
+    if (!activeSection) {
+        console.error('❌ BOOKMARK: No active section found');
+        return;
+    }
+    
+    // Get the section data
+    const sectionData = activeSection.sectionData;
+    if (!sectionData) {
+        console.error('❌ BOOKMARK: No section data found');
+        return;
+    }
+    
+    // Initialize bookmarks array for this section if it doesn't exist
+    if (!sectionData.bookmarks) {
+        sectionData.bookmarks = [];
     }
     
     // Add the new bookmark
@@ -1064,8 +1123,8 @@ window.handleBookmarkData = function(data) {
         id: `bookmark-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
     };
     
-    expandedCard.bookmarks.push(bookmark);
-    console.log('🔖 BOOKMARK: Added bookmark to card:', bookmark.title);
+    sectionData.bookmarks.push(bookmark);
+    console.log('🔖 BOOKMARK: Added bookmark to section:', bookmark.title);
     
     // Update AppState immediately
     if (expandedCard.appStateLocation) {
@@ -1076,7 +1135,23 @@ window.handleBookmarkData = function(data) {
         if (board && board.categories) {
             const { categoryIndex, cardIndex } = expandedCard.appStateLocation;
             if (board.categories[categoryIndex] && board.categories[categoryIndex].cards[cardIndex]) {
-                board.categories[categoryIndex].cards[cardIndex].bookmarks = [...expandedCard.bookmarks];
+                // Find the section in the board data
+                if (!board.categories[categoryIndex].cards[cardIndex].sections) {
+                    board.categories[categoryIndex].cards[cardIndex].sections = [];
+                }
+                
+                const sectionIndex = board.categories[categoryIndex].cards[cardIndex].sections.findIndex(s => s.id === sectionData.id);
+                if (sectionIndex !== -1) {
+                    board.categories[categoryIndex].cards[cardIndex].sections[sectionIndex].bookmarks = [...sectionData.bookmarks];
+                } else {
+                    board.categories[categoryIndex].cards[cardIndex].sections.push({
+                        id: sectionData.id,
+                        title: sectionData.title,
+                        content: sectionData.content,
+                        bookmarks: [...sectionData.bookmarks]
+                    });
+                }
+                
                 AppState.set('boards', boards);
                 console.log('🔖 BOOKMARK: Updated AppState with new bookmark');
             }
@@ -1084,7 +1159,7 @@ window.handleBookmarkData = function(data) {
     }
     
     // Update the bookmarks section if card is expanded
-    const bookmarksSection = expandedCard.querySelector('.bookmarks-section');
+    const bookmarksSection = activeSection.querySelector('.section-bookmarks');
     if (bookmarksSection) {
         // Remove placeholder if it exists
         const placeholders = bookmarksSection.querySelectorAll('.bookmark-card');
@@ -1101,14 +1176,14 @@ window.handleBookmarkData = function(data) {
             bookmark.url,
             bookmark.timestamp,
             bookmark.screenshot,
-            expandedCard.bookmarks.length - 1,  // New bookmark is at the end
+            sectionData.bookmarks.length - 1,  // New bookmark is at the end
             expandedCard
         );
         bookmarksSection.appendChild(bookmarkCard);
         console.log('🔖 BOOKMARK: Updated UI with new bookmark');
     }
     
-    // Save to Firebase
+// Save to Firebase
     if (window.syncService) {
         window.syncService.saveAfterAction('bookmark added');
     }
@@ -1155,42 +1230,24 @@ function createSection(card, bookmarks = []) {
     // Create section container
     const section = document.createElement('div');
     section.className = 'card-section';
-    section.style.display = 'flex';
-    section.style.flexDirection = 'column';
-    section.style.gap = '20px';
-    section.style.marginBottom = '20px';
-    section.style.padding = '20px';
-    section.style.backgroundColor = '#f8f9fa';
-    section.style.borderRadius = '8px';
-    section.style.border = '1px solid #e9ecef';
     
     // Create section title
     const sectionTitle = document.createElement('div');
     sectionTitle.className = 'section-title';
     sectionTitle.contentEditable = true;
     sectionTitle.textContent = 'Section Title';
-    sectionTitle.style.fontSize = '22px';
-    sectionTitle.style.fontWeight = '600';
-    sectionTitle.style.color = '#111827';
-    sectionTitle.style.marginBottom = '15px';
-    sectionTitle.style.padding = '0 5px';
     
     // Create content container for editor and bookmarks
     const contentContainer = document.createElement('div');
-    contentContainer.style.display = 'flex';
-    contentContainer.style.gap = '20px';
+    contentContainer.className = 'section-content';
     
     // Create editor container
     const editorContainer = document.createElement('div');
-    editorContainer.className = 'editor-container';
-    editorContainer.style.flex = '3';
-    editorContainer.style.height = '100%';
+    editorContainer.className = 'editor-container section-editor';
     
     // Create bookmarks container
     const bookmarksSection = document.createElement('div');
-    bookmarksSection.className = 'bookmarks-section';
-    bookmarksSection.style.flex = '1';
-    bookmarksSection.style.height = '100%';
+    bookmarksSection.className = 'bookmarks-section section-bookmarks';
     
     // Add title to section
     section.appendChild(sectionTitle);
@@ -1223,6 +1280,34 @@ function createSection(card, bookmarks = []) {
     
     // Store a reference to the section element on the section data
     sectionData.element = section;
+    
+    // Save to AppState
+    if (card.appStateLocation) {
+        const boards = AppState.get('boards');
+        const currentBoardId = AppState.get('currentBoardId');
+        const board = boards.find(b => b.id === currentBoardId);
+        
+        if (board && board.categories) {
+            const { categoryIndex, cardIndex } = card.appStateLocation;
+            if (board.categories[categoryIndex] && board.categories[categoryIndex].cards[cardIndex]) {
+                // Initialize sections array if it doesn't exist
+                if (!board.categories[categoryIndex].cards[cardIndex].sections) {
+                    board.categories[categoryIndex].cards[cardIndex].sections = [];
+                }
+                
+                // Add the new section to the board data
+                board.categories[categoryIndex].cards[cardIndex].sections.push({
+                    id: sectionData.id,
+                    title: sectionData.title,
+                    content: null,
+                    bookmarks: []
+                });
+                
+                AppState.set('boards', boards);
+                console.log('🔖 SECTION: Updated AppState with new section');
+            }
+        }
+    }
     
     // Initialize editor in this section
     initializeEditorJS(card, editorContainer);
@@ -1431,9 +1516,60 @@ async function initializeEditorJS(card, container = null) {
     
     // Save content on changes
     quill.on('text-change', () => {
-        card.initialContent = {
-            content: quill.root.innerHTML
-        };
+        // Check if this editor is in a section
+        const section = editorContainer.closest('.card-section');
+        
+        if (section && section.sectionData) {
+            // Update the section data
+            section.sectionData.content = {
+                content: quill.root.innerHTML
+            };
+            
+            // Save to AppState
+            if (card.appStateLocation) {
+                const boards = AppState.get('boards');
+                const currentBoardId = AppState.get('currentBoardId');
+                const board = boards.find(b => b.id === currentBoardId);
+                
+                if (board && board.categories) {
+                    const { categoryIndex, cardIndex } = card.appStateLocation;
+                    if (board.categories[categoryIndex] && board.categories[categoryIndex].cards[cardIndex]) {
+                        if (!board.categories[categoryIndex].cards[cardIndex].sections) {
+                            board.categories[categoryIndex].cards[cardIndex].sections = [];
+                        }
+                        
+                        const sectionIndex = board.categories[categoryIndex].cards[cardIndex].sections.findIndex(s => s.id === section.sectionData.id);
+                        if (sectionIndex !== -1) {
+                            board.categories[categoryIndex].cards[cardIndex].sections[sectionIndex].content = {
+                                content: quill.root.innerHTML
+                            };
+                        } else {
+                            board.categories[categoryIndex].cards[cardIndex].sections.push({
+                                id: section.sectionData.id,
+                                title: section.sectionData.title,
+                                content: {
+                                    content: quill.root.innerHTML
+                                },
+                                bookmarks: []
+                            });
+                        }
+                        
+                        AppState.set('boards', boards);
+                        console.log('🔖 SECTION: Updated AppState with editor content');
+                    }
+                }
+            }
+            
+            // Save to Firebase
+            if (window.syncService) {
+                window.syncService.saveAfterAction('section content edited');
+            }
+        } else {
+            // This is the main card editor
+            card.initialContent = {
+                content: quill.root.innerHTML
+            };
+        }
     });
     
     console.log('Quill initialized successfully');

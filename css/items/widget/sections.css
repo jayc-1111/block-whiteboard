@@ -1,0 +1,109 @@
+/* Card section container */
+.card-section {
+    background: white;
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 16px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    border: 1px solid #e5e7eb;
+}
+
+/* Section title */
+.section-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: #111827;
+    margin: 0 0 12px 0;
+    padding: 8px;
+    border: 1px solid #e5e7eb;
+    border-radius: 4px;
+    background: #f9fafb;
+}
+
+/* Section title when focused */
+.section-title:focus {
+    outline: none;
+    border-color: #3b82f6;
+    background: white;
+}
+
+/* Section content container */
+.section-content {
+    display: flex;
+    gap: 20px;
+}
+
+/* Section editor container */
+.section-editor {
+    flex: 3;
+}
+
+/* Section bookmarks container */
+.section-bookmarks {
+    flex: 1;
+    padding-left: 0;
+}
+
+/* Add section button container */
+.add-section-container {
+    margin-top: 16px;
+    display: flex;
+    justify-content: center;
+}
+
+/* Add section button */
+.add-section-btn {
+    background: #3b82f6;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    padding: 10px 20px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.add-section-btn:hover {
+    background: #2563eb;
+}
+
+/* Dark mode support */
+.dark-mode .card-section {
+    background: #1f2937;
+    border-color: #374151;
+}
+
+.dark-mode .section-title {
+    color: #f3f4f6;
+    background: #374151;
+    border-color: #4b5563;
+}
+
+.dark-mode .section-title:focus {
+    border-color: #60a5fa;
+    background: #1f2937;
+}
+
+.dark-mode .section-bookmarks {
+    background: #1f2937;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .section-content {
+        flex-direction: column;
+    }
+    
+    .section-editor {
+        flex: none;
+    }
+    
+    .section-bookmarks {
+        flex: none;
+        padding-left: 16px;
+    }
+}

@@ -2,6 +2,7 @@
 (function() {
     let pendingBookmarkData = null;
     let selectedCard = null;
+    let selectedSectionId = null;
     
     // Initialize modal when DOM ready
     document.addEventListener('DOMContentLoaded', function() {
@@ -168,6 +169,36 @@
                             ${cardName}
                             ${bookmarkCount > 0 ? `<span class="item-count">${bookmarkCount} bookmarks</span>` : ''}
                         </li>`;
+                        
+                        // If card has sections, add them as nested items
+                        if (card.sections && card.sections.length > 0) {
+                            html += `<li class="section-container" style="margin-left: 20px;">
+                                <details open>
+                                    <summary style="padding-left: 10px;">
+                                        <svg class="folder-icon" width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+                                            <path d="M10 4H4c-1.11 0-2 .89-2 2v12c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V8c0-1.11-.89-2-2-2h-8l-2-2z"/>
+                                        </svg>
+                                        <span>Sections</span>
+                                        <span class="item-count">${card.sections.length} sections</span>
+                                    </summary>
+                                    <ul>`;
+                            
+                            card.sections.forEach(section => {
+                                const sectionTitle = section.title || 'Untitled Section';
+                                const sectionId = section.id;
+                                
+                                html += `<li class="section-item" data-card-id="${cardId}" data-section-id="${sectionId}">
+                                    <svg class="file-icon" width="10" height="10" viewBox="0 0 24 24" fill="currentColor">
+                                        <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"/>
+                                    </svg>
+                                    ${sectionTitle}
+                                </li>`;
+                            });
+                            
+                            html += `</ul>
+                                </details>
+                            </li>`;
+                        }
                     });
                     
                     html += '</ul></details></li>';
@@ -184,7 +215,7 @@
         container.querySelectorAll('.card-item').forEach(item => {
             item.addEventListener('click', function() {
                 // Remove previous selection
-                container.querySelectorAll('.card-item').forEach(i => i.classList.remove('selected'));
+                container.querySelectorAll('.card-item, .section-item').forEach(i => i.classList.remove('selected'));
                 
                 // Select this card
                 this.classList.add('selected');
@@ -196,6 +227,30 @@
                 addBtn.disabled = false;
                 
                 console.log('🎯 BOOKMARK DEST: Selected card:', selectedCard);
+            });
+        });
+        
+        // Add click handlers for sections
+        container.querySelectorAll('.section-item').forEach(item => {
+            item.addEventListener('click', function() {
+                // Remove previous selection
+                container.querySelectorAll('.card-item, .section-item').forEach(i => i.classList.remove('selected'));
+                
+                // Select this section
+                this.classList.add('selected');
+                const cardId = this.dataset.cardId;
+                const sectionId = this.dataset.sectionId;
+                const card = document.getElementById(cardId);
+                
+                // Store selection
+                selectedCard = card;
+                selectedSectionId = sectionId;
+                
+                // Enable add button
+                const addBtn = document.querySelector('.bookmark-destination-add');
+                addBtn.disabled = false;
+                
+                console.log('🎯 BOOKMARK DEST: Selected section:', sectionId, 'in card:', card);
             });
         });
         
@@ -254,11 +309,6 @@
     async function addBookmarkToCard(card, bookmarkData) {
         console.log('🎯 BOOKMARK DEST: Adding bookmark to card', card, bookmarkData);
         
-        // Initialize bookmarks array if doesn't exist
-        if (!card.bookmarks) {
-            card.bookmarks = [];
-        }
-        
         // Add the bookmark
         const bookmark = {
             title: bookmarkData.title || 'Untitled',
@@ -269,8 +319,60 @@
             id: `bookmark-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
         };
         
-        card.bookmarks.push(bookmark);
-        console.log('🎯 BOOKMARK DEST: Bookmark added to card, total now:', card.bookmarks.length);
+        // If a section is selected, add to that section
+        if (selectedSectionId && card.sections) {
+            const section = card.sections.find(s => s.id === selectedSectionId);
+            if (section) {
+                // Initialize bookmarks array if doesn't exist
+                if (!section.bookmarks) {
+                    section.bookmarks = [];
+                }
+                
+                // Add the bookmark to the section
+                section.bookmarks.push(bookmark);
+                console.log('🎯 BOOKMARK DEST: Bookmark added to section, total now:', section.bookmarks.length);
+                
+                // Update the bookmarks section in the UI if this section is visible
+                if (card.classList.contains('expanded')) {
+                    const sectionElement = section.element;
+                    if (sectionElement) {
+                        const bookmarksSection = sectionElement.querySelector('.bookmarks-section');
+                        if (bookmarksSection) {
+                            // Remove placeholder
+                            const placeholders = bookmarksSection.querySelectorAll('.bookmark-card');
+                            placeholders.forEach(p => {
+                                if (p.textContent.includes('Example Bookmark')) {
+                                    p.remove();
+                                }
+                            });
+                            
+                            // Add the new bookmark card
+                            if (window.createBookmarkCard) {
+                                const bookmarkCard = window.createBookmarkCard(
+                                    bookmark.title,
+                                    bookmark.description,
+                                    bookmark.url,
+                                    bookmark.timestamp,
+                                    bookmark.screenshot,
+                                    section.bookmarks.length - 1,
+                                    card
+                                );
+                                bookmarksSection.appendChild(bookmarkCard);
+                            }
+                        }
+                    }
+                }
+            }
+        } else {
+            // Initialize bookmarks array if doesn't exist
+            if (!card.bookmarks) {
+                card.bookmarks = [];
+            }
+            
+            // Add the bookmark to the card
+            card.bookmarks.push(bookmark);
+            console.log('🎯 BOOKMARK DEST: Bookmark added to card, total now:', card.bookmarks.length);
+        }
         
         // Update AppState immediately to ensure persistence
         const boards = AppState.get('boards');
@@ -290,7 +392,24 @@
                         // Match by ID first, then by title as fallback
                         if ((savedCard.id && savedCard.id === cardId) || savedCard.title === cardTitle) {
                             // Update bookmarks in AppState
-                            board.categories[catIndex].cards[cardIndex].bookmarks = [...card.bookmarks];
+                            if (selectedSectionId && savedCard.sections) {
+                                // Find the section and update its bookmarks
+                                const section = savedCard.sections.find(s => s.id === selectedSectionId);
+                                if (section) {
+                                    const sectionIndex = savedCard.sections.findIndex(s => s.id === selectedSectionId);
+                                    // Create a new section object with updated bookmarks
+                                    const updatedSection = {
+                                        ...section,
+                                        bookmarks: section.bookmarks ? [...section.bookmarks] : []
+                                    };
+                                    // Update the section in the card
+                                    savedCard.sections[sectionIndex] = updatedSection;
+                                }
+                            } else {
+                                // Update card-level bookmarks
+                                board.categories[catIndex].cards[cardIndex].bookmarks = [...card.bookmarks];
+                            }
+                            
                             AppState.set('boards', boards);
                             console.log('🎯 BOOKMARK DEST: Updated AppState with new bookmark');
                             break;
@@ -614,6 +733,23 @@
             showBookmarkDestination(data);
         }
     };
+    
+    // Update the section selection in the expanded card
+    function selectSectionInExpandedCard(sectionElement) {
+        // Remove active class from all sections
+        const allSections = document.querySelectorAll('.card-section');
+        allSections.forEach(section => {
+            section.classList.remove('active');
+        });
+        
+        // Add active class to selected section
+        if (sectionElement) {
+            sectionElement.classList.add('active');
+        }
+    }
+    
+    // Make selectSectionInExpandedCard available globally
+    window.selectSectionInExpandedCard = selectSectionInExpandedCard;
     
     // Expose for testing
     window.showBookmarkDestination = showBookmarkDestination;
