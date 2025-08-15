@@ -200,14 +200,14 @@
 }
 
 .save-card-btn, .delete-card-btn {
-    padding: 8px 16px;
+    padding: 5px 10px;
     border-radius: 4px;
     cursor: pointer;
-    font-size: 14px;
-    font-weight: 500;
+    font-size: 11px;
+    font-weight: 700;
     display: flex !important;
     align-items: center;
-    gap: 6px;
+    gap: 3px;
     transition: all 0.2s;
     border: none;
     position: relative;
@@ -495,21 +495,22 @@
 .header-buttons {
     display: flex;
     gap: 3px;
-    padding-top: 22px;
+    padding-top: 18px;
     padding-right: 9px;
 }
 
 .save-card-btn,
 .delete-card-btn {
-    padding: 8px 16px;
+    padding: 5px 10px;
     border: none;
     border-radius: 3px;
     cursor: pointer;
-    font-weight: 500;
+    font-size: 11px;
+    font-weight: 700;
     transition: background-color 0.2s;
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: 3px;
 }
 
 .save-card-btn {
