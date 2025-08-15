@@ -559,6 +559,74 @@ function createBookmarkCard(title, description, url, date, imageData, bookmarkIn
     card.className = 'bookmark-card';
     card.dataset.bookmarkIndex = bookmarkIndex;
     
+    // Create controls container for top right buttons
+    const controlsContainer = document.createElement('div');
+    controlsContainer.className = 'bookmark-controls-container';
+    controlsContainer.style.cssText = 'display: flex; position: absolute; top: 8px; right: 8px; z-index: 10; gap: 4px;';
+    
+    // Remove button
+    const removeBtn = document.createElement('button');
+    removeBtn.className = 'bookmark-remove-btn';
+    removeBtn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M3 6h18"></path>
+        <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
+        <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path>
+    </svg>`;
+    removeBtn.title = 'Remove bookmark';
+    removeBtn.style.cssText = 'padding: 2px 4px; background: #dc2626; border: 1px solid #ef4444; cursor: pointer; color: #fff; transition: all 0.2s; height: 22px; display: flex; align-items: center;';
+    
+    removeBtn.onclick = () => {
+        removeBookmark(expandedCard, bookmarkIndex);
+    };
+    
+    // Add hover effect for remove button
+    removeBtn.onmouseenter = () => {
+        removeBtn.style.background = '#ef4444';
+        removeBtn.style.transform = 'scale(1.05)';
+    };
+    removeBtn.onmouseleave = () => {
+        removeBtn.style.background = '#dc2626';
+        removeBtn.style.transform = 'scale(1)';
+    };
+    
+    controlsContainer.appendChild(removeBtn);
+    card.appendChild(controlsContainer);
+    
+    // Image or placeholder
+    if (imageData) {
+        const img = document.createElement('img');
+        img.className = 'bookmark-image';
+        img.src = imageData;
+        img.style.cssText = 'width: 100%; height: 120px; object-fit: cover; border-radius: 6px; margin-bottom: 12px;';
+        card.appendChild(img);
+    } else {
+        const imagePlaceholder = document.createElement('div');
+        imagePlaceholder.className = 'bookmark-image-placeholder';
+        card.appendChild(imagePlaceholder);
+    }    
+    const cardTitle = document.createElement('h3');
+    cardTitle.className = 'bookmark-title';
+    cardTitle.textContent = title;
+    
+    const cardDesc = document.createElement('p');
+    cardDesc.className = 'bookmark-description';
+    cardDesc.textContent = description;
+    
+    const cardUrl = document.createElement('a');
+    cardUrl.className = 'bookmark-url';
+    cardUrl.href = url;
+    cardUrl.target = '_blank';
+    cardUrl.textContent = url;
+    
+    const cardDate = document.createElement('span');
+    cardDate.className = 'bookmark-date';
+    cardDate.textContent = date.toLocaleDateString ? date.toLocaleDateString() : date;
+    
+    card.appendChild(cardTitle);
+    card.appendChild(cardDesc);
+    card.appendChild(cardUrl);
+    card.appendChild(cardDate);
+    
     // Create controls row at the bottom
     const controlsRow = document.createElement('div');
     controlsRow.className = 'bookmark-controls';
@@ -595,21 +663,6 @@ function createBookmarkCard(title, description, url, date, imageData, bookmarkIn
         reorderBookmark(expandedCard, bookmarkIndex, bookmarkIndex + 1);
     };
     
-    // Remove button
-    const removeBtn = document.createElement('button');
-    removeBtn.className = 'bookmark-remove-btn';
-    removeBtn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <path d="M3 6h18"></path>
-        <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
-        <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path>
-    </svg>`;
-    removeBtn.title = 'Remove bookmark';
-    removeBtn.style.cssText = 'padding: 2px 4px; background: #dc2626; border: 1px solid #ef4444; border-radius: 4px; cursor: pointer; color: #fff; transition: all 0.2s; height: 22px; display: flex; align-items: center;';
-    
-    removeBtn.onclick = () => {
-        removeBookmark(expandedCard, bookmarkIndex);
-    };
-    
     // Add hover effects
     [moveUpBtn, moveDownBtn].forEach(btn => {
         if (!btn.disabled) {
@@ -624,55 +677,8 @@ function createBookmarkCard(title, description, url, date, imageData, bookmarkIn
         }
     });
     
-    // Add hover effect for remove button
-    removeBtn.onmouseenter = () => {
-        removeBtn.style.background = '#ef4444';
-        removeBtn.style.transform = 'scale(1.05)';
-    };
-    removeBtn.onmouseleave = () => {
-        removeBtn.style.background = '#dc2626';
-        removeBtn.style.transform = 'scale(1)';
-    };
-    
     controlsRow.appendChild(moveUpBtn);
     controlsRow.appendChild(moveDownBtn);
-    controlsRow.appendChild(removeBtn);
-    card.appendChild(controlsRow);
-    
-    // Image or placeholder
-    if (imageData) {
-        const img = document.createElement('img');
-        img.className = 'bookmark-image';
-        img.src = imageData;
-        img.style.cssText = 'width: 100%; height: 120px; object-fit: cover; border-radius: 6px; margin-bottom: 12px;';
-        card.appendChild(img);
-    } else {
-        const imagePlaceholder = document.createElement('div');
-        imagePlaceholder.className = 'bookmark-image-placeholder';
-        card.appendChild(imagePlaceholder);
-    }    
-    const cardTitle = document.createElement('h3');
-    cardTitle.className = 'bookmark-title';
-    cardTitle.textContent = title;
-    
-    const cardDesc = document.createElement('p');
-    cardDesc.className = 'bookmark-description';
-    cardDesc.textContent = description;
-    
-    const cardUrl = document.createElement('a');
-    cardUrl.className = 'bookmark-url';
-    cardUrl.href = url;
-    cardUrl.target = '_blank';
-    cardUrl.textContent = url;
-    
-    const cardDate = document.createElement('span');
-    cardDate.className = 'bookmark-date';
-    cardDate.textContent = date.toLocaleDateString ? date.toLocaleDateString() : date;
-    
-    card.appendChild(cardTitle);
-    card.appendChild(cardDesc);
-    card.appendChild(cardUrl);
-    card.appendChild(cardDate);
     card.appendChild(controlsRow);
     
     return card;
@@ -1328,9 +1334,9 @@ function createSection(card, bookmarks = []) {
             bookmarksSection.appendChild(bookmarkCard);
         });
     } else {
-        // Create sample bookmark card
-        const bookmarkCard = createBookmarkCard('Example Bookmark', 'This is a sample bookmark description that shows how bookmarks will appear.', 'https://example.com', new Date(), null, 0, card);
-        bookmarksSection.appendChild(bookmarkCard);
+    // Create sample bookmark card
+    const bookmarkCard = createBookmarkCard('Example Bookmark', 'This is a sample bookmark description that shows how bookmarks will appear.', 'https://example.com', new Date(), null, 0, card);
+    bookmarksSection.appendChild(bookmarkCard);
     }
     
     // Update section title listener to save changes

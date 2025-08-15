@@ -314,3 +314,11 @@
     background: #374151;
     color: #e0e0e0;
 }
+
+/* Bookmark remove button container - duplicate, removing */
+/* .bookmark-remove-container {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    z-index: 10;
+} */
