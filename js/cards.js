@@ -288,6 +288,8 @@ function expandCard(card) {
         const cardTitle = card.querySelector('.card-title')?.textContent;
         const cardId = card.dataset.cardId || card.id;
         
+        console.log('🔍 DEBUG: Looking for card in AppState', { cardId, cardTitle });
+        
         for (let catIndex = 0; catIndex < board.categories.length; catIndex++) {
             const category = board.categories[catIndex];
             if (category.cards) {
@@ -296,6 +298,8 @@ function expandCard(card) {
                     // Match by ID first, then by title as fallback
                     if ((savedCard.id && savedCard.id === cardId) || savedCard.title === cardTitle) {
                         cardLocation = { categoryIndex: catIndex, cardIndex: cardIndex };
+                        console.log('🔍 DEBUG: Found card in AppState', { cardLocation });
+                        
                         // Restore bookmarks from AppState if missing on DOM
                         if (!card.bookmarks && savedCard.bookmarks) {
                             card.bookmarks = savedCard.bookmarks;
@@ -304,7 +308,9 @@ function expandCard(card) {
                         // Restore sections from AppState if available
                         if (savedCard.sections) {
                             card.sections = savedCard.sections;
-                            console.log(`💚 EXPAND: Restored ${savedCard.sections.length} sections from AppState`);
+                            console.log(`💚 EXPAND: Restored ${savedCard.sections.length} sections from AppState`, {
+                                sectionIds: savedCard.sections.map(s => s.id)
+                            });
                         }
                         break;
                     }
@@ -493,22 +499,92 @@ function expandCard(card) {
     mainContent.className = 'expanded-card-main';
     if (card.darkModeEnabled) mainContent.classList.add('dark-mode');
     
-    // Create sections from card data
-    if (card.sections && card.sections.length > 0) {
-        // Create sections from saved data
-        card.sections.forEach((sectionData, index) => {
-            const section = createSection(card, sectionData.bookmarks);
-            // Update section title
-            const sectionTitle = section.querySelector('.section-title');
-            if (sectionTitle) {
-                sectionTitle.textContent = sectionData.title;
-            }
+    console.log('🔍 DEBUG: Checking for existing sections in DOM', { 
+        existingSectionsCount: card.querySelectorAll('.card-section').length 
+    });
+    
+    // Check if sections already exist in the DOM to prevent duplicates
+    const existingSections = card.querySelectorAll('.card-section');
+    if (existingSections.length > 0) {
+        console.log('🔍 DEBUG: Found existing sections in DOM, moving them to main content');
+        // Sections already exist in DOM, move them to main content
+        existingSections.forEach(section => {
             mainContent.appendChild(section);
         });
     } else {
-        // Create first section with editor and bookmarks
-        const firstSection = createSection(card, card.bookmarks);
-        mainContent.appendChild(firstSection);
+        console.log('🔍 DEBUG: No existing sections in DOM, creating from card data', {
+            cardSectionsCount: card.sections ? card.sections.length : 0
+        });
+        // Create sections from card data, but first check if sections already exist in DOM
+        // to prevent duplication from Firebase sync
+        if (card.sections && card.sections.length > 0) {
+            console.log('🔍 DEBUG: Creating sections from saved data', {
+                savedSectionsCount: card.sections.length,
+                sectionIds: card.sections.map(s => s.id)
+            });
+        // Create sections from saved data
+        card.sections.forEach((sectionData, index) => {
+            console.log('🔍 DEBUG: Processing saved section data', { 
+                index, 
+                sectionId: sectionData.id,
+                sectionTitle: sectionData.title,
+                bookmarksCount: sectionData.bookmarks?.length || 0
+            });
+            
+            // Check if a section with this ID already exists in DOM
+            const existingSection = Array.from(mainContent.querySelectorAll('.card-section')).find(section => {
+                return section.sectionData && section.sectionData.id === sectionData.id;
+            });
+            
+            if (!existingSection) {
+                // Check if this section already exists in the card's sections array with an element
+                const sectionInCardArray = card.sections.find(s => s.id === sectionData.id && s.element);
+                if (sectionInCardArray) {
+                    console.log('🔍 DEBUG: Section already exists in card array with element, adding to DOM', { sectionId: sectionData.id });
+                    mainContent.appendChild(sectionInCardArray.element);
+                } else {
+                    console.log('🔍 DEBUG: Creating new section from saved data', { sectionId: sectionData.id });
+                    // Pass the existing section ID to createSection to prevent duplication
+                    const section = createSection(card, sectionData.bookmarks, sectionData.id);
+                    // Update section title
+                    const sectionTitle = section.querySelector('.section-title');
+                    if (sectionTitle) {
+                        sectionTitle.textContent = sectionData.title;
+                    }
+                    // Update section content if it exists
+                    if (sectionData.content && sectionData.content.content) {
+                        // Initialize editor first
+                        setTimeout(() => {
+                            if (section.sectionData && section.sectionData.element) {
+                                const editorContainer = section.sectionData.element.querySelector('.editor-container');
+                                if (editorContainer && section.sectionData.element.quillEditor) {
+                                    section.sectionData.element.quillEditor.root.innerHTML = sectionData.content.content;
+                                }
+                            }
+                        }, 0);
+                    }
+                    mainContent.appendChild(section);
+                }
+            } else {
+                console.log('🔍 DEBUG: Section already exists in DOM, skipping creation', { sectionId: sectionData.id });
+                mainContent.appendChild(existingSection);
+            }
+        });
+        } else {
+            console.log('🔍 DEBUG: Creating first section with editor and bookmarks', {
+                bookmarksCount: card.bookmarks?.length || 0
+            });
+            // Check if first section already exists
+            const firstSectionExists = mainContent.querySelector('.card-section') || 
+                                     (card.sections && card.sections.length > 0 && card.sections[0].element);
+            if (!firstSectionExists) {
+                // Create first section with editor and bookmarks
+                const firstSection = createSection(card, card.bookmarks);
+                mainContent.appendChild(firstSection);
+            } else {
+                console.log('🔍 DEBUG: First section already exists, skipping creation');
+            }
+        }
     }
     
     // Create add section button container
@@ -522,8 +598,13 @@ function expandCard(card) {
     
     // Add click handler to create new section
     addSectionBtn.onclick = () => {
+        console.log('🔍 DEBUG: Add section button clicked');
         const newSection = createSection(card, []);
         mainContent.insertBefore(newSection, addSectionContainer);
+        console.log('🔍 DEBUG: New section added to DOM', { 
+            sectionId: newSection.sectionData?.id,
+            sectionsInCard: card.sections?.length
+        });
         
         // Save to Firebase
         if (window.syncService) {
@@ -860,8 +941,14 @@ function reorderBookmark(expandedCard, fromIndex, toIndex) {
 function collapseCard(card) {
     if (!card || !card.classList.contains('expanded')) return;
     
+    console.log('🔍 DEBUG: collapseCard called', { cardId: card.id });
+    
     // Save sections data before collapsing
     if (card.sections && card.appStateLocation) {
+        console.log('🔍 DEBUG: Saving sections data before collapse', { 
+            sectionsCount: card.sections.length,
+            sectionIds: card.sections.map(s => s.id)
+        });
         const boards = AppState.get('boards');
         const currentBoardId = AppState.get('currentBoardId');
         const board = boards.find(b => b.id === currentBoardId);
@@ -872,10 +959,17 @@ function collapseCard(card) {
                 // Initialize sections array if it doesn't exist
                 if (!board.categories[categoryIndex].cards[cardIndex].sections) {
                     board.categories[categoryIndex].cards[cardIndex].sections = [];
+                    console.log('🔍 DEBUG: Initialized sections array in AppState');
                 }
+                
+                console.log('🔍 DEBUG: Before updating board sections', {
+                    boardSectionsCount: board.categories[categoryIndex].cards[cardIndex].sections.length,
+                    sectionIds: board.categories[categoryIndex].cards[cardIndex].sections.map(s => s.id)
+                });
                 
                 // Update sections in board data
                 card.sections.forEach(sectionData => {
+                    console.log('🔍 DEBUG: Processing section for board save', { sectionId: sectionData.id });
                     // Find existing section or add new one
                     const sectionIndex = board.categories[categoryIndex].cards[cardIndex].sections.findIndex(s => s.id === sectionData.id);
                     if (sectionIndex !== -1) {
@@ -886,6 +980,7 @@ function collapseCard(card) {
                             content: sectionData.content,
                             bookmarks: sectionData.bookmarks
                         };
+                        console.log('🔍 DEBUG: Updated existing section in board data', { sectionId: sectionData.id });
                     } else {
                         // Add new section
                         board.categories[categoryIndex].cards[cardIndex].sections.push({
@@ -894,11 +989,19 @@ function collapseCard(card) {
                             content: sectionData.content,
                             bookmarks: sectionData.bookmarks
                         });
+                        console.log('🔍 DEBUG: Added new section to board data', { sectionId: sectionData.id });
                     }
                 });
                 
+                console.log('🔍 DEBUG: After updating board sections', {
+                    boardSectionsCount: board.categories[categoryIndex].cards[cardIndex].sections.length,
+                    sectionIds: board.categories[categoryIndex].cards[cardIndex].sections.map(s => s.id)
+                });
+                
                 AppState.set('boards', boards);
-                console.log('🔖 SECTION: Saved sections to AppState before collapse');
+                console.log('🔖 SECTION: Saved sections to AppState before collapse', {
+                    totalBoardSections: board.categories[categoryIndex].cards[cardIndex].sections.length
+                });
             }
         }
     }
@@ -1233,7 +1336,14 @@ console.log('🔌 EXTENSION: processBookmarkOnce available:', typeof window.proc
 console.log('🔌 EXTENSION: handleBookmarkData available:', typeof window.handleBookmarkData);
 
 // Create a section with editor and bookmarks
-function createSection(card, bookmarks = []) {
+function createSection(card, bookmarks = [], existingSectionId = null) {
+    console.log('🔍 DEBUG: createSection called', { 
+        cardId: card.id, 
+        bookmarksCount: bookmarks.length,
+        existingSectionsCount: card.sections ? card.sections.length : 0,
+        existingSectionId: existingSectionId
+    });
+    
     // Create section container
     const section = document.createElement('div');
     section.className = 'card-section';
@@ -1281,22 +1391,45 @@ function createSection(card, bookmarks = []) {
     // Add content container to section
     section.appendChild(contentContainer);
     
-    // Create section data object
+    // Create section data object - use existing ID if provided, otherwise generate new one
     const sectionData = {
-        id: `section-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+        id: existingSectionId || `section-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
         title: sectionTitle.textContent,
         content: null,
         bookmarks: bookmarks || []
     };
     
+    console.log('🔍 DEBUG: Created section data', { sectionId: sectionData.id });
+    
     // Store section data on the section element
     section.sectionData = sectionData;
     
-    // Add section to card's sections array
+    // Add section to card's sections array ONLY if it doesn't already exist
     if (!card.sections) {
         card.sections = [];
     }
-    card.sections.push(sectionData);
+    
+    // Check if section with this ID already exists in card.sections
+    const existingSectionIndex = card.sections.findIndex(s => s.id === sectionData.id);
+    console.log('🔍 DEBUG: Checking for existing section in card.sections', { 
+        existingSectionIndex, 
+        totalCardSections: card.sections.length 
+    });
+    
+    if (existingSectionIndex === -1) {
+        card.sections.push(sectionData);
+        console.log('🔍 DEBUG: Added new section to card.sections', { 
+            sectionId: sectionData.id,
+            totalCardSections: card.sections.length 
+        });
+    } else {
+        // Update existing section data
+        card.sections[existingSectionIndex] = sectionData;
+        console.log('🔍 DEBUG: Updated existing section in card.sections', { 
+            sectionId: sectionData.id,
+            index: existingSectionIndex 
+        });
+    }
     
     // Store a reference to the section element on the section data
     sectionData.element = section;
@@ -1315,25 +1448,56 @@ function createSection(card, bookmarks = []) {
                     board.categories[categoryIndex].cards[cardIndex].sections = [];
                 }
                 
-                // Add the new section to the board data
-                board.categories[categoryIndex].cards[cardIndex].sections.push({
-                    id: sectionData.id,
-                    title: sectionData.title,
-                    content: null,
-                    bookmarks: []
+                console.log('🔍 DEBUG: Board sections before processing', { 
+                    boardSectionsCount: board.categories[categoryIndex].cards[cardIndex].sections.length,
+                    sectionIds: board.categories[categoryIndex].cards[cardIndex].sections.map(s => s.id)
                 });
                 
+                // Check if section with this ID already exists in board data
+                const boardSectionIndex = board.categories[categoryIndex].cards[cardIndex].sections.findIndex(s => s.id === sectionData.id);
+                console.log('🔍 DEBUG: Checking for existing section in board data', { boardSectionIndex });
+                
+                if (boardSectionIndex === -1) {
+                    // Add the new section to the board data
+                    board.categories[categoryIndex].cards[cardIndex].sections.push({
+                        id: sectionData.id,
+                        title: sectionData.title,
+                        content: null,
+                        bookmarks: sectionData.bookmarks || []
+                    });
+                    console.log('🔍 DEBUG: Added new section to board data', { sectionId: sectionData.id });
+                } else {
+                    // Update existing section in board data
+                    board.categories[categoryIndex].cards[cardIndex].sections[boardSectionIndex] = {
+                        id: sectionData.id,
+                        title: sectionData.title,
+                        content: null,
+                        bookmarks: sectionData.bookmarks || []
+                    };
+                    console.log('🔍 DEBUG: Updated existing section in board data', { 
+                        sectionId: sectionData.id,
+                        index: boardSectionIndex 
+                    });
+                }
+                
                 AppState.set('boards', boards);
-                console.log('🔖 SECTION: Updated AppState with new section');
+                console.log('🔖 SECTION: Updated AppState with section', {
+                    totalBoardSections: board.categories[categoryIndex].cards[cardIndex].sections.length
+                });
             }
         }
     }
     
     // Initialize editor in this section
+    console.log('🔍 DEBUG: Initializing editor for section', { sectionId: sectionData.id });
     initializeEditorJS(card, editorContainer);
     
     // Add bookmarks to section
     if (bookmarks && bookmarks.length > 0) {
+        console.log('🔍 DEBUG: Adding bookmarks to section', { 
+            sectionId: sectionData.id, 
+            bookmarksCount: bookmarks.length 
+        });
         bookmarks.forEach((bookmark, index) => {
             const bookmarkCard = createBookmarkCard(
                 bookmark.title,
@@ -1347,9 +1511,10 @@ function createSection(card, bookmarks = []) {
             bookmarksSection.appendChild(bookmarkCard);
         });
     } else {
-    // Create sample bookmark card
-    const bookmarkCard = createBookmarkCard('Example Bookmark', 'This is a sample bookmark description that shows how bookmarks will appear.', 'https://example.com', new Date(), null, 0, card);
-    bookmarksSection.appendChild(bookmarkCard);
+        console.log('🔍 DEBUG: Adding sample bookmark to section', { sectionId: sectionData.id });
+        // Create sample bookmark card
+        const bookmarkCard = createBookmarkCard('Example Bookmark', 'This is a sample bookmark description that shows how bookmarks will appear.', 'https://example.com', new Date(), null, 0, card);
+        bookmarksSection.appendChild(bookmarkCard);
     }
     
     // Update section title listener to save changes
@@ -1371,12 +1536,20 @@ function createSection(card, bookmarks = []) {
                     const sectionIndex = board.categories[categoryIndex].cards[cardIndex].sections.findIndex(s => s.id === sectionData.id);
                     if (sectionIndex !== -1) {
                         board.categories[categoryIndex].cards[cardIndex].sections[sectionIndex].title = this.textContent;
+                        console.log('🔍 DEBUG: Updated section title in board data', { 
+                            sectionId: sectionData.id, 
+                            newTitle: this.textContent 
+                        });
                     } else {
                         board.categories[categoryIndex].cards[cardIndex].sections.push({
                             id: sectionData.id,
                             title: this.textContent,
                             content: null,
-                            bookmarks: []
+                            bookmarks: sectionData.bookmarks || []
+                        });
+                        console.log('🔍 DEBUG: Added new section with title to board data', { 
+                            sectionId: sectionData.id, 
+                            title: this.textContent 
                         });
                     }
                     
@@ -1392,6 +1565,7 @@ function createSection(card, bookmarks = []) {
         }
     });
     
+    console.log('🔍 DEBUG: createSection completed', { sectionId: sectionData.id });
     return section;
 }
 
@@ -1570,7 +1744,7 @@ async function initializeEditorJS(card, container = null) {
                                 content: {
                                     content: quill.root.innerHTML
                                 },
-                                bookmarks: []
+                                bookmarks: section.sectionData.bookmarks || []
                             });
                         }
                         
