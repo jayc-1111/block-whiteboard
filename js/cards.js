@@ -573,7 +573,7 @@ function createBookmarkCard(title, description, url, date, imageData, bookmarkIn
         <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path>
     </svg>`;
     removeBtn.title = 'Remove bookmark';
-    removeBtn.style.cssText = 'padding: 2px 4px; background: #dc2626; border: 1px solid #ef4444; cursor: pointer; color: #fff; transition: all 0.2s; height: 22px; display: flex; align-items: center;';
+    removeBtn.style.cssText = 'padding: 2px 4px; background: #dc2626; border: 1px solid #ef4444; border-radius: 12px; cursor: pointer; transition: all 0.2s; height: 22px; display: flex; align-items: center;';
     
     removeBtn.onclick = () => {
         removeBookmark(expandedCard, bookmarkIndex);
@@ -597,7 +597,7 @@ function createBookmarkCard(title, description, url, date, imageData, bookmarkIn
         const img = document.createElement('img');
         img.className = 'bookmark-image';
         img.src = imageData;
-        img.style.cssText = 'width: 100%; height: 120px; object-fit: cover; border-radius: 6px; margin-bottom: 12px;';
+        img.style.cssText = 'width: 100%; height: 150px; object-fit: cover; border-radius: 4px; margin-bottom: 12px;';
         card.appendChild(img);
     } else {
         const imagePlaceholder = document.createElement('div');
@@ -606,17 +606,18 @@ function createBookmarkCard(title, description, url, date, imageData, bookmarkIn
     }    
     const cardTitle = document.createElement('h3');
     cardTitle.className = 'bookmark-title';
-    cardTitle.textContent = title;
+    
+    // Create title as a link using the bookmark URL
+    const titleLink = document.createElement('a');
+    titleLink.href = url;
+    titleLink.target = '_blank';
+    titleLink.textContent = title;
+    titleLink.style.cssText = 'text-decoration: none;';
+    cardTitle.appendChild(titleLink);
     
     const cardDesc = document.createElement('p');
     cardDesc.className = 'bookmark-description';
     cardDesc.textContent = description;
-    
-    const cardUrl = document.createElement('a');
-    cardUrl.className = 'bookmark-url';
-    cardUrl.href = url;
-    cardUrl.target = '_blank';
-    cardUrl.textContent = url;
     
     const cardDate = document.createElement('span');
     cardDate.className = 'bookmark-date';
@@ -624,13 +625,12 @@ function createBookmarkCard(title, description, url, date, imageData, bookmarkIn
     
     card.appendChild(cardTitle);
     card.appendChild(cardDesc);
-    card.appendChild(cardUrl);
     card.appendChild(cardDate);
     
     // Create controls row at the bottom
     const controlsRow = document.createElement('div');
     controlsRow.className = 'bookmark-controls';
-    controlsRow.style.cssText = 'display: flex; justify-content: flex-end; gap: 6px; margin-top: 8px;';
+    controlsRow.style.cssText = 'display: flex; justify-content: flex-start; gap: 6px; margin-top: 8px;';
     
     // Move up button
     const moveUpBtn = document.createElement('button');
@@ -639,7 +639,7 @@ function createBookmarkCard(title, description, url, date, imageData, bookmarkIn
         <polyline points="18 15 12 9 6 15"></polyline>
     </svg>`;
     moveUpBtn.title = 'Move up';
-    moveUpBtn.style.cssText = 'padding: 2px 4px; background: #374151; border: 1px solid #4b5563; border-radius: 4px; cursor: pointer; color: #9ca3af; transition: all 0.2s; height: 22px; display: flex; align-items: center;';
+    moveUpBtn.style.cssText = 'padding: 2px 4px; background: #374151; border: 1px solid #4b5563; border-radius: 12px; cursor: pointer; transition: all 0.2s; height: 22px; display: flex; align-items: center;';
     moveUpBtn.disabled = bookmarkIndex === 0;
     if (bookmarkIndex === 0) moveUpBtn.style.opacity = '0.3';
     
@@ -654,7 +654,7 @@ function createBookmarkCard(title, description, url, date, imageData, bookmarkIn
         <polyline points="6 9 12 15 18 9"></polyline>
     </svg>`;
     moveDownBtn.title = 'Move down';
-    moveDownBtn.style.cssText = 'padding: 2px 4px; background: #374151; border: 1px solid #4b5563; border-radius: 4px; cursor: pointer; color: #9ca3af; transition: all 0.2s; height: 22px; display: flex; align-items: center;';
+    moveDownBtn.style.cssText = 'padding: 2px 4px; background: #374151; border: 1px solid #4b5563; border-radius: 12px; cursor: pointer; transition: all 0.2s; height: 22px; display: flex; align-items: center;';
     const totalBookmarks = expandedCard?.bookmarks?.length || 1;
     moveDownBtn.disabled = bookmarkIndex >= totalBookmarks - 1;
     if (bookmarkIndex >= totalBookmarks - 1) moveDownBtn.style.opacity = '0.3';
@@ -1242,7 +1242,20 @@ function createSection(card, bookmarks = []) {
     const sectionTitle = document.createElement('div');
     sectionTitle.className = 'section-title';
     sectionTitle.contentEditable = true;
-    sectionTitle.textContent = 'Section Title';
+    sectionTitle.textContent = 'New Section';
+    sectionTitle.dataset.placeholder = 'New Section';
+    
+    sectionTitle.addEventListener('focus', function() {
+        if (this.textContent === this.dataset.placeholder) {
+            this.textContent = '';
+        }
+    });
+    
+    sectionTitle.addEventListener('blur', function() {
+        if (this.textContent.trim() === '') {
+            this.textContent = this.dataset.placeholder;
+        }
+    });
     
     // Create content container for editor and bookmarks
     const contentContainer = document.createElement('div');
