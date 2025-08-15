@@ -559,10 +559,10 @@ function createBookmarkCard(title, description, url, date, imageData, bookmarkIn
     card.className = 'bookmark-card';
     card.dataset.bookmarkIndex = bookmarkIndex;
     
-    // Create controls row at the top
+    // Create controls row at the bottom
     const controlsRow = document.createElement('div');
     controlsRow.className = 'bookmark-controls';
-    controlsRow.style.cssText = 'display: flex; justify-content: flex-end; gap: 6px; margin-bottom: 4px;';
+    controlsRow.style.cssText = 'display: flex; justify-content: flex-end; gap: 6px; margin-top: 8px;';
     
     // Move up button
     const moveUpBtn = document.createElement('button');
@@ -673,6 +673,7 @@ function createBookmarkCard(title, description, url, date, imageData, bookmarkIn
     card.appendChild(cardDesc);
     card.appendChild(cardUrl);
     card.appendChild(cardDate);
+    card.appendChild(controlsRow);
     
     return card;
 }
