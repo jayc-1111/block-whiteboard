@@ -493,9 +493,18 @@
     function createExpandedCardModal() {
         const modalHTML = `
             <div id="expandedCardChoiceModal" class="modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 10000001; align-items: center; justify-content: center;">
-                <div class="modal-content" style="background: white; border-radius: 12px; padding: 24px; max-width: 400px; margin: auto; margin-top: 100px; box-shadow: 0 4px 20px rgba(0,0,0,0.2); position: relative; z-index: 10000002;">
+                <div class="modal-content" style="background: white; border-radius: 12px; padding: 24px; max-width: 500px; margin: auto; margin-top: 100px; box-shadow: 0 4px 20px rgba(0,0,0,0.2); position: relative; z-index: 10000002;">
                     <h3 style="margin: 0 0 16px 0; font-size: 18px;">Where would you like to add this bookmark?</h3>
                     <p style="color: #666; margin-bottom: 20px; font-size: 14px;">You currently have a card open.</p>
+                    
+                    <!-- Section selection will be added here -->
+                    <div id="sectionSelection" style="display: none; margin-bottom: 16px;">
+                        <label style="display: block; margin-bottom: 8px; font-size: 14px; font-weight: 500;">Select a section:</label>
+                        <div id="sectionsList" style="max-height: 200px; overflow-y: auto; border: 1px solid #ddd; border-radius: 6px; padding: 8px;">
+                            <!-- Sections will be populated here -->
+                        </div>
+                    </div>
+                    
                     <div style="display: flex; gap: 12px; margin-bottom: 12px;">
                         <button id="addToOpenCard" style="flex: 1; padding: 10px 16px; background: #5353ff; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 500;">Add to Open Card</button>
                         <button id="addElsewhere" style="flex: 1; padding: 10px 16px; background: #e0e0e0; color: #333; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 500;">Choose Another Card</button>
@@ -531,6 +540,70 @@
             modalContent.onclick = (e) => e.stopPropagation();
         }
         
+        // Get the actual DOM element for the expanded card
+        const expandedCardDOM = document.querySelector('.card.expanded') || expandedCard;
+        
+        // Find all sections in the expanded card
+        const sections = expandedCardDOM.querySelectorAll('.card-section');
+        const sectionSelection = document.getElementById('sectionSelection');
+        const sectionsList = document.getElementById('sectionsList');
+        
+        // Variables to track selected section
+        let selectedSectionElement = null;
+        let selectedSectionData = null;
+        
+        if (sections && sections.length > 0) {
+            // Show section selection if there are sections
+            sectionSelection.style.display = 'block';
+            sectionsList.innerHTML = '';
+            
+            sections.forEach((section, index) => {
+                const sectionTitle = section.querySelector('.section-title')?.textContent || `Section ${index + 1}`;
+                const sectionItem = document.createElement('div');
+                sectionItem.style.cssText = 'padding: 8px 12px; margin: 4px 0; border-radius: 4px; cursor: pointer; transition: background 0.2s;';
+                sectionItem.style.background = index === 0 ? '#e8e8ff' : '#f5f5f5';
+                sectionItem.innerHTML = `
+                    <div style="font-weight: 500; margin-bottom: 4px;">${sectionTitle}</div>
+                    <div style="font-size: 12px; color: #666;">
+                        ${section.sectionData?.bookmarks?.length || 0} bookmarks
+                    </div>
+                `;
+                
+                // Select first section by default
+                if (index === 0) {
+                    selectedSectionElement = section;
+                    selectedSectionData = section.sectionData;
+                }
+                
+                sectionItem.addEventListener('click', () => {
+                    // Update selection
+                    sectionsList.querySelectorAll('div').forEach(item => {
+                        if (item.style.padding) item.style.background = '#f5f5f5';
+                    });
+                    sectionItem.style.background = '#e8e8ff';
+                    selectedSectionElement = section;
+                    selectedSectionData = section.sectionData;
+                });
+                
+                sectionItem.addEventListener('mouseenter', () => {
+                    if (selectedSectionElement !== section) {
+                        sectionItem.style.background = '#ebebeb';
+                    }
+                });
+                
+                sectionItem.addEventListener('mouseleave', () => {
+                    if (selectedSectionElement !== section) {
+                        sectionItem.style.background = '#f5f5f5';
+                    }
+                });
+                
+                sectionsList.appendChild(sectionItem);
+            });
+        } else {
+            // Hide section selection if no sections
+            sectionSelection.style.display = 'none';
+        }
+        
         const addToOpenBtn = document.getElementById('addToOpenCard');
         const addElsewhereBtn = document.getElementById('addElsewhere');
         const cancelBtn = document.getElementById('cancelExpandedModal');
@@ -562,14 +635,26 @@
         newAddToOpen.addEventListener('click', async (e) => {
             e.stopPropagation(); // Prevent click from reaching overlay
             modal.style.display = 'none';
-            // Use the original handler logic for expanded cards
-            if (expandedCard && bookmarkData) {
-                // Get the actual DOM element, not just the AppState reference
-                const expandedCardDOM = document.querySelector('.card.expanded') || expandedCard;
+            
+            // Use selected section or fall back to first section
+            if (expandedCardDOM && bookmarkData) {
+                let targetSection = selectedSectionElement;
+                let targetSectionData = selectedSectionData;
                 
-                // Initialize bookmarks array if doesn't exist
-                if (!expandedCardDOM.bookmarks) {
-                    expandedCardDOM.bookmarks = [];
+                // If no section selected, try to find the first section
+                if (!targetSection) {
+                    targetSection = expandedCardDOM.querySelector('.card-section');
+                    targetSectionData = targetSection?.sectionData;
+                }
+                
+                if (!targetSection || !targetSectionData) {
+                    console.error('❌ BOOKMARK: No section available to add bookmark');
+                    return;
+                }
+                
+                // Initialize bookmarks array for this section if it doesn't exist
+                if (!targetSectionData.bookmarks) {
+                    targetSectionData.bookmarks = [];
                 }
                 
                 // Add the new bookmark
@@ -582,8 +667,8 @@
                     id: `bookmark-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
                 };
                 
-                expandedCardDOM.bookmarks.push(bookmark);
-                console.log('🔖 BOOKMARK MODAL: Added bookmark to DOM element, total now:', expandedCardDOM.bookmarks.length);
+                targetSectionData.bookmarks.push(bookmark);
+                console.log('🔖 BOOKMARK MODAL: Added bookmark to section:', targetSection.querySelector('.section-title')?.textContent);
                 
                 // Update AppState immediately to ensure persistence
                 if (expandedCardDOM.appStateLocation) {
@@ -594,40 +679,31 @@
                     if (board && board.categories) {
                         const { categoryIndex, cardIndex } = expandedCardDOM.appStateLocation;
                         if (board.categories[categoryIndex] && board.categories[categoryIndex].cards[cardIndex]) {
-                            board.categories[categoryIndex].cards[cardIndex].bookmarks = [...expandedCardDOM.bookmarks];
-                            AppState.set('boards', boards);
-                            console.log('🔖 BOOKMARK MODAL: Updated AppState with new bookmark');
-                        }
-                    }
-                } else {
-                    // Fallback: find card location if appStateLocation missing
-                    const boards = AppState.get('boards');
-                    const currentBoardId = AppState.get('currentBoardId');
-                    const board = boards.find(b => b.id === currentBoardId);
-                    
-                    if (board && board.categories) {
-                        const cardTitle = expandedCardDOM.querySelector('.card-title')?.textContent;
-                        const cardId = expandedCardDOM.dataset.cardId || expandedCardDOM.id;
-                        
-                        for (let catIndex = 0; catIndex < board.categories.length; catIndex++) {
-                            const category = board.categories[catIndex];
-                            if (category.cards) {
-                                for (let cardIndex = 0; cardIndex < category.cards.length; cardIndex++) {
-                                    const savedCard = category.cards[cardIndex];
-                                    if ((savedCard.id && savedCard.id === cardId) || savedCard.title === cardTitle) {
-                                        board.categories[catIndex].cards[cardIndex].bookmarks = [...expandedCardDOM.bookmarks];
-                                        AppState.set('boards', boards);
-                                        console.log('🔖 BOOKMARK MODAL: Updated AppState with new bookmark (fallback)');
-                                        break;
-                                    }
-                                }
+                            // Find the section in the board data
+                            if (!board.categories[categoryIndex].cards[cardIndex].sections) {
+                                board.categories[categoryIndex].cards[cardIndex].sections = [];
                             }
+                            
+                            const sectionIndex = board.categories[categoryIndex].cards[cardIndex].sections.findIndex(s => s.id === targetSectionData.id);
+                            if (sectionIndex !== -1) {
+                                board.categories[categoryIndex].cards[cardIndex].sections[sectionIndex].bookmarks = [...targetSectionData.bookmarks];
+                            } else {
+                                board.categories[categoryIndex].cards[cardIndex].sections.push({
+                                    id: targetSectionData.id,
+                                    title: targetSectionData.title,
+                                    content: targetSectionData.content,
+                                    bookmarks: [...targetSectionData.bookmarks]
+                                });
+                            }
+                            
+                            AppState.set('boards', boards);
+                            console.log('🔖 BOOKMARK MODAL: Updated AppState with new bookmark in section');
                         }
                     }
                 }
                 
-                // Update the bookmarks section without collapsing
-                const bookmarksSection = expandedCardDOM.querySelector('.bookmarks-section');
+                // Update the bookmarks section UI without collapsing
+                const bookmarksSection = targetSection.querySelector('.section-bookmarks');
                 if (bookmarksSection) {
                     // Remove placeholder if it exists
                     const placeholders = bookmarksSection.querySelectorAll('.bookmark-card');
@@ -645,7 +721,7 @@
                             bookmark.url,
                             bookmark.timestamp,
                             bookmark.screenshot,
-                            expandedCardDOM.bookmarks.length - 1,
+                            targetSectionData.bookmarks.length - 1,
                             expandedCardDOM
                         );
                         bookmarksSection.appendChild(bookmarkCard);

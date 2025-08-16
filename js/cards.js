@@ -1186,6 +1186,9 @@ function getCurrentIndent(li) {
 window.handleBookmarkData = function(data) {
     console.log('🔖 BOOKMARK: Received bookmark data from extension:', data);
     
+    // NOTE: This function is now overridden in bookmark-destination-selector.js
+    // to show the modal with section selection. This is kept as a fallback.
+    
     // Get the currently expanded card
     const expandedCard = AppState.get('expandedCard');
     if (!expandedCard) {
@@ -1202,12 +1205,11 @@ window.handleBookmarkData = function(data) {
         return;
     }
     
-    // Get the active section (the one that was selected in the modal)
-    const activeSection = expandedCard.querySelector('.card-section.active') || 
-                         expandedCard.querySelector('.card-section:first-child');
+    // Get the first section by default (modal should override this)
+    const activeSection = expandedCard.querySelector('.card-section:first-child');
     
     if (!activeSection) {
-        console.error('❌ BOOKMARK: No active section found');
+        console.error('❌ BOOKMARK: No section found');
         return;
     }
     
