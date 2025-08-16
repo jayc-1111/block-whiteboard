@@ -79,11 +79,15 @@ document.addEventListener('DOMContentLoaded', function() {
             // Remove active from folders
             treeFolders.forEach(f => f.classList.remove('active'));
             
+            // Get date element if exists in dataset
+            const date = this.dataset.date ? `<span class="bookmark-date">${this.dataset.date}</span>` : '';
+            
             // Update content area
             const contentArea = document.querySelector('.bookmarks-content');
             if (contentArea) {
                 contentArea.innerHTML = `
                     <h3 style="margin-top: 0; color: #111827;">${this.textContent}</h3>
+                    ${date}
                     <p style="color: #6b7280;">Bookmarks for "${this.textContent}" will appear here.</p>
                 `;
             }

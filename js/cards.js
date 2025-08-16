@@ -700,8 +700,9 @@ function createBookmarkCard(title, description, url, date, imageData, bookmarkIn
     cardDesc.className = 'bookmark-description';
     cardDesc.textContent = description;
     
-    const cardDate = document.createElement('span');
+    const cardDate = document.createElement('div');
     cardDate.className = 'bookmark-date';
+    cardDate.style.cssText = 'text-align: right; font-size: 12px; color: #666; margin-top: 8px;';
     cardDate.textContent = date.toLocaleDateString ? date.toLocaleDateString() : date;
     
     card.appendChild(cardTitle);

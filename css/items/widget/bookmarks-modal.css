@@ -193,11 +193,19 @@
     border-radius: 4px;
     display: flex;
     align-items: center;
+    justify-content: space-between;
     gap: 6px;
     cursor: pointer;
     transition: background 0.2s;
     font-size: 13px;
     color: #6b7280;
+}
+
+.bookmarks-tree-leaf .bookmark-date {
+    margin-left: auto;
+    color: #9ca3af;
+    font-size: 12px;
+    white-space: nowrap;
 }
 
 .bookmarks-tree-leaf:hover {
