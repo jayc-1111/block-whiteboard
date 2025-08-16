@@ -4,7 +4,7 @@
     height: 100vh;
     position: relative;
     overflow: auto;
-    background: var(--bg-image), #1a1a1a;
+    background: none, #191919;
     background-attachment: fixed;
     background-size: cover;
     background-position: center;
@@ -16,8 +16,8 @@
     height: 2000px;
     min-width: 100%;
     min-height: 100%;
-    background-image: radial-gradient(circle, rgba(255,255,255,0.035) var(--grid-dot-size), transparent var(--grid-dot-size));
-    background-size: var(--grid-spacing) var(--grid-spacing);
+    background-image: radial-gradient(circle, rgba(255,255,255,0.035) 2px, transparent 2px);
+    background-size: 27px 27px;
     background-position: 0 0;
 }
 

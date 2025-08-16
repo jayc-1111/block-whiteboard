@@ -97,13 +97,13 @@ body.with-background #topBar {
 
 /* Special button states */
 .save-button {
-    background: #059669;
-    border-color: #047857;
+    background: #3b82f6;
+    border-color: #2563eb;
 }
 
 .save-button:hover {
-    background: #10b981;
-    border-color: #059669;
+    background: #60a5fa;
+    border-color: #3b82f6;
 }
 
 #drawingModeBtn.active {
