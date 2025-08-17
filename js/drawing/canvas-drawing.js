@@ -245,7 +245,7 @@ function getPointFromEvent(e) {
 function drawPath(points) {
     if (!ctx || points.length < 2) return;
     
-    ctx.fillStyle = '#000';
+    ctx.fillStyle = '#add8e6'; // Light blue color
     ctx.beginPath();
     ctx.moveTo(points[0][0], points[0][1]);
     

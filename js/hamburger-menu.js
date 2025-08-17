@@ -67,16 +67,16 @@ function updateFileTree() {
     } else {
         // Create root board item
         const boardName = document.getElementById('boardName')?.textContent || 'Board 1';
-        html += `<li>
-            <details open>
-                <summary>
-                    <svg class="folder-icon" width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M10 4H4c-1.11 0-2 .89-2 2v12c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V8c0-1.11-.89-2-2-2h-8l-2-2z"/>
-                    </svg>
-                    ${boardName}
-                    <span class="item-count">${categories.length} categories</span>
-                </summary>
-                <ul>`;
+            html += `<li>
+                <details open>
+                    <summary>
+                        <svg class="folder-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M5 19l2.757 -7.351a1 1 0 0 1 .936 -.649h12.307a1 1 0 0 1 .986 1.164l-.996 5.211a2 2 0 0 1 -1.964 1.625h-14.026a2 2 0 0 1 -2 -2v-11a2 2 0 0 1 2 -2h4l3 3h7a2 2 0 0 1 2 2v2" />
+                        </svg>
+                        ${boardName}
+                        <span class="item-count">${categories.length} categories</span>
+                    </summary>
+                    <ul>`;
         
         categories.forEach((category, categoryIndex) => {
             const categoryTitle = category.querySelector('.category-title');
@@ -86,8 +86,8 @@ function updateFileTree() {
             html += `<li>
                 <details>
                     <summary>
-                        <svg class="folder-icon" width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M10 4H4c-1.11 0-2 .89-2 2v12c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V8c0-1.11-.89-2-2-2h-8l-2-2z"/>
+                        <svg class="folder-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M5 19l2.757 -7.351a1 1 0 0 1 .936 -.649h12.307a1 1 0 0 1 .986 1.164l-.996 5.211a2 2 0 0 1 -1.964 1.625h-14.026a2 2 0 0 1 -2 -2v-11a2 2 0 0 1 2 -2h4l3 3h7a2 2 0 0 1 2 2v2" />
                         </svg>
                         <span class="category-name">${title}</span>
                         <span class="item-count">${cards.length} cards</span>
@@ -105,8 +105,10 @@ function updateFileTree() {
                     if (!card.id) card.id = cardId;
                     
                     html += `<li class="file-item" data-card-id="${cardId}">
-                        <svg class="file-icon" width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"/>
+                        <svg class="file-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                            <path d="M14 3v4a1 1 0 0 0 1 1h4" />
+                            <path d="M17 21h-10a2 2 0 0 1 -2 -2v-14a2 2 0 0 1 2 -2h7l5 5v11a2 2 0 0 1 -2 2z" />
                         </svg>
                         ${cardName}
                     </li>`;

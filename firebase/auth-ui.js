@@ -77,6 +77,10 @@ export const authUI = {
         this.addAuthButton();
         Debug.auth.step('Auth button added to toolbar');
         
+        // Add user info to hamburger menu
+        this.addUserInfoToHamburger();
+        Debug.auth.step('User info added to hamburger menu');
+        
         // Setup event listeners after modal is created
         this.setupEventListeners();
         Debug.auth.step('Event listeners configured');
@@ -117,6 +121,7 @@ export const authUI = {
             // Force UI update with delay to ensure DOM is ready
             setTimeout(() => {
                 this.updateUIForUser(user);
+                this.updateUserInfoForHamburger(user);
             }, 0);
             
             // Update dev mode info immediately when auth state changes
@@ -143,6 +148,7 @@ export const authUI = {
         if (currentUser) {
             Debug.auth.detail('Current user on init', { uid: currentUser.uid });
             this.updateUIForUser(currentUser);
+            this.updateUserInfoForHamburger(currentUser);
             
             // Update dev info for current user
             if (window.setDevInfo) {
@@ -204,8 +210,9 @@ export const authUI = {
     addAuthButton() {
         const attemptAddButton = () => {
             const topBar = document.getElementById('topBar');
-            if (!topBar) {
-                Debug.auth.detail('Auth UI: topBar element not found, retrying in 500ms...');
+            const whiteboardSwitcher = document.getElementById('whiteboardSwitcher');
+            if (!topBar || !whiteboardSwitcher) {
+                Debug.auth.detail('Auth UI: Required elements not found, retrying in 500ms...');
                 setTimeout(attemptAddButton, 500);
                 return;
             }
@@ -223,13 +230,12 @@ export const authUI = {
                     Sign In
                 </button>
                 <div id="userMenu" class="user-menu" style="display: none;">
-                    <span id="userEmail"></span>
                     <button id="signOutBtn">Sign Out</button>
                 </div>
             `;
             
-            // Insert at the end of topBar to appear on the right
-            topBar.appendChild(authContainer);
+            // Insert before the whiteboard switcher (leftmost position)
+            whiteboardSwitcher.insertAdjacentElement('beforebegin', authContainer);
             
             // Setup event listeners for auth button
             const authButton = authContainer.querySelector('#authButton');
@@ -470,10 +476,107 @@ export const authUI = {
         }
     },
     
+    addUserInfoToHamburger() {
+        const attemptAddUserInfo = () => {
+            const hamburgerDropdown = document.querySelector('.hamburger-dropdown');
+            if (!hamburgerDropdown) {
+                Debug.auth.detail('Auth UI: Hamburger dropdown not found, retrying in 500ms...');
+                setTimeout(attemptAddUserInfo, 500);
+                return;
+            }
+            
+            // Check if user info container already exists
+            if (document.querySelector('.hamburger-user-info')) {
+                Debug.auth.detail('Hamburger user info container already exists');
+                return;
+            }
+            
+            // Create user info container for hamburger menu
+            const userInfoContainer = document.createElement('div');
+            userInfoContainer.className = 'hamburger-user-info';
+            userInfoContainer.innerHTML = `
+                <div class="hamburger-separator"></div>
+                <div class="hamburger-item" id="hamburgerUserInfo" style="display: none;">
+                    <span id="hamburgerUserEmail" style="margin-left: 0; font-size: 0.85rem;"></span>
+                </div>
+            `;
+            
+            // Insert at the top of the hamburger dropdown
+            hamburgerDropdown.insertBefore(userInfoContainer, hamburgerDropdown.firstChild);
+            
+            Debug.auth.step('User info added to hamburger menu successfully');
+            
+            // Check if we have a current user and update UI immediately
+            const currentUser = authService.getCurrentUser();
+            if (currentUser) {
+                Debug.auth.detail('Current user found during user info setup', { user: currentUser.email || 'Anonymous' });
+                setTimeout(() => this.updateUserInfoForHamburger(currentUser), 100);
+            }
+        };
+        
+        // Try to add user info immediately, with fallback retry logic
+        attemptAddUserInfo();
+    },
+    
+    updateUserInfoForHamburger(user) {
+        const userInfoContainer = document.querySelector('.hamburger-user-info');
+        const userInfoElement = document.getElementById('hamburgerUserInfo');
+        const userEmailElement = document.getElementById('hamburgerUserEmail');
+        
+        if (!userInfoContainer || !userInfoElement || !userEmailElement) {
+            Debug.auth.stepError('Hamburger user info elements not found, retrying...');
+            setTimeout(() => this.updateUserInfoForHamburger(user), 100);
+            return;
+        }
+        
+        if (user) {
+            // Check if this is a real authenticated user (not anonymous)
+            const isAuthenticatedUser = user && 
+                                       !user.isAnonymous && 
+                                       user.email && 
+                                       user.email !== 'none' && 
+                                       user.email !== 'guest@zenban.app';
+            
+            // Check if this is a guest user
+            const isGuestUser = user && user.isAnonymous;
+            
+            if (isAuthenticatedUser) {
+                // Real authenticated user - show user email
+                Debug.auth.step('AUTHENTICATED USER CONFIRMED for hamburger');
+                Debug.auth.detail('User email for hamburger', { email: user.email });
+                
+                userInfoElement.style.display = 'flex';
+                
+                if (userEmailElement) {
+                    userEmailElement.textContent = user.email;
+                    userEmailElement.style.color = '#40c9ff';
+                    Debug.auth.detail('Email element updated for hamburger', { email: user.email });
+                }
+                
+            } else if (isGuestUser) {
+                // Guest user - show guest ID
+                const guestId = user.uid.slice(-6).toUpperCase();
+                Debug.auth.step('GUEST USER CONFIRMED for hamburger');
+                Debug.auth.detail('Guest ID for hamburger', { guestId });
+                
+                userInfoElement.style.display = 'flex';
+                
+                if (userEmailElement) {
+                    userEmailElement.textContent = `Guest: ${guestId}`;
+                    userEmailElement.style.color = '#888';
+                    Debug.auth.detail('Guest ID element updated for hamburger', { guestId });
+                }
+            }
+        } else {
+            // No user - hide user info
+            Debug.auth.detail('No user - hiding user info in hamburger');
+            userInfoElement.style.display = 'none';
+        }
+    },
+    
     updateUIForUser(user) {
         const authButton = document.getElementById('authButton');
         const userMenu = document.getElementById('userMenu');
-        const userEmail = document.getElementById('userEmail');
         
         Debug.auth.detail('updateUIForUser called', { user: user ? { email: user.email, uid: user.uid } : null });
         
@@ -495,22 +598,13 @@ export const authUI = {
             const isGuestUser = user && user.isAnonymous;
             
             if (isAuthenticatedUser) {
-                // Real authenticated user - show user menu with email
+                // Real authenticated user - show user menu
                 Debug.auth.step('AUTHENTICATED USER CONFIRMED');
                 Debug.auth.detail('User email', { email: user.email });
                 
                 authButton.style.display = 'none';
-                authButton.style.visibility = 'hidden';
                 
                 userMenu.style.display = 'flex';
-                userMenu.style.visibility = 'visible';
-                userMenu.style.alignItems = 'center';
-                userMenu.style.gap = '12px';
-                
-                if (userEmail) {
-                    userEmail.textContent = user.email;
-                    Debug.auth.detail('Email element updated', { email: user.email });
-                }
                 
                 // Restore sign out functionality for authenticated users
                 const signOutBtn = userMenu.querySelector('#signOutBtn');
@@ -530,24 +624,14 @@ export const authUI = {
                 }
                 
             } else if (isGuestUser) {
-                // Guest user - show user menu with guest ID
+                // Guest user - show user menu
                 const guestId = user.uid.slice(-6).toUpperCase();
                 Debug.auth.step('GUEST USER CONFIRMED');
                 Debug.auth.detail('Guest ID', { guestId });
                 
                 authButton.style.display = 'none';
-                authButton.style.visibility = 'hidden';
                 
                 userMenu.style.display = 'flex';
-                userMenu.style.visibility = 'visible';
-                userMenu.style.alignItems = 'center';
-                userMenu.style.gap = '12px';
-                
-                if (userEmail) {
-                    userEmail.textContent = `Guest: ${guestId}`;
-                    userEmail.style.color = '#888';
-                    Debug.auth.detail('Guest ID element updated', { guestId });
-                }
                 
                 // Update sign out button text for guest
                 const signOutBtn = userMenu.querySelector('#signOutBtn');
@@ -569,10 +653,8 @@ export const authUI = {
             Debug.auth.detail('No user - showing sign in button');
             
             authButton.style.display = 'block';
-            authButton.style.visibility = 'visible';
             
             userMenu.style.display = 'none';
-            userMenu.style.visibility = 'hidden';
             
             authButton.textContent = 'Sign In';
         }

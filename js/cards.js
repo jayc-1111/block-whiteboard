@@ -1,3 +1,17 @@
+// Helper function to get card title text
+function getCardTitleText(card) {
+    const cardTitle = card.querySelector('.card-title');
+    if (!cardTitle) return '';
+    
+    // If we have a titleTextElement (our span), use its textContent
+    if (cardTitle.titleTextElement) {
+        return cardTitle.titleTextElement.textContent;
+    }
+    
+    // Fallback to the card title's text content
+    return cardTitle.textContent;
+}
+
 // Card management
 function createCardSlot() {
     const slot = document.createElement('div');
@@ -49,15 +63,41 @@ function addCardToCategory(categoryOrIndex, title = 'New Card', content = null, 
     card.id = cardId;
     card.dataset.cardId = cardId;
 
+    // Create container for SVG and title
+    const titleContainer = document.createElement('div');
+    titleContainer.className = 'card-title-container';
+    
+    // Create file icon SVG
+    const fileIcon = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    fileIcon.className = 'card-title-icon';
+    fileIcon.setAttribute('width', '16');
+    fileIcon.setAttribute('height', '16');
+    fileIcon.setAttribute('viewBox', '0 0 24 24');
+    fileIcon.setAttribute('fill', 'currentColor');
+    fileIcon.innerHTML = '<path fill-rule="evenodd" d="M9 2.221V7H4.221a2 2 0 0 1 .365-.5L8.5 2.586A2 2 0 0 1 9 2.22ZM11 2v5a2 2 0 0 1-2 2H4v11a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2h-7Z" clip-rule="evenodd"/>';
+    
     const cardTitle = document.createElement('div');
     cardTitle.className = 'card-title';
     cardTitle.contentEditable = true;
-    cardTitle.textContent = title;
-    cardTitle.dataset.placeholder = title;
+    
+    // Create text span
+    const titleText = document.createElement('span');
+    titleText.textContent = title;
+    titleText.dataset.placeholder = title;
+    
+    // Add icon and text to container
+    titleContainer.appendChild(fileIcon);
+    cardTitle.appendChild(titleText);
+    titleContainer.appendChild(cardTitle);
+    
+    // Store reference to text element for later use
+    cardTitle.titleTextElement = titleText;
 
     cardTitle.addEventListener('focus', function(e) {
         e.stopPropagation();
-        if (this.textContent === this.dataset.placeholder) {
+        if (this.titleTextElement && this.titleTextElement.textContent === this.titleTextElement.dataset.placeholder) {
+            this.titleTextElement.textContent = '';
+        } else if (this.textContent === this.dataset.placeholder) {
             this.textContent = '';
         }
     });
@@ -66,10 +106,16 @@ function addCardToCategory(categoryOrIndex, title = 'New Card', content = null, 
     cardTitle.addEventListener('paste', function(e) {
         e.preventDefault();
         const text = (e.clipboardData || window.clipboardData).getData('text/plain');
-        document.execCommand('insertText', false, text);
+        if (this.titleTextElement) {
+            this.titleTextElement.textContent = text;
+        } else {
+            document.execCommand('insertText', false, text);
+        }
     });
     cardTitle.addEventListener('blur', function() {
-        if (this.textContent.trim() === '') {
+        if (this.titleTextElement && this.titleTextElement.textContent.trim() === '') {
+            this.titleTextElement.textContent = this.titleTextElement.dataset.placeholder;
+        } else if (this.textContent.trim() === '') {
             this.textContent = this.dataset.placeholder;
         }
         // Save after editing card title
@@ -108,7 +154,7 @@ function addCardToCategory(categoryOrIndex, title = 'New Card', content = null, 
         card.dataset.categoryId = category.element.id;
     }
 
-    card.appendChild(cardTitle);
+    card.appendChild(titleContainer);
     card.appendChild(cardContent);
 
     const hoverOverlay = document.createElement('div');
@@ -501,7 +547,7 @@ function expandCard(card) {
         e.stopPropagation();
         showConfirmDialog(
             'Remove Card',
-            `Are you sure you want to remove "${card.querySelector('.card-title').textContent}"?`,
+            `Are you sure you want to remove "${getCardTitleText(card)}"?`,
             () => {
                 collapseCard(card);
                 deleteCard(card);
@@ -734,7 +780,6 @@ function createBookmarkCard(title, description, url, date, imageData, bookmarkIn
     titleLink.href = url;
     titleLink.target = '_blank';
     titleLink.textContent = title;
-    titleLink.style.cssText = 'text-decoration: none;';
     cardTitle.appendChild(titleLink);
     
     const cardDesc = document.createElement('p');
@@ -1085,13 +1130,40 @@ function collapseCard(card) {
         // Get the title from header and restore it to card
         const titleInHeader = expandedWrapper.querySelector('.expanded-card-header .card-title');
         if (titleInHeader) {
-            // Find where to insert title (before card-content)
-            const cardContent = card.querySelector('.card-content');
-            if (cardContent) {
-                card.insertBefore(titleInHeader, cardContent);
-            } else {
-                card.appendChild(titleInHeader);
+            // Find or recreate the title container to maintain flex column layout
+            let titleContainer = card.querySelector('.card-title-container');
+            
+            if (!titleContainer) {
+                // Recreate the title container if it's missing
+                titleContainer = document.createElement('div');
+                titleContainer.className = 'card-title-container';
+                
+                // Recreate the file icon SVG
+                const fileIcon = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+                fileIcon.className = 'card-title-icon';
+                fileIcon.setAttribute('width', '16');
+                fileIcon.setAttribute('height', '16');
+                fileIcon.setAttribute('viewBox', '0 0 24 24');
+                fileIcon.setAttribute('fill', 'currentColor');
+                fileIcon.innerHTML = '<path fill-rule="evenodd" d="M9 2.221V7H4.221a2 2 0 0 1 .365-.5L8.5 2.586A2 2 0 0 1 9 2.22ZM11 2v5a2 2 0 0 1-2 2H4v11a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2h-7Z" clip-rule="evenodd"/>';
+                
+                titleContainer.appendChild(fileIcon);
+                
+                // Find where to insert the container (before card-content and hover-overlay)
+                const cardContent = card.querySelector('.card-content');
+                const hoverOverlay = card.querySelector('.card-hover-overlay');
+                
+                if (hoverOverlay) {
+                    card.insertBefore(titleContainer, hoverOverlay);
+                } else if (cardContent) {
+                    card.insertBefore(titleContainer, cardContent);
+                } else {
+                    card.appendChild(titleContainer);
+                }
             }
+            
+            // Add the title back to the container (after the icon)
+            titleContainer.appendChild(titleInHeader);
         }
         
         // Remove the entire expanded wrapper and its contents

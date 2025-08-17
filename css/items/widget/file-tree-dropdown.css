@@ -5,7 +5,7 @@
     position: absolute;
     left: 100%;
     top: 0;
-    background: #0a0a0a; /* Same as toolbar */
+    background: #131313; /* Same as toolbar */
     border-radius: 8px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
     padding: 16px;
@@ -117,17 +117,13 @@
 /* Icons */
 .folder-icon, .file-icon {
     flex-shrink: 0;
-    fill: #3b82f6;
 }
 
 .file-icon {
-    fill: #9ca3af;
+    stroke: #9ca3af;
+    fill: none;
 }
 
-/* Folder changes color when open */
-.file-tree details[open] > summary .folder-icon {
-    fill: #60a5fa;
-}
 
 /* Category link for glow navigation */
 .category-link {
@@ -196,7 +192,7 @@
 }
 
 .file-item:hover .file-icon {
-    fill: #3b82f6;
+    stroke: #3b82f6;
 }
 
 /* Empty state */
@@ -230,12 +226,10 @@
     color: #9ca3af;
 }
 
-.light-mode .folder-icon {
-    fill: #3b82f6;
-}
 
 .light-mode .file-icon {
-    fill: #6b7280;
+    stroke: #6b7280;
+    fill: none;
 }
 
 .light-mode .item-count {

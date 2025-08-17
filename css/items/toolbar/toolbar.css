@@ -21,8 +21,7 @@
 
 /* Default dark theme */
 body:not(.frutiger-mode):not(.light-mode):not(.night-mode):not(.picnic-mode):not(.with-background) #topBar {
-    background: #0a0a0a;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+    background: #131313;
     border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
@@ -35,7 +34,6 @@ body.night-mode #topBar {
 
 body.picnic-mode #topBar {
     background: #0a0a0a;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
     border: 1px solid rgba(255, 255, 255, 0.05);
 }
 

@@ -1,0 +1,42 @@
+/* File icon for card titles */
+.card-title-icon {
+    width: 16px;
+    height: 16px;
+    margin-bottom: 4px;
+    flex-shrink: 0;
+    fill: currentColor;
+    display: block;  /* Ensure proper block display */
+    margin-left: auto;  /* Center horizontally */
+    margin-right: auto;  /* Center horizontally */
+}
+
+/* New flexbox container for SVG above card titles */
+.card-title-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    padding: 4px 0; /* Add some padding to prevent touching edges */
+}
+
+.card-title-container .card-title-icon {
+    margin-right: 0;
+    margin-bottom: 4px;
+}
+
+/* Hide file icon in expanded cards */
+.card.expanded .card-title-icon {
+    display: none;
+}
+
+/* Hide file icon in expanded card title */
+.card.expanded .card-title .card-title-icon {
+    display: none;
+}
+
+/* Specific rule to hide the file-svg icon in expanded card header */
+.expanded-card-header .card-title svg {
+    display: none;
+}
