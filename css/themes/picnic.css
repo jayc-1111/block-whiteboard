@@ -7,7 +7,7 @@
 .picnic-mode #grid {
     position: relative;
     background: 
-        radial-gradient(circle, rgba(255, 255, 255, 0.2) var(--grid-dot-size), transparent var(--grid-dot-size)),
+        /* Grid will be styled via JavaScript */
         repeating-linear-gradient(
             45deg,
             transparent 0,
@@ -24,7 +24,7 @@
         ),
         linear-gradient(90deg, #009ffd, #2a2a72);
     background-size: 
-        var(--grid-spacing) var(--grid-spacing),
+        27px 27px,
         auto,
         auto,
         auto;

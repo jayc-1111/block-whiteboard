@@ -215,38 +215,38 @@
 
 /* Light mode adjustments */
 .light-mode #hamburgerMenu .hamburger-btn {
-    background: #fff;
-    border-color: #cbd5e1;
+    background: #F5F7FB;
+    border: 1px solid #F5F7FB;
 }
 
 .light-mode #hamburgerMenu .hamburger-btn:hover {
-    background: #f3f4f6;
-    border-color: #9ca3af;
+    background: #ECECEC;
+    border-color: #ECECEC;
 }
 
 .light-mode #hamburgerMenu .hamburger-btn svg {
-    color: #333;
+    color: #7f7f7f;
 }
 
 .light-mode .hamburger-dropdown {
-    background: #fff;
-    border: 1px solid #e5e7eb;
+    background: #FFFFFF;
+    border: 1px solid #F5F7FB;
 }
 
 .light-mode .hamburger-item {
-    color: #333;
+    color: #7f7f7f;
 }
 
 .light-mode .hamburger-item:hover {
-    background: #f3f4f6;
+    background: #F5F7FB;
 }
 
 .light-mode .hamburger-item svg {
-    stroke: #333;
+    stroke: #7f7f7f;
 }
 
 .light-mode .hamburger-separator {
-    background: #e5e7eb;
+    background: #F5F7FB;
 }
 
 /* Settings Menu Styles - Working solution */
@@ -342,31 +342,31 @@
 
 /* Light mode settings menu */
 .light-mode .settings-menu {
-    background: #fff;
-    border: 1px solid #e5e7eb;
+    background: #FFFFFF;
+    border: 1px solid #F5F7FB;
 }
 
 .light-mode .settings-option {
-    color: #333;
+    color: #7f7f7f;
 }
 
 .light-mode .settings-option:hover {
-    background: #f3f4f6;
+    background: #F5F7FB;
 }
 
 .light-mode .settings-option.separator {
-    background: #e5e7eb;
+    background: #F5F7FB;
 }
 
 .light-mode .customization-submenu {
-    background: #fff;
-    border: 1px solid #e5e7eb;
+    background: #FFFFFF;
+    border: 1px solid #F5F7FB;
 }
 
 .light-mode .bg-option {
-    color: #333;
+    color: #7f7f7f;
 }
 
 .light-mode .bg-option:hover {
-    background: #f3f4f6;
+    background: #F5F7FB;
 }

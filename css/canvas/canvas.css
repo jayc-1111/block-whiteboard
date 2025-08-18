@@ -4,7 +4,7 @@
     height: 100vh;
     position: relative;
     overflow: auto;
-    background: none, #191919;
+    background: #191919;
     background-attachment: fixed;
     background-size: cover;
     background-position: center;
@@ -16,7 +16,7 @@
     height: 2000px;
     min-width: 100%;
     min-height: 100%;
-    background-image: radial-gradient(circle, rgba(255,255,255,0.035) 2px, transparent 2px);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='27' height='27' viewBox='0 0 27 27'%3E%3Cpath d='M13.5 11.5a2 2 0 1 1 -1.998 2.087l-.002 -.087l.002 -.087a2 2 0 0 1 1.998 -1.913z' fill='rgba(255,255,255,0.035)'/%3E%3C/svg%3E");
     background-size: 27px 27px;
     background-position: 0 0;
 }

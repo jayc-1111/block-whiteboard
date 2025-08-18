@@ -105,7 +105,6 @@
     visibility: hidden;
     transition: opacity 0.3s ease, visibility 0.3s ease;
     flex-direction: column;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
     min-width: 220px;
     display: flex;
 }
@@ -173,7 +172,6 @@
     display: flex;
     flex-direction: column;
     gap: 4px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
     border: 1px solid rgba(255, 255, 255, 0.05);
     min-width: 150px;
     pointer-events: none;
@@ -243,7 +241,6 @@
     width: 220px;
     background: #0a0a0a;
     border-radius: 12px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
     border: 1px solid rgba(255, 255, 255, 0.05);
     opacity: 0;
     visibility: hidden;
@@ -334,7 +331,6 @@
     opacity: 0;
     visibility: hidden;
     transition: opacity 0.3s ease, visibility 0.3s ease;
-    box-shadow: 0 4px 22px rgba(0, 0, 0, 0.4);
     z-index: 1000002;
     display: flex;
     flex-direction: column;
@@ -377,17 +373,37 @@
     transform: scale(0.99);
 }
 
-/* Light mode dropdown styles */
+/* Light mode dropdown overrides */
+.light-mode .board-dropdown {
+    background: #FFFFFF;
+    border: 1px solid #F5F7FB;
+}
+
+.light-mode .settings-menu {
+    background: #FFFFFF;
+    border: 1px solid #F5F7FB;
+}
+
+.light-mode .customization-submenu {
+    background: #FFFFFF;
+    border: 1px solid #F5F7FB;
+}
+
+.light-mode .file-structure-dropdown {
+    background: #FFFFFF;
+    border: 1px solid #F5F7FB;
+}
+
 .light-mode .add-dropdown-menu {
-    background: #fff;
-    border: 1px solid #e5e7eb;
+    background: #FFFFFF;
+    border: 1px solid #F5F7FB;
 }
 
 .light-mode .dropdown-item {
-    color: #333;
+    color: #7f7f7f;
 }
 
 .light-mode .dropdown-item:hover {
-    background-color: #5353ff;
-    color: #ffffff;
+    background-color: #F5F7FB;
+    color: #7f7f7f;
 }

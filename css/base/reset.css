@@ -10,7 +10,7 @@
 /* Base body styles */
 body {
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    background: var(--canvas-bg);
+    background: #191919;
     color: #707070;
     overflow: hidden;
     height: 100vh;
@@ -27,16 +27,16 @@ button {
     height: 36px;
     border-radius: 10px;
     padding: 0 16px;
-    color: var(--toolbar-button-text-color);
+    color: #7e8590;
     border: none;
     cursor: pointer;
-    background: var(--toolbar-button-background);
+    background: transparent;
     transition: all 0.15s ease;
     box-shadow: none;
 }
 
 button:hover {
-    background: var(--toolbar-button-background-hover);
+    background: #5353ff;
     transform: translateY(-1px);
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 }

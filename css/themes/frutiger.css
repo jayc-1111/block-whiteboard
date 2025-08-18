@@ -11,8 +11,8 @@
 /* Grid with subtle dot pattern and frosted overlay */
 .frutiger-mode #grid {
     position: relative;
-    background-image: radial-gradient(circle, rgba(255, 255, 255, 0.3) var(--grid-dot-size), transparent var(--grid-dot-size));
-    background-size: var(--grid-spacing) var(--grid-spacing);
+    /* Grid will be styled via JavaScript */
+    background-size: 27px 27px;
 }
 
 /* Frosted glass overlay that covers the entire canvas */

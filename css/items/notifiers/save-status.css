@@ -46,7 +46,7 @@
 }
 
 .save-status.saving {
-    background: var(--notification-button-1);
+    background: #3B82F6;
 }
 
 .save-status.saved {
@@ -125,7 +125,7 @@
 }
 
 .guest-indicator {
-    color: var(--text-muted);
+    color: #718096;
     font-style: italic;
     font-size: 0.9em;
     font-weight: 400;
@@ -133,7 +133,7 @@
 }
 
 .user-email {
-    color: var(--text-secondary);
+    color: #4A5568;
     font-size: 0.9em;
     font-weight: 400;
 }

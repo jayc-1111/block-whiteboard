@@ -1,6 +1,6 @@
 /* Notification Button Base Class - Reusable across stylesheets */
 .notification-button-base {
-    background: var(--notification-button-1);
+    background: #3B82F6;
     color: white;
     padding: 10px 20px;
     border-radius: 8px;

@@ -1,8 +1,24 @@
 // Theme management
+
+// Grid dot colors for each theme
+const gridDotColors = {
+    none: 'rgba(233, 11, 11, 0.04)',      // Default dark theme
+    night: 'rgba(255,255,255,0.025)',     // Even more subtle for night
+    light: 'rgba(100,100,100,0.15)',      // Dark gray for light theme
+    frutiger: 'rgba(255,255,255,0.3)',    // Bright white for glass effect
+    picnic: 'rgba(255,255,255,0.2)',      // White for picnic
+    lollipop: 'rgba(255,255,255,0.2)'     // White for lollipop
+};
+
+// Function to generate grid SVG with custom color
+function generateGridSVG(color) {
+    return `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='27' height='27' viewBox='0 0 27 27'%3E%3Cpath d='M13.5 11.5a2 2 0 1 1 -1.998 2.087l-.002 -.087l.002 -.087a2 2 0 0 1 1.998 -1.913z' fill='${encodeURIComponent(color)}'/%3E%3C/svg%3E")`;
+}
+
 const backgrounds = {
     none: 'none',
     night: 'none',
-    light: 'url("https://images.unsplash.com/photo-1707209857286-62b9be358128?q=80&w=3018&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D")',
+    light: 'none',
     lollipop: 'url("https://images.unsplash.com/photo-1654358101344-b58696575d26?q=80&w=3870&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D")',
     frutiger: 'url("https://images.unsplash.com/photo-1743220879914-14adc4afdaa3?q=80&w=3540&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D")',
     picnic: 'none'
@@ -36,8 +52,48 @@ function setBackground(theme) {
         document.body.classList.add('with-background');
     }
     
-    const root = document.documentElement;
-    root.style.setProperty('--bg-image', backgrounds[theme] || backgrounds.none);
+    // Direct background setting - no CSS variables
+    const whiteboard = document.getElementById('whiteboard');
+    if (whiteboard) {
+        const bgImage = backgrounds[theme] || backgrounds.none;
+        if (bgImage === 'none') {
+            whiteboard.style.backgroundImage = '';
+        } else {
+            whiteboard.style.backgroundImage = bgImage;
+        }
+    }
+    
+    // Update grid dot color
+    const grid = document.getElementById('grid');
+    if (grid) {
+        const dotColor = gridDotColors[theme] || gridDotColors.none;
+        
+        // Special handling for picnic mode with multiple backgrounds
+        if (theme === 'picnic') {
+            grid.style.background = `
+                ${generateGridSVG(dotColor)},
+                repeating-linear-gradient(
+                    45deg,
+                    transparent 0,
+                    transparent 35px,
+                    rgba(255, 255, 255, 0.15) 35px,
+                    rgba(255, 255, 255, 0.15) 70px
+                ),
+                repeating-linear-gradient(
+                    -45deg,
+                    transparent 0,
+                    transparent 35px,
+                    rgba(255, 255, 255, 0.15) 35px,
+                    rgba(255, 255, 255, 0.15) 70px
+                ),
+                linear-gradient(90deg, #009ffd, #2a2a72)
+            `;
+            grid.style.backgroundSize = '27px 27px, auto, auto, auto';
+            grid.style.backgroundAttachment = 'local';
+        } else {
+            grid.style.backgroundImage = generateGridSVG(dotColor);
+        }
+    }
     
     const bgOptions = document.querySelectorAll('.bg-option');
     bgOptions.forEach(opt => opt.classList.remove('active'));

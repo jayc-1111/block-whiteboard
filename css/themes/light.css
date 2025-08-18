@@ -1,374 +1,807 @@
-/* Light theme */
-
+/* Light Theme - Clean & Modern */
 .light-mode {
-    background: #F5F7F9;
-    --canvas-dot-color: rgba(255, 255, 255, 0.7);
+    /* No CSS variables - using direct color values */
 }
 
-.light-mode #whiteboard {
-    background: var(--bg-image), #F5F7F9;
+.light-mode .board-dropdown {
+    background-color: #fff;
 }
-
-.light-mode #grid {
-    background-color: #e3e2e6;
-    background-image: radial-gradient(circle, rgba(231, 231, 231, 0.6) var(--grid-dot-size), transparent var(--grid-dot-size));
-    background-size: var(--grid-spacing) var(--grid-spacing);
-}
-
-.light-mode .category {
+.light-mode .board-dropdown .list {
     background: #fff;
-    border: 1px solid #EFF1F3;
-    box-shadow: none;
 }
 
 .light-mode .card-slot {
-    background: #FAFBFC;
-    border-color: #ddd;
+    border: 1px solid #fff;
+    background-color: #fff;
 }
 
+/* Canvas and Grid */
+.light-mode #whiteboard {
+    /* Don't override background - let the image show through */
+    /* background is set via --bg-image variable in theme.js */
+    background: #F4F5FF;
+}
+
+.light-mode #grid {
+    /* Grid will be styled via JavaScript */
+    background-color: transparent !important;
+}
+
+.light-mode .canvas-header {
+    color: #5c5c5c;
+    background: #fff;
+}
+
+/* Categories */
+.light-mode .category {
+    background: #FFFFFF !important;
+    border: 2px solid #ffffff !important;
+    box-shadow: none !important;
+}
+
+.light-mode .category-header {
+    background: #FFFFFF !important;
+    border-bottom: 1px solid #ffffff !important;
+}
+
+.light-mode .category-title {
+    color: #5c5c5c !important;
+}
+
+.light-mode .category-title::placeholder {
+    color: #5c5c5c !important;
+}
+
+.light-mode .toggle-btn {
+    background: #FFFFFF !important;
+    color: #5c5c5c !important;
+    border: 1px solid #ffffff !important;
+}
+
+.light-mode .toggle-btn:hover {
+    background: #E8EBF0 !important;
+    border-color: #CBD5E0 !important;
+}
+
+/* Cards */
 .light-mode .card {
-    background: #F5F7F9;
-    border-color: #ddd;
-    box-shadow: none;
+    background: #F8F9FF !important;
+    border: none !important;
+    box-shadow: none !important;
 }
 
 .light-mode .card:hover {
     box-shadow: none !important;
-    background: #F0F2F4;
-    border-color: #d5d5d5;
+    border-color: #CBD5E0 !important;
 }
 
-/* Light mode card hover overlay */
+.light-mode .card-title {
+    color: #5c5c5c !important;
+}
+
+.light-mode .card-title-icon {
+    fill: #5c5c5c !important;
+}
+
+.light-mode .card-content {
+    color: #5c5c5c !important;
+}
+
 .light-mode .card-hover-overlay {
-    background: rgba(200, 200, 200, 0.95);
+    background: rgba(26, 32, 44, 0.85) !important;
 }
 
-.light-mode .card:hover .card-hover-overlay {
-    background: rgba(200, 200, 200, 0.95);
+.light-mode .card-hover-overlay svg {
+    stroke: #FFFFFF !important;
 }
 
-/* Light mode category buttons */
-.light-mode .category-header button {
-    background: #fff;
-    color: #333;
-    border: none;
-    box-shadow: none;
+/* Expanded Cards */
+.light-mode .card.expanded {
+    background: #FFFFFF !important;
+    box-shadow: none !important;
 }
 
-.light-mode .category-header button:hover {
-    background: #f5f5f5;
-    box-shadow: none;
+.light-mode .expanded-card-overlay {
+    background: rgba(0, 0, 0, 0.3) !important;
 }
 
-.light-mode .category-title:focus {
-    background: #f0f0f0;
+.light-mode .expanded-card-content {
+    background: #FFFFFF !important;
 }
 
-/* Light mode toolbar styling */
-.light-mode #topBar {
-    background: #fff;
-    border: 1px solid #e0e8f5;
+.light-mode .expanded-card-header {
+    background: #FFFFFF !important;
+    border-bottom: 1px solid #ffffff !important;
 }
 
-/* Light mode toolbar buttons */
-.light-mode #toolbar button {
-    background: #fff;
-    color: #333;
-    border: none;
-    border-radius: 8px;
-    padding: 8px 12px;
-    font-size: 12px;
-    font-weight: 600;
+.light-mode .expanded-card-header .card-title {
+    color: #5c5c5c !important;
 }
 
-.light-mode #toolbar button:hover {
-    background: #f5f5f5;
-    transform: translateY(-1px);
+.light-mode .expanded-card-buttons {
+    background: #FFFFFF !important;
+    border-bottom: 1px solid #ffffff !important;
 }
 
-.light-mode #toolbar .save-button {
-    background: #10b981 !important;
-    color: white !important;
+.light-mode .expanded-card-main {
+    background: #FFFFFF !important;
+}
+
+/* Sections */
+.light-mode .card-section {
+    background: #F5F7FB !important;
+    border: 1px solid #ffffff !important;
+}
+
+.light-mode .section-title {
+    background: #FFFFFF !important;
+    color: #5c5c5c !important;
+    border: 1px solid #ffffff !important;
+}
+
+/* Bookmarks */
+.light-mode .bookmark-card {
+    background: #FFFFFF !important;
+    box-shadow: none !important;
+}
+
+.light-mode .bookmark-card:hover {
+    box-shadow: none !important;
+}
+
+.light-mode .bookmark-title,
+.light-mode .bookmark-title a {
+    color: #5c5c5c !important;
+}
+
+.light-mode .bookmark-description {
+    color: #5c5c5c !important;
+}
+
+.light-mode .bookmark-date {
+    color: #5c5c5c !important;
+}
+
+.light-mode .bookmark-image-placeholder {
+    background: #E8EBF0 !important;
+}
+
+/* Toolbar */
+.light-mode .toolbar {
+    background: #FFFFFF !important;
+    border-bottom: 1px solid #ffffff !important;
+    box-shadow: none !important;
+}
+
+.light-mode .toolbar button {
+    background: #FFFFFF !important;
+    color: #5c5c5c !important;
+    border: 1px solid #ffffff !important;
+}
+
+.light-mode .toolbar button:hover {
+    background: #E8EBF0 !important;
+    border-color: #CBD5E0 !important;
+}
+
+.light-mode .toolbar button.active {
+    background: #E8EBF0 !important;
+    border-color: #CBD5E0 !important;
+}
+
+.light-mode .board-selector {
+    background: #FFFFFF !important;
+    color: #5c5c5c !important;
+    border: 1px solid #ffffff !important;
+}
+
+.light-mode .board-selector:hover {
+    background: #E8EBF0 !important;
+}
+
+.light-mode .board-selector option {
+    background: #FFFFFF !important;
+    color: #5c5c5c !important;
+}
+
+/* Modals and Dialogs */
+.light-mode .modal,
+.light-mode .dialog {
+    background: #FFFFFF !important;
+    color: #5c5c5c !important;
+    box-shadow: none !important;
+}
+
+.light-mode .modal-overlay,
+.light-mode .dialog-overlay {
+    background: rgba(0, 0, 0, 0.3) !important;
+}
+
+.light-mode .modal-header,
+.light-mode .dialog-header {
+    border-bottom: 1px solid #ffffff !important;
+}
+
+.light-mode .modal-footer,
+.light-mode .dialog-footer {
+    border-top: 1px solid #ffffff !important;
+}
+
+/* Buttons */
+.light-mode .btn-primary,
+.light-mode .save-card-btn {
+    background: #3B82F6 !important;
+    color: #FFFFFF !important;
     border: none !important;
 }
 
-.light-mode #toolbar .save-button:hover {
-    background: #059669 !important;
+.light-mode .btn-primary:hover,
+.light-mode .save-card-btn:hover {
+    background: #2563EB !important;
 }
 
-/* Light mode settings button */
-.light-mode .setting-btn {
-    background: #fff;
-    color: #333;
-    border: none;
-    border-radius: 8px;
-    padding: 8px 12px;
+.light-mode .btn-danger,
+.light-mode .delete-card-btn {
+    background: #EF4444 !important;
+    color: #FFFFFF !important;
+    border: none !important;
 }
 
-.light-mode .setting-btn:hover {
-    background: #f5f5f5;
+.light-mode .btn-danger:hover,
+.light-mode .delete-card-btn:hover {
+    background: #DC2626 !important;
 }
 
-.light-mode .setting-btn span {
-    color: #333 !important;
+.light-mode .btn-secondary {
+    background: #E8EBF0 !important;
+    color: #5c5c5c !important;
+    border: 1px solid #ffffff !important;
 }
 
-/* Light mode expand space buttons */
-.light-mode .expand-space-btn {
-    background: rgba(255, 255, 255, 0.9);
+.light-mode .btn-secondary:hover {
+    background: #ffffff !important;
 }
 
-.light-mode .expand-space-btn:hover {
-    background: rgba(255, 255, 255, 1);
+/* Quill Editor */
+.light-mode .ql-toolbar {
+    background: #FFFFFF !important;
+    border: 1px solid #ffffff !important;
 }
 
-.light-mode .expand-space-btn svg {
-    color: #333;
+.light-mode .ql-toolbar button {
+    color: #5c5c5c !important;
 }
 
-.light-mode .category-title,
-.light-mode .card-title {
-    color: #333;
+.light-mode .ql-toolbar button:hover {
+    background: #E8EBF0 !important;
 }
 
-.light-mode .card-content,
-.light-mode .bullet-item::before {
-    color: #666;
+.light-mode .ql-toolbar button.ql-active {
+    background: #E8EBF0 !important;
+    color: #3B82F6 !important;
 }
 
-.light-mode .super-header {
-    color: #4a90e2;
+.light-mode .ql-editor {
+    background: #FFFFFF !important;
+    color: #5c5c5c !important;
 }
 
-/* Light mode UI adjustments */
-.light-mode .file-structure-trigger {
-    background: white;
+.light-mode .ql-editor.ql-blank::before {
+    color: #5c5c5c !important;
 }
 
-.light-mode .file-structure-trigger:hover {
-    background: #f5f5f5;
+/* Context Menu */
+.light-mode .context-menu {
+    background: #FFFFFF !important;
+    border: 1px solid #ffffff !important;
+    box-shadow: none !important;
 }
 
-.light-mode .file-structure-trigger p {
-    color: #333;
+.light-mode .context-menu-item {
+    color: #5c5c5c !important;
 }
 
-.light-mode .file-structure-trigger svg {
-    stroke: #333;
+.light-mode .context-menu-item:hover {
+    background: #E8EBF0 !important;
+}
+
+/* Dropdown Menus */
+.light-mode .dropdown-menu {
+    background: #FFFFFF !important;
+    border: 1px solid #ffffff !important;
+    box-shadow: none !important;
+}
+
+.light-mode .dropdown-menu-item {
+    color: #5c5c5c !important;
+}
+
+.light-mode .dropdown-menu-item:hover {
+    background: #E8EBF0 !important;
+}
+
+/* Settings Panel */
+.light-mode .settings-panel {
+    background: #FFFFFF !important;
+    border: 1px solid #ffffff !important;
+}
+
+.light-mode .settings-item {
+    color: #5c5c5c !important;
+}
+
+.light-mode .settings-item:hover {
+    background: #E8EBF0 !important;
+}
+
+/* Notifications */
+.light-mode .notification {
+    background: #FFFFFF !important;
+    border: 1px solid #ffffff !important;
+    color: #5c5c5c !important;
+    box-shadow: none !important;
+}
+
+/* Save Status Indicator */
+.light-mode .save-status {
+    background: #FFFFFF !important;
+    color: #5c5c5c !important;
+    border: 1px solid #ffffff !important;
+}
+
+/* Selection Box */
+.light-mode .selection-box {
+    border-color: #3B82F6 !important;
+    background: rgba(59, 130, 246, 0.1) !important;
+}
+
+/* ===================================
+   TOOLBAR - Match category styling
+   =================================== */
+.light-mode #topBar {
+    background: #FFFFFF !important;
+    border: 2px solid #ffffff !important;
+    box-shadow: none !important;
+}
+
+.light-mode #toolbar button,
+.light-mode .add-button,
+.light-mode .setting-btn,
+.light-mode .save-button,
+.light-mode #drawingModeBtn,
+.light-mode #eraserModeBtn {
+    background: transparent !important;
+    color: #5c5c5c !important;
+    border: none !important;
+}
+
+.light-mode #toolbar button:hover,
+.light-mode .add-button:hover,
+.light-mode .setting-btn:hover,
+.light-mode .save-button:hover,
+.light-mode #drawingModeBtn:hover:not(.active),
+.light-mode #eraserModeBtn:hover:not(.active) {
+    background: #E8EBF0 !important;
+    color: #5c5c5c !important;
+    transform: translateY(-1px);
+}
+
+.light-mode #drawingModeBtn.active,
+.light-mode #eraserModeBtn.active {
+    background: #3B82F6 !important;
+    color: #FFFFFF !important;
+}
+
+/* File & Bookmark buttons in toolbar */
+.light-mode .file-structure-trigger,
+.light-mode .bookmarks-trigger {
+    background: #FFFFFF !important;
+    border: 2px solid #ffffff !important;
+    color: #5c5c5c !important;
+}
+
+.light-mode .file-structure-trigger:hover,
+.light-mode .bookmarks-trigger:hover {
+    background: #E8EBF0 !important;
+    border-color: #E8EBF0 !important;
+}
+
+.light-mode .file-structure-trigger p,
+.light-mode .bookmarks-trigger p {
+    color: #5c5c5c !important;
+}
+
+/* ===================================
+   HAMBURGER MENU - Match category styling
+   =================================== */
+.light-mode #hamburgerMenu .hamburger-btn {
+    background: #FFFFFF !important;
+    border: 2px solid #ffffff !important;
+    box-shadow: none !important;
+}
+
+.light-mode #hamburgerMenu .hamburger-btn:hover {
+    background: #E8EBF0 !important;
+    border-color: #E8EBF0 !important;
+}
+
+.light-mode #hamburgerMenu .hamburger-btn svg {
+    color: #5c5c5c !important;
+}
+
+.light-mode .hamburger-dropdown {
+    background: #FFFFFF !important;
+    border: 2px solid #ffffff !important;
+    box-shadow: none !important;
+}
+
+.light-mode .hamburger-item {
+    color: #5c5c5c !important;
+}
+
+.light-mode .hamburger-item:hover {
+    background: #E8EBF0 !important;
+}
+
+.light-mode .hamburger-item svg {
+    stroke: #5c5c5c !important;
+}
+
+.light-mode .hamburger-separator {
+    background: #E8EBF0 !important;
+}
+
+/* Hamburger Settings Menu */
+.light-mode #settingsItem .settings-menu {
+    background: #FFFFFF !important;
+    border: 2px solid #ffffff !important;
+    box-shadow: none !important;
+}
+
+.light-mode .settings-option {
+    color: #5c5c5c !important;
+}
+
+.light-mode .settings-option:hover {
+    background: #E8EBF0 !important;
+}
+
+.light-mode .settings-option.separator {
+    background: #E8EBF0 !important;
+}
+
+.light-mode .customization-submenu {
+    background: #FFFFFF !important;
+    border: 2px solid #ffffff !important;
+    box-shadow: none !important;
+}
+
+.light-mode .bg-option {
+    color: #5c5c5c !important;
+}
+
+.light-mode .bg-option:hover {
+    background: #E8EBF0 !important;
+    color: #5c5c5c !important;
+}
+
+.light-mode .bg-option.active {
+    background: #3B82F6 !important;
+    color: #FFFFFF !important;
+}
+
+/* Toolbar dropdown menus */
+.light-mode .add-dropdown-menu,
+.light-mode .settings-menu {
+    background: #FFFFFF !important;
+    border: 2px solid #ffffff !important;
+    box-shadow: none !important;
+}
+
+.light-mode .dropdown-item {
+    color: #5c5c5c !important;
+}
+
+.light-mode .dropdown-item:hover {
+    background: #E8EBF0 !important;
+    color: #5c5c5c !important;
 }
 
 .light-mode .file-structure-dropdown {
-    background: white;
-    border: 1px solid #e5e7eb;
+    background: #FFFFFF !important;
+    border: 2px solid #ffffff !important;
+    box-shadow: none !important;
 }
 
 .light-mode .file-structure-list li {
-    color: #333;
+    color: #5c5c5c !important;
 }
 
 .light-mode .file-structure-list li:hover {
-    background: #f3f4f6;
-    color: #333;
+    background: #E8EBF0 !important;
+    color: #5c5c5c !important;
 }
 
-.light-mode .file-structure-list li.active {
-    background: #e0e7ff;
-    color: #4338ca;
+.light-mode .file-structure-list li.card-item {
+    color: #718096 !important;
 }
 
-/* Light mode board selector */
-.light-mode #whiteboardSwitcher {
-    background: white;
+/* Auth Container */
+.light-mode .auth-container {
+    background: #FFFFFF !important;
+    border: 1px solid #ffffff !important;
 }
 
-.light-mode #whiteboardSwitcher:hover {
-    background: #f5f5f5;
+.light-mode .auth-container button {
+    background: #E8EBF0 !important;
+    color: #5c5c5c !important;
+    border: 1px solid #ffffff !important;
+}
+
+.light-mode .auth-container button:hover {
+    background: #ffffff !important;
+}
+
+/* Expand Space Buttons */
+.light-mode .expand-space-btn {
+    background: #FFFFFF !important;
+    border: 1px solid #ffffff !important;
+}
+
+.light-mode .expand-space-btn:hover {
+    background: #E8EBF0 !important;
+}
+
+.light-mode .expand-space-btn svg {
+    color: #5c5c5c !important;
+}
+
+/* File Tree */
+.light-mode .file-tree {
+    background: #FFFFFF !important;
+    border: 1px solid #ffffff !important;
+}
+
+.light-mode .file-tree-item {
+    color: #5c5c5c !important;
+}
+
+.light-mode .file-tree-item:hover {
+    background: #E8EBF0 !important;
+}
+
+/* Add Section Button */
+.light-mode .add-section-btn {
+    background: #3B82F6 !important;
+    color: #FFFFFF !important;
+}
+
+.light-mode .add-section-btn:hover {
+    background: #2563EB !important;
+}
+
+/* Dark Mode Toggle Button */
+.light-mode .dark-mode-toggle {
+    background: #E8EBF0 !important;
+    border: 1px solid #ffffff !important;
+}
+
+.light-mode .dark-mode-toggle:hover {
+    background: #ffffff !important;
+}
+
+/* Scrollbar Styling */
+.light-mode ::-webkit-scrollbar {
+    background: #F5F7FB !important;
+}
+
+.light-mode ::-webkit-scrollbar-thumb {
+    background: #ffffff !important;
+    border-radius: 4px;
+}
+
+.light-mode ::-webkit-scrollbar-thumb:hover {
+    background: #CBD5E0 !important;
+}
+
+/* Input Fields */
+.light-mode input,
+.light-mode textarea,
+.light-mode select {
+    background: #FFFFFF !important;
+    color: #5c5c5c !important;
+    border: 1px solid #ffffff !important;
+}
+
+.light-mode input:focus,
+.light-mode textarea:focus,
+.light-mode select:focus {
+    border-color: #3B82F6 !important;
+    outline: none !important;
+    box-shadow: none !important;
+}
+
+.light-mode input::placeholder,
+.light-mode textarea::placeholder {
+    color: #5c5c5c !important;
+}
+
+/* Links */
+.light-mode a {
+    color: #3B82F6 !important;
+}
+
+.light-mode a:hover {
+    color: #2563EB !important;
+}
+
+/* ===================================
+   BOARD SELECTOR (WHITEBOARD SWITCHER)
+   =================================== */
+/* Main board selector button */
+.light-mode .board-selector {
+    background: #FFFFFF !important;
+    border: 2px solid #ffffff !important;
+    color: #5c5c5c !important;
+}
+
+.light-mode .board-selector:hover {
+    background: #E8EBF0 !important;
+    border-color: #E8EBF0 !important;
 }
 
 .light-mode .board-selector-text {
-    color: #333;
+    color: #5c5c5c !important;
 }
 
 .light-mode .board-selector-arrow {
-    color: #333;
+    color: #5c5c5c !important;
 }
 
+/* Board name input */
+.light-mode #boardName {
+    color: #4A5568 !important;
+}
+
+.light-mode #boardName:hover,
+.light-mode #boardName:focus {
+    background: rgba(66, 153, 225, 0.1) !important;
+}
+
+/* Board dropdown menu */
 .light-mode .board-dropdown {
-    background: white;
-    border: 1px solid #e5e7eb;
+    background: #FFFFFF !important;
+    border: 1px solid #E2E8F0 !important;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1) !important;
 }
 
 .light-mode .board-dropdown .element {
-    color: #333;
-}
-
-.light-mode .board-dropdown .element svg {
-    stroke: #333;
+    color: #4A5568 !important;
 }
 
 .light-mode .board-dropdown .element:hover {
-    background: #f3f4f6;
-    color: #333;
-}
-
-.light-mode .board-dropdown .element:hover svg {
-    stroke: #333;
+    background-color: #3B82F6 !important;
+    color: #FFFFFF !important;
 }
 
 .light-mode .board-dropdown .element.active {
-    background: #e0e7ff;
-    color: #4338ca;
+    background-color: rgba(59, 130, 246, 0.15) !important;
+    color: #3B82F6 !important;
 }
 
-.light-mode .board-dropdown .separator {
-    border-top-color: #e5e7eb;
-}
-
-/* Light mode context menu */
-.light-mode .context-menu {
-    background: white;
-    border: 1px solid #e5e7eb;
-}
-
-.light-mode .context-menu .element {
-    color: #333;
-}
-
-.light-mode .context-menu .element svg {
-    stroke: #333;
-}
-
-.light-mode .context-menu .element:hover {
-    background: #f3f4f6;
-    color: #333;
-}
-
-.light-mode .context-menu .element:hover svg {
-    stroke: #333;
-}
-
-.light-mode .context-menu .separator {
-    border-top-color: #e5e7eb;
-}
-
-/* Light mode auth button fixes */
+/* ===================================
+   AUTH BUTTON & USER MENU
+   =================================== */
+/* Sign In button */
 .light-mode .auth-button {
-    background: #40c9ff;
-    color: #000;  /* Black text for visibility on light blue background */
-    border: 1px solid #2ba7dd;
+    background: #FFFFFF !important;
+    border: 2px solid #ffffff !important;
+    color: #5c5c5c !important;
 }
 
 .light-mode .auth-button:hover {
-    background: #2ba7dd;
-    color: #000;
-    border-color: #1e90c7;
+    background: #E8EBF0 !important;
+    border-color: #E8EBF0 !important;
 }
 
-/* Light mode user menu for signed-in state */
+/* User email display */
 .light-mode #userEmail {
-    color: #333;  /* Dark text for light mode */
+    color: #3B82F6 !important;
 }
 
+/* Sign Out button */
 .light-mode #signOutBtn {
-    background: #fff;
-    color: #333;  /* Dark text for visibility */
-    border: 1px solid #ddd;
+    background: transparent !important;
+    border: 2px solid #ffffff !important;
+    color: #5c5c5c !important;
 }
 
 .light-mode #signOutBtn:hover {
-    background: #f5f5f5;
-    border-color: #ccc;
-    color: #000;
+    background: #E8EBF0 !important;
+    border-color: #E8EBF0 !important;
 }
 
-/* Light mode auth modal */
+/* Auth Modal */
 .light-mode .auth-modal {
-    background: #fff;
-    border: 1px solid #e5e7eb;
+    background: #FFFFFF !important;
+    border: 1px solid #E2E8F0 !important;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1) !important;
 }
 
 .light-mode .auth-header {
-    border-bottom: 1px solid #e5e7eb;
+    border-bottom: 1px solid #E2E8F0 !important;
 }
 
 .light-mode .auth-header h2 {
-    color: #333;
+    color: #1A202C !important;
 }
 
 .light-mode .auth-close {
-    color: #666;
+    color: #718096 !important;
 }
 
 .light-mode .auth-close:hover {
-    background: #f5f5f5;
-    color: #333;
+    background: #F5F7FB !important;
+    color: #4A5568 !important;
 }
 
 .light-mode .auth-tab {
-    background: #fff;
-    border-color: #ddd;
-    color: #666;
+    background: transparent !important;
+    border: 1px solid #E2E8F0 !important;
+    color: #718096 !important;
 }
 
 .light-mode .auth-tab.active {
-    background: #f5f5f5;
-    color: #333;
-    border-color: #ccc;
+    background: #3B82F6 !important;
+    color: #FFFFFF !important;
+    border-color: #3B82F6 !important;
 }
 
 .light-mode .auth-tab:hover:not(.active) {
-    background: #fafafa;
-    color: #333;
+    background: #F5F7FB !important;
+    color: #4A5568 !important;
 }
 
 .light-mode .auth-input-group input {
-    background: #f8f9fa;
-    border-color: #ddd;
-    color: #333;
+    background: #F5F7FB !important;
+    border: 1px solid #E2E8F0 !important;
+    color: #1A202C !important;
 }
 
 .light-mode .auth-input-group input:focus {
-    background: #fff;
-    border-color: #40c9ff;
+    border-color: #3B82F6 !important;
+    background: #FFFFFF !important;
 }
 
 .light-mode .auth-input-group input::placeholder {
-    color: #999;
-}
-
-.light-mode .auth-divider::before {
-    background: #e5e7eb;
+    color: #A0AEC0 !important;
 }
 
 .light-mode .auth-divider span {
-    background: #fff;
-    color: #666;
+    background: #FFFFFF !important;
+    color: #718096 !important;
 }
 
-.light-mode .auth-notice {
-    color: #666;
+.light-mode .auth-divider::before {
+    background: #E2E8F0 !important;
 }
 
-/* Light mode canvas headers */
-.light-mode .canvas-header {
-    background: #ffffff;
-    color: #333333;
-    border: 1px solid #EFF1F3;
-    box-shadow: none;
+.light-mode .auth-error {
+    background: rgba(239, 68, 68, 0.1) !important;
+    border: 1px solid rgba(239, 68, 68, 0.3) !important;
+    color: #DC2626 !important;
 }
 
-.light-mode .canvas-header:hover {
-    background: #f8f8f8;
-    box-shadow: none;
+/* Code Blocks */
+.light-mode code,
+.light-mode pre {
+    background: #F5F7FB !important;
+    color: #5c5c5c !important;
+    border: 1px solid #ffffff !important;
 }
 
-.light-mode .canvas-header[contenteditable="true"] {
-    background: #ffffff !important;
-    outline: 2px solid rgba(64, 201, 255, 0.5) !important;
-}
-
-.light-mode .canvas-header.selected {
-    background: #ffffff !important;
-    border: 2px solid #40c9ff !important;
-    box-shadow: none !important;
+/* Transitions for smooth theme switching */
+.light-mode,
+.light-mode * {
+    transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
 }

@@ -28,7 +28,6 @@ body:not(.frutiger-mode):not(.light-mode):not(.night-mode):not(.picnic-mode):not
 /* Theme variations */
 body.night-mode #topBar {
     background: #0a0a0a;
-    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.9);
     border: none;
 }
 
@@ -38,9 +37,8 @@ body.picnic-mode #topBar {
 }
 
 body.light-mode #topBar {
-    background: #fff;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-    border: 1px solid #e5e7eb;
+    background: #FFFFFF;
+    border: 1px solid #F5F7FB;
 }
 
 body.with-background #topBar {
@@ -119,24 +117,24 @@ body.with-background #topBar {
 .light-mode .add-button,
 .light-mode .setting-btn,
 .light-mode .save-button {
-    background: #fff;
-    border-color: #cbd5e1 !important;
-    color: #333;
+    background: #F5F7FB;
+    border: 1px solid #F5F7FB !important;
+    color: #7f7f7f;
 }
 
 .light-mode #toolbar button:hover,
 .light-mode .add-button:hover,
 .light-mode .setting-btn:hover,
 .light-mode .save-button:hover {
-    background: #f3f4f6;
-    border-color: #9ca3af !important;
+    background: #ECECEC;
+    border-color: #ECECEC !important;
 }
 
 /* ===================================
    3. BOARD SELECTOR
    =================================== */
 #whiteboardSwitcher {
-    background: var(--toolbar-button-background);
+    background: transparent;
     padding-right: 16px;
     border-radius: 10px;
     border: none;
@@ -149,9 +147,8 @@ body.with-background #topBar {
 }
 
 #whiteboardSwitcher:hover {
-    background: var(--toolbar-button-background-hover);
+    background: #5353ff;
     transform: translateY(-1px);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 }
 
 .board-selector {
@@ -164,7 +161,7 @@ body.with-background #topBar {
     gap: 8px;
     cursor: pointer;
     transition: all 0.3s ease;
-    color: var(--toolbar-button-text-color);
+    color: #7e8590;
     font-size: 0.80rem;
     font-weight: 600;
     font-family: 'Nunito', sans-serif !important;
@@ -177,7 +174,7 @@ body.with-background #topBar {
 }
 
 .board-selector-text {
-    color: var(--toolbar-button-text-color);
+    color: #7e8590;
     font-family: 'Nunito', sans-serif !important;
 }
 
@@ -196,9 +193,13 @@ body.with-background #topBar {
     cursor: text;
     transition: background 0.2s;
     font-size: 0.80rem;
-    color: var(--toolbar-button-text-color);
+    color: #7e8590;
     font-weight: 600;
     font-family: 'Nunito', sans-serif !important;
+}
+
+.light-mode #boardName {
+    color: #7f7f7f;
 }
 
 #boardName:hover, 
@@ -207,15 +208,22 @@ body.with-background #topBar {
     outline: none;
 }
 
+.light-mode #boardName:hover,
+.light-mode #boardName:focus {
+    background: #F5F7FB;
+    outline: none;
+}
+
 /* Light mode board selector */
 .light-mode .board-selector {
-    background: #fff;
-    border-color: #cbd5e1 !important;
+    background: #F5F7FB;
+    border: 1px solid #F5F7FB !important;
+    color: #7f7f7f;
 }
 
 .light-mode .board-selector:hover {
-    background: #f3f4f6;
-    border-color: #9ca3af !important;
+    background: #ECECEC;
+    border-color: #ECECEC !important;
 }
 
 /* ===================================
@@ -252,7 +260,7 @@ body.with-background #topBar {
 .file-structure-trigger p, 
 .bookmarks-trigger p {
     margin: 0;
-    color: var(--toolbar-button-text-color, #ddd);
+    color: #ddd;
     font-size: 0.80rem;
     font-weight: 600;
     font-family: 'Nunito', sans-serif !important;
@@ -261,14 +269,14 @@ body.with-background #topBar {
 /* Light mode */
 .light-mode .file-structure-trigger,
 .light-mode .bookmarks-trigger {
-    background: #fff;
-    border-color: #cbd5e1 !important;
+    background: #F5F7FB;
+    border: 1px solid #F5F7FB !important;
 }
 
 .light-mode .file-structure-trigger:hover,
 .light-mode .bookmarks-trigger:hover {
-    background: #f3f4f6;
-    border-color: #9ca3af !important;
+    background: #ECECEC;
+    border-color: #ECECEC !important;
 }
 
 /* ===================================
@@ -345,7 +353,6 @@ body.with-background #topBar {
     transition: opacity 0.3s ease, visibility 0.3s ease;
     flex-direction: column;
     gap: 9px;
-    box-shadow: 0 4px 22px rgba(0, 0, 0, 0.4);
     z-index: 1000002;
     min-width: 180px;
 }
@@ -410,7 +417,6 @@ body.with-background #topBar {
     transition: opacity 0.3s ease, visibility 0.3s ease;
     flex-direction: column;
     gap: 0.72rem;
-    box-shadow: 0 0.45rem 0.9rem rgba(143, 142, 142, 0.15);
     min-width: 180px;
     display: flex;
 }
@@ -470,7 +476,6 @@ body.with-background #topBar {
     opacity: 0;
     visibility: hidden;
     transition: opacity 0.3s ease, visibility 0.3s ease;
-    box-shadow: 0 4px 22px rgba(0, 0, 0, 0.4);
     z-index: 1000002;
     display: flex;
     flex-direction: column;
@@ -517,7 +522,6 @@ body.with-background #topBar {
     width: 220px;
     background: #000000;
     border-radius: 9px;
-    box-shadow: 0 4px 22px rgba(0, 0, 0, 0.4);
     opacity: 0;
     visibility: hidden;
     transition: opacity 0.3s ease, visibility 0.3s ease;
@@ -580,7 +584,6 @@ body.with-background #topBar {
     display: flex;
     flex-direction: column;
     gap: 0.72rem;
-    box-shadow: 0 0.45rem 0.9rem rgba(143, 142, 142, 0.15);
     min-width: 150px;
     pointer-events: none;
     z-index: 1001;
@@ -619,17 +622,17 @@ body.with-background #topBar {
 /* Light mode dropdown adjustments */
 .light-mode .add-dropdown-menu,
 .light-mode .settings-menu {
-    background: #fff;
-    border: 1px solid #e5e7eb;
+    background: #FFFFFF;
+    border: 1px solid #F5F7FB;
 }
 
 .light-mode .dropdown-item,
 .light-mode .settings-option {
-    color: #333;
+    color: #7f7f7f;
 }
 
 .light-mode .dropdown-item:hover,
 .light-mode .settings-option:hover {
-    background-color: #5353ff;
-    color: #ffffff;
+    background-color: #F5F7FB;
+    color: #7f7f7f;
 }

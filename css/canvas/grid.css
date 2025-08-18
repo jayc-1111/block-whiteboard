@@ -6,7 +6,7 @@
     height: 100vh;
     position: relative;
     overflow: auto;
-    background: var(--bg-image), var(--grid-bg);
+    background: #191919;
     background-attachment: fixed;
     background-size: cover;
     background-position: center;
@@ -15,14 +15,45 @@
 /* Grid surface */
 #grid {
     position: relative;
-    width: var(--grid-element-size);
-    height: var(--grid-element-size);
+    width: 2000px;
+    height: 2000px;
     min-width: 100%;
     min-height: 100%;
-    background-image: radial-gradient(circle, var(--canvas-dot-color) var(--grid-dot-size), transparent var(--grid-dot-size));
-    background-size: var(--grid-spacing) var(--grid-spacing);
-    background-position: 0 0;
     /* Force GPU acceleration */
     will-change: transform;
     transform: translateZ(0);
+}
+
+/* Grid dots background */
+#grid-dots {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 0;
+    /* Control dot color with CSS color property */
+    color: rgb(30, 30, 30);
+}
+
+/* Theme variations */
+.night-mode #grid-dots {
+    color: rgba(255, 255, 255, 0.025);
+}
+
+.light-mode #grid-dots {
+    color: rgb(242, 242, 242);
+}
+
+.lollipop-mode #grid-dots {
+    color: rgba(255, 105, 180, 0.05);
+}
+
+.frutiger-mode #grid-dots {
+    color: rgba(0, 191, 255, 0.04);
+}
+
+.picnic-mode #grid-dots {
+    color: rgba(76, 175, 80, 0.04);
 }
