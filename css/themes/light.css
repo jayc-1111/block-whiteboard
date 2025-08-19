@@ -383,7 +383,6 @@
 .light-mode #eraserModeBtn:hover:not(.active) {
     background: #E8EBF0 !important;
     color: #5c5c5c !important;
-    transform: translateY(-1px);
 }
 
 .light-mode #drawingModeBtn.active,

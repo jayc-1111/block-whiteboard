@@ -79,7 +79,6 @@ body.with-background #topBar {
 #eraserModeBtn:hover {
     background-color: #9191ff;
     color: #ffffff;
-    transform: translate(1px, -1px);
 }
 
 #toolbar button:not(.dropdown-item):active,
@@ -148,7 +147,6 @@ body.with-background #topBar {
 
 #whiteboardSwitcher:hover {
     background: #3a3a3a;
-    transform: translateY(-1px);
 }
 
 .board-selector {
@@ -254,7 +252,6 @@ body.with-background #topBar {
 .bookmarks-trigger:hover {
     background: #3a3a3a;
     border-color: #2a2a2a !important;
-    transform: translateY(-1px);
 }
 
 .file-structure-trigger p, 
@@ -389,11 +386,11 @@ body.with-background #topBar {
 
 .board-dropdown .element:hover {
     background: #2a2a2a;
-    transform: translateX(2px);
 }
 
 .board-dropdown .element.active {
     color: #ffffff;
+    background-color: lightblue;
 }
 
 /* Hide separator completely */
@@ -444,7 +441,6 @@ body.with-background #topBar {
 
 .settings-option:hover {
     background: #2a2a2a;
-    transform: translateX(2px);
 }
 
 .settings-option.separator {
@@ -514,7 +510,6 @@ body.with-background #topBar {
 
 .dropdown-item:hover {
     background: #2a2a2a;
-    transform: translateX(2px);
 }
 
 /* File structure dropdown */
@@ -561,7 +556,6 @@ body.with-background #topBar {
 
 .file-structure-list li:hover {
     background: #2a2a2a;
-    transform: translateX(2px);
 }
 
 .file-structure-list li.category-item {
@@ -598,9 +592,8 @@ body.with-background #topBar {
 .customization-submenu:hover {
     opacity: 1;
     visibility: visible;
-    transform: translateX(0);
     pointer-events: auto;
-    transition: opacity 0.15s ease, transform 0.15s ease, visibility 0s;
+    transition: opacity 0.15s ease, visibility 0s;
 }
 
 .bg-option {
@@ -621,7 +614,6 @@ body.with-background #topBar {
 
 .bg-option:hover {
     background: #2a2a2a;
-    transform: translateX(2px);
 }
 
 .bg-option.active {

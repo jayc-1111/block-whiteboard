@@ -31,7 +31,6 @@
 #eraserModeBtn:hover {
     background: #3a3a3a;
     border-color: #2a2a2a;  /* Border stays darker on hover */
-    transform: translateY(-1px);
 }
 
 /* Active/pressed state */
@@ -103,7 +102,6 @@
 .bookmarks-trigger:hover {
     background: #3a3a3a;
     border-color: #2a2a2a !important;
-    transform: translateY(-1px);
 }
 
 /* Board selector */

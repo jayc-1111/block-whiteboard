@@ -19,7 +19,6 @@
 
 #whiteboardSwitcher:hover {
     background: #3a3a3a;
-    transform: translateY(-1px);
 }
 
 /* Board selector button */
@@ -138,7 +137,6 @@
 
 .board-dropdown .element:hover {
     background: #2a2a2a;
-    transform: translateX(2px);
 }
 
 .board-dropdown .element.active {

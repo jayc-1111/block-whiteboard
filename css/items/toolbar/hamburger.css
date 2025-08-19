@@ -29,7 +29,6 @@
 .hamburger-btn:hover {
     background: #3a3a3a;
     border-color: #2a2a2a;
-    transform: translateY(-1px);
 }
 
 .hamburger-btn svg {
@@ -83,7 +82,6 @@
 
 .hamburger-item:hover {
     background: #2a2a2a;
-    transform: translateX(2px);
 }
 
 .hamburger-item svg {
@@ -332,7 +330,6 @@
 .bg-option:hover {
     background-color: #5353ff;
     color: #ffffff;
-    transform: translate(1px, -1px);
 }
 
 .bg-option.active {

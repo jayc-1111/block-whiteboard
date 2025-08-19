@@ -61,7 +61,6 @@
 
 .board-dropdown .element:hover {
     background: #2a2a2a;
-    transform: translateX(2px);
 }
 
 .board-dropdown .element:active {
@@ -126,7 +125,6 @@
 
 .settings-option:hover {
     background: #2a2a2a;
-    transform: translateX(2px);
 }
 
 .settings-option.active {
@@ -203,9 +201,8 @@
 .customization-submenu:hover {
     opacity: 1;
     visibility: visible;
-    transform: translateX(0);
     pointer-events: auto;
-    transition: opacity 0.15s ease, transform 0.15s ease, visibility 0s;
+    transition: opacity 0.15s ease, visibility 0s;
 }
 
 .bg-option {
@@ -272,7 +269,6 @@
 
 .file-structure-list li:hover {
     background: #2a2a2a;
-    transform: translateX(2px);
 }
 
 .file-structure-list li.board-item {
@@ -361,7 +357,6 @@
 .dropdown-item:hover {
     background-color: #5353ff;
     color: #ffffff;
-    transform: translate(1px, -1px);
 }
 
 .dropdown-item:active {

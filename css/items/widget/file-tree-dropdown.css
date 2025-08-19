@@ -94,7 +94,6 @@
 
 .file-tree details summary:hover {
     background: #2a2a2a;
-    transform: translateX(2px);
 }
 
 /* Remove default marker */
@@ -194,7 +193,6 @@
 
 .file-item:hover {
     background: #2a2a2a;
-    transform: translateX(2px);
     color: #ddd;
 }
 

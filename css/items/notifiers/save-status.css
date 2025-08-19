@@ -31,7 +31,7 @@
 }
 
 .save-status:hover {
-    transform: translateX(0) scale(1.02);
+    transform: scale(1.02);
 }
 
 .save-status:active {

@@ -50,7 +50,6 @@
 .context-menu .element:hover {
     background-color: #5353ff;
     color: #ffffff;
-    transform: translate(1px, -1px);
 }
 
 .context-menu .delete:hover {
