@@ -719,13 +719,29 @@ function expandCard(card) {
 // Create bookmark card element
 function createBookmarkCard(title, description, url, date, imageData, bookmarkIndex, expandedCard) {
     const card = document.createElement('div');
-    card.className = 'bookmark-card';
+    card.className = 'bookmark-card image-style';
     card.dataset.bookmarkIndex = bookmarkIndex;
     
     // Add margin-top to first bookmark only
     if (bookmarkIndex === 0) {
         card.style.marginTop = '68px';
     }
+    
+    // Image or placeholder
+    if (imageData) {
+        const img = document.createElement('img');
+        img.className = 'bookmark-image';
+        img.src = imageData;
+        card.appendChild(img);
+    } else {
+        const imagePlaceholder = document.createElement('div');
+        imagePlaceholder.className = 'bookmark-image-placeholder';
+        card.appendChild(imagePlaceholder);
+    }
+    
+    // Create content overlay for hover effect
+    const contentOverlay = document.createElement('div');
+    contentOverlay.className = 'bookmark-content-overlay';
     
     // Create controls container for top right buttons
     const controlsContainer = document.createElement('div');
@@ -758,20 +774,8 @@ function createBookmarkCard(title, description, url, date, imageData, bookmarkIn
     };
     
     controlsContainer.appendChild(removeBtn);
-    card.appendChild(controlsContainer);
+    contentOverlay.appendChild(controlsContainer);
     
-    // Image or placeholder
-    if (imageData) {
-        const img = document.createElement('img');
-        img.className = 'bookmark-image';
-        img.src = imageData;
-        img.style.cssText = 'width: 100%; height: 150px; object-fit: cover; border-radius: 4px; margin-bottom: 12px;';
-        card.appendChild(img);
-    } else {
-        const imagePlaceholder = document.createElement('div');
-        imagePlaceholder.className = 'bookmark-image-placeholder';
-        card.appendChild(imagePlaceholder);
-    }    
     const cardTitle = document.createElement('h3');
     cardTitle.className = 'bookmark-title';
     
@@ -788,17 +792,15 @@ function createBookmarkCard(title, description, url, date, imageData, bookmarkIn
     
     const cardDate = document.createElement('div');
     cardDate.className = 'bookmark-date';
-    cardDate.style.cssText = 'text-align: right; font-size: 12px; color: #666; margin-top: 8px;';
     cardDate.textContent = date.toLocaleDateString ? date.toLocaleDateString() : date;
     
-    card.appendChild(cardTitle);
-    card.appendChild(cardDesc);
-    card.appendChild(cardDate);
+    contentOverlay.appendChild(cardTitle);
+    contentOverlay.appendChild(cardDesc);
+    contentOverlay.appendChild(cardDate);
     
     // Create controls row at the bottom
     const controlsRow = document.createElement('div');
     controlsRow.className = 'bookmark-controls';
-    controlsRow.style.cssText = 'display: flex; justify-content: flex-start; gap: 6px; margin-top: 8px;';
     
     // Move up button
     const moveUpBtn = document.createElement('button');
@@ -847,7 +849,9 @@ function createBookmarkCard(title, description, url, date, imageData, bookmarkIn
     
     controlsRow.appendChild(moveUpBtn);
     controlsRow.appendChild(moveDownBtn);
-    card.appendChild(controlsRow);
+    contentOverlay.appendChild(controlsRow);
+    
+    card.appendChild(contentOverlay);
     
     return card;
 }

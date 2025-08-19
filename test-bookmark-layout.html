@@ -3,12 +3,36 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bookmark Layout Test</title>
+    <title>Bookmark Image Style Test</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f7fb;
             padding: 20px;
-            background-color: #f5f5f5;
+            margin: 0;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            color: #111827;
+            text-align: center;
+        }
+        
+        .description {
+            text-align: center;
+            color: #6b7280;
+            margin-bottom: 30px;
+        }
+        
+        .bookmarks-section {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
         }
         
         .bookmark-card {
@@ -17,15 +41,141 @@
             margin-bottom: 16px;
             box-shadow: 0 1px 3px rgba(0,0,0,0.1);
             transition: box-shadow 0.2s;
-            width: 300px;
+            width: 100%;
             position: relative;
-            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 12px;
+            box-sizing: border-box;
+            overflow: hidden;
         }
-        
+
         .bookmark-card:hover {
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
         }
+
+        /* Bookmark as image */
+        .bookmark-card.image-style {
+            padding: 0;
+            height: 150px;
+            display: block;
+        }
+
+        .bookmark-card.image-style .bookmark-image,
+        .bookmark-card.image-style .bookmark-image-placeholder {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 8px;
+        }
+
+        .bookmark-card.image-style .bookmark-content-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 12px;
+            opacity: 0;
+            transition: opacity 0.8s ease;
+            border-radius: 0 0 8px 8px;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+            z-index: 10;
+        }
+
+        .bookmark-card.image-style:hover .bookmark-content-overlay {
+            opacity: 1;
+        }
+
+        .bookmark-card.image-style .bookmark-title,
+        .bookmark-card.image-style .bookmark-description,
+        .bookmark-card.image-style .bookmark-date,
+        .bookmark-card.image-style .bookmark-controls {
+            text-align: left;
+            width: 100%;
+        }
+
+        .bookmark-card.image-style .bookmark-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin: 0 0 8px 0;
+            color: #111827;
+        }
+
+        .bookmark-card.image-style .bookmark-description {
+            font-size: 14px;
+            color: #6b7280;
+            line-height: 1.4;
+            margin: 0 0 8px 0;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .bookmark-card.image-style .bookmark-date {
+            font-size: 12px;
+            color: #9ca3af;
+            margin: 0 0 8px 0;
+        }
+
+        .bookmark-card.image-style .bookmark-controls {
+            display: flex;
+            justify-content: flex-start;
+            gap: 6px;
+            margin-top: 8px;
+        }
+
+        .bookmark-card.image-style .bookmark-move-btn,
+        .bookmark-card.image-style .bookmark-remove-btn {
+            padding: 2px 4px;
+            background: #374151;
+            border: 1px solid #4b5563;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            height: 22px;
+            display: flex;
+            align-items: center;
+            color: #9ca3af;
+        }
+
+        .bookmark-card.image-style .bookmark-move-btn:hover,
+        .bookmark-card.image-style .bookmark-remove-btn:hover {
+            background: #4b5563;
+            color: #fff;
+        }
+
+        .bookmark-card.image-style .bookmark-remove-btn {
+            background: #dc2626;
+            border: 1px solid #ef4444;
+        }
+
+        .bookmark-card.image-style .bookmark-remove-btn:hover {
+            background: #ef4444;
+        }
         
+        /* Bookmark image placeholder */
+        .bookmark-image-placeholder {
+            width: 100%;
+            height: 150px;
+            background: linear-gradient(270deg, #ce68d9, #45c6db, #45db79);
+            background-size: 800% 800%;
+            animation: GradientAnimation 3s ease infinite;
+            border-radius: 4px;
+            margin-bottom: 12px;
+        }
+        
+        @keyframes GradientAnimation {
+            0% { background-position: 0% 50% }
+            50% { background-position: 100% 50% }
+            100% { background-position: 0% 50% }
+        }
+
         .bookmark-title {
             font-size: 16px;
             font-weight: 600;
@@ -36,7 +186,7 @@
             text-align: center;
             width: 100%;
         }
-        
+
         .bookmark-title a {
             color: #5c90f4;
             text-decoration: none;
@@ -44,8 +194,9 @@
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
+            width: 100%;
         }
-        
+
         .bookmark-description {
             font-size: 14px;
             color: #6b7280;
@@ -57,51 +208,93 @@
             overflow: hidden;
             text-overflow: ellipsis;
         }
-        
-        .bookmark-url {
-            font-size: 13px;
-            color: #2563eb;
-            text-decoration: none;
-            display: block;
-            margin-bottom: 8px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-        
-        .bookmark-url:hover {
-            text-decoration: underline;
-        }
-        
+
         .bookmark-date {
             font-size: 12px;
             color: #9ca3af;
-            text-align: right;
-            font-size: 12px;
-            color: #666;
-            margin-top: 8px;
+        }
+        
+        /* Bookmark controls container */
+        .bookmark-controls-container {
+            display: flex;
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            z-index: 10;
+            gap: 4px;
         }
     </style>
 </head>
 <body>
-    <h1>Bookmark Layout Test</h1>
-    
-    <div class="bookmark-card">
-        <h3 class="bookmark-title">
-            <a href="https://example.com">Short Title</a>
-        </h3>
-        <p class="bookmark-description">This is a short description for the bookmark.</p>
-        <div class="bookmark-url">https://example.com</div>
-        <div class="bookmark-date">August 16, 2025</div>
-    </div>
-    
-    <div class="bookmark-card">
-        <h3 class="bookmark-title">
-            <a href="https://example.com">This is a very long bookmark title that should be truncated with ellipsis when it exceeds the container width</a>
-        </h3>
-        <p class="bookmark-description">This is a very long bookmark description that should be truncated after three lines with ellipsis when it exceeds the container width. This is a very long bookmark description that should be truncated after three lines with ellipsis when it exceeds the container width.</p>
-        <div class="bookmark-url">https://example.com/very/long/url/that/should/be/truncated/with/ellipsis/when/it/exceeds/the/container/width</div>
-        <div class="bookmark-date">August 16, 2025</div>
+    <div class="container">
+        <h1>Bookmark Image Style</h1>
+        <p class="description">Bookmarks now appear as images with a hover overlay containing title, description, date, and controls.</p>
+        
+        <div class="bookmarks-section">
+            <div class="bookmark-card image-style">
+                <div class="bookmark-image-placeholder"></div>
+                <div class="bookmark-content-overlay">
+                    <div class="bookmark-controls-container">
+                        <button class="bookmark-remove-btn" title="Remove bookmark">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M3 6h18"></path>
+                                <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
+                                <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path>
+                            </svg>
+                        </button>
+                    </div>
+                    <h3 class="bookmark-title">
+                        <a href="https://example.com" target="_blank">Example Bookmark Title</a>
+                    </h3>
+                    <p class="bookmark-description">This is a sample bookmark description that shows how bookmarks will appear with the new image style and hover overlay.</p>
+                    <div class="bookmark-date">August 19, 2025</div>
+                    <div class="bookmark-controls">
+                        <button class="bookmark-move-btn" title="Move up">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="18 15 12 9 6 15"></polyline>
+                            </svg>
+                        </button>
+                        <button class="bookmark-move-btn" title="Move down">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bookmark-card image-style">
+                <div class="bookmark-image-placeholder"></div>
+                <div class="bookmark-content-overlay">
+                    <div class="bookmark-controls-container">
+                        <button class="bookmark-remove-btn" title="Remove bookmark">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M3 6h18"></path>
+                                <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
+                                <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path>
+                            </svg>
+                        </button>
+                    </div>
+                    <h3 class="bookmark-title">
+                        <a href="https://github.com" target="_blank">GitHub Repository</a>
+                    </h3>
+                    <p class="bookmark-description">A link to a GitHub repository with code examples and documentation.</p>
+                    <div class="bookmark-date">August 18, 2025</div>
+                    <div class="bookmark-controls">
+                        <button class="bookmark-move-btn" title="Move up">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="18 15 12 9 6 15"></polyline>
+                            </svg>
+                        </button>
+                        <button class="bookmark-move-btn" title="Move down">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </body>
 </html>

@@ -298,7 +298,7 @@
     box-shadow: 0 1px 3px rgba(0,0,0,0.1);
     transition: box-shadow 0.2s;
     width: 100%;
-    position: relative; /* Added for positioning context */
+    position: relative;
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -306,10 +306,113 @@
     text-align: center;
     padding: 12px;
     box-sizing: border-box;
+    overflow: hidden;
 }
 
 .bookmark-card:hover {
     box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+/* Bookmark as image */
+.bookmark-card.image-style {
+    padding: 0;
+    height: 150px;
+    display: block;
+}
+
+.bookmark-card.image-style .bookmark-image,
+.bookmark-card.image-style .bookmark-image-placeholder {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 8px;
+}
+
+.bookmark-card.image-style .bookmark-content-overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: rgba(255, 255, 255, 0.95);
+    padding: 12px;
+    opacity: 0;
+    transition: opacity 0.8s ease;
+    border-radius: 0 0 8px 8px;
+    box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+    z-index: 10;
+}
+
+.bookmark-card.image-style:hover .bookmark-content-overlay {
+    opacity: 1;
+}
+
+.bookmark-card.image-style .bookmark-title,
+.bookmark-card.image-style .bookmark-description,
+.bookmark-card.image-style .bookmark-date,
+.bookmark-card.image-style .bookmark-controls {
+    text-align: left;
+    width: 100%;
+}
+
+.bookmark-card.image-style .bookmark-title {
+    font-size: 16px;
+    font-weight: 600;
+    margin: 0 0 8px 0;
+    color: #111827;
+}
+
+.bookmark-card.image-style .bookmark-description {
+    font-size: 14px;
+    color: #6b7280;
+    line-height: 1.4;
+    margin: 0 0 8px 0;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.bookmark-card.image-style .bookmark-date {
+    font-size: 12px;
+    color: #9ca3af;
+    margin: 0 0 8px 0;
+}
+
+.bookmark-card.image-style .bookmark-controls {
+    display: flex;
+    justify-content: flex-start;
+    gap: 6px;
+    margin-top: 8px;
+}
+
+.bookmark-card.image-style .bookmark-move-btn,
+.bookmark-card.image-style .bookmark-remove-btn {
+    padding: 2px 4px;
+    background: #374151;
+    border: 1px solid #4b5563;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+    height: 22px;
+    display: flex;
+    align-items: center;
+    color: #9ca3af;
+}
+
+.bookmark-card.image-style .bookmark-move-btn:hover,
+.bookmark-card.image-style .bookmark-remove-btn:hover {
+    background: #4b5563;
+    color: #fff;
+}
+
+.bookmark-card.image-style .bookmark-remove-btn {
+    background: #dc2626;
+    border: 1px solid #ef4444;
+}
+
+.bookmark-card.image-style .bookmark-remove-btn:hover {
+    background: #ef4444;
 }
 
 /* Bookmark image placeholder */
