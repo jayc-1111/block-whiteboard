@@ -72,11 +72,6 @@
     stroke: #ffffff;
 }
 
-.board-dropdown .element.active {
-    background-color: rgba(83, 83, 255, 0.2);
-    color: #bd89ff;
-}
-
 /* Hide all separators in board dropdown */
 .board-dropdown .separator,
 .board-dropdown hr,

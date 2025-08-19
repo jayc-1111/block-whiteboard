@@ -15,7 +15,7 @@ document.addEventListener('DOMContentLoaded', function() {
         yourBookmarksItem.addEventListener('click', function() {
             const bookmarksModal = document.getElementById('bookmarksModal');
             if (bookmarksModal) {
-                bookmarksModal.style.display = 'flex';
+                bookmarksModal.classList.add('active');
             }
         });
     }

@@ -8,7 +8,7 @@
 #topBar {
     position: fixed;
     top: 20px;
-    left: 80px;  /* Make room for hamburger menu */
+    left: 95px;  /* Adjusted for 53px hamburger menu with spacing */
     z-index: 1000000;
     display: flex;
     gap: 8px;
@@ -50,17 +50,17 @@ body.with-background #topBar {
 /* ===================================
    2. MAIN TOOLBAR BUTTONS
    =================================== */
-#toolbar button,
+#toolbar button:not(.dropdown-item),
 .add-button,
 .setting-btn,
 .save-button,
 #drawingModeBtn,
 #eraserModeBtn {
-    padding: 4px 6px;
+    padding: 6px 14px;
     background: transparent;
     border: none;
     color: #7e8590;
-    border-radius: 5px;
+    border-radius: 10px;
     font-size: 0.8rem;
     font-weight: 600;
     cursor: pointer;
@@ -71,18 +71,18 @@ body.with-background #topBar {
     gap: 9px;
 }
 
-#toolbar button:hover,
+#toolbar button:not(.dropdown-item):hover,
 .add-button:hover,
 .setting-btn:hover,
 .save-button:hover,
 #drawingModeBtn:hover,
 #eraserModeBtn:hover {
-    background-color: #5353ff;
+    background-color: #9191ff;
     color: #ffffff;
     transform: translate(1px, -1px);
 }
 
-#toolbar button:active,
+#toolbar button:not(.dropdown-item):active,
 .add-button:active,
 .setting-btn:active,
 .save-button:active,
@@ -113,7 +113,7 @@ body.with-background #topBar {
 }
 
 /* Light mode button adjustments */
-.light-mode #toolbar button,
+.light-mode #toolbar button:not(.dropdown-item),
 .light-mode .add-button,
 .light-mode .setting-btn,
 .light-mode .save-button {
@@ -122,7 +122,7 @@ body.with-background #topBar {
     color: #7f7f7f;
 }
 
-.light-mode #toolbar button:hover,
+.light-mode #toolbar button:not(.dropdown-item):hover,
 .light-mode .add-button:hover,
 .light-mode .setting-btn:hover,
 .light-mode .save-button:hover {
@@ -147,7 +147,7 @@ body.with-background #topBar {
 }
 
 #whiteboardSwitcher:hover {
-    background: #5353ff;
+    background: #3a3a3a;
     transform: translateY(-1px);
 }
 
@@ -342,22 +342,23 @@ body.with-background #topBar {
 /* Board dropdown */
 .board-dropdown {
     position: absolute;
-    top: 100%;
+    top: calc(100% + 5px);
     left: 0;
-    margin-top: 10px;
-    background: #000000;
-    border-radius: 9px;
-    padding: 14px 0;
+    background: #131313;
+    border-radius: 12px;
+    padding: 8px;
     opacity: 0;
     visibility: hidden;
     transition: opacity 0.3s ease, visibility 0.3s ease;
     flex-direction: column;
-    gap: 9px;
+    gap: 4px;
     z-index: 1000002;
     min-width: 180px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
-#whiteboardSwitcher:hover .board-dropdown {
+#whiteboardSwitcher:hover .board-dropdown,
+.board-dropdown:hover {
     opacity: 1;
     visibility: visible;
     display: flex;
@@ -367,33 +368,32 @@ body.with-background #topBar {
     list-style-type: none;
     display: flex;
     flex-direction: column;
-    gap: 7px;
-    padding: 0 9px;
+    gap: 4px;
+    padding: 0;
     margin: 0;
 }
 
 .board-dropdown .element {
     display: flex;
     align-items: center;
-    color: #7e8590;
-    gap: 9px;
-    transition: all 0.3s ease-out;
-    padding: 4px 6px;
-    border-radius: 5px;
+    color: #ddd;
+    gap: 12px;
+    transition: all 0.2s ease;
+    padding: 10px 12px;
+    border-radius: 8px;
     cursor: pointer;
     font-family: 'Nunito', sans-serif !important;
-    font-size: 0.8rem;
+    font-size: 0.80rem;
+    font-weight: 500;
 }
 
 .board-dropdown .element:hover {
-    background-color: #5353ff;
-    color: #ffffff;
-    transform: translate(1px, -1px);
+    background: #2a2a2a;
+    transform: translateX(2px);
 }
 
 .board-dropdown .element.active {
-    background-color: rgba(83, 83, 255, 0.2);
-    color: #bd89ff;
+    color: #ffffff;
 }
 
 /* Hide separator completely */
@@ -405,43 +405,46 @@ body.with-background #topBar {
 /* Settings menu */
 .settings-menu {
     position: absolute;
-    top: 100%;
+    top: calc(100% + 5px);
     left: 0;
-    margin-top: 10px;
-    background: #000;
-    border-radius: 0.36rem;
-    padding: 0.9rem;
+    background: #131313;
+    border-radius: 12px;
+    padding: 8px;
     z-index: 1000002;
     opacity: 0;
     visibility: hidden;
     transition: opacity 0.3s ease, visibility 0.3s ease;
     flex-direction: column;
-    gap: 0.72rem;
-    min-width: 180px;
+    gap: 4px;
+    min-width: 220px;
     display: flex;
+    border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
-.settings-container:hover .settings-menu {
+.settings-container:hover .settings-menu,
+.settings-menu:hover {
     opacity: 1;
     visibility: visible;
     display: flex;
 }
 
 .settings-option {
-    padding: 0.72rem;
-    border-radius: 0.27rem;
-    cursor: pointer;
-    transition: background 0.2s;
-    color: #ddd;
-    font-family: 'Nunito', sans-serif !important;
-    font-size: 0.81rem;
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: 12px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    color: #ddd;
+    font-family: 'Nunito', sans-serif !important;
+    font-size: 0.80rem;
+    font-weight: 500;
 }
 
 .settings-option:hover {
-    background: #2b2a2a;
+    background: #2a2a2a;
+    transform: translateX(2px);
 }
 
 .settings-option.separator {
@@ -466,12 +469,11 @@ body.with-background #topBar {
 
 .add-dropdown-menu {
     position: absolute;
-    top: 100%;
+    top: calc(100% + 5px);
     left: 0;
-    margin-top: 10px;
-    background: #0a0a0a;
-    border-radius: 9px;
-    padding: 14px 0;
+    background: #131313;
+    border-radius: 12px;
+    padding: 8px;
     min-width: 180px;
     opacity: 0;
     visibility: hidden;
@@ -479,49 +481,52 @@ body.with-background #topBar {
     z-index: 1000002;
     display: flex;
     flex-direction: column;
-    gap: 9px;
+    gap: 4px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
-.add-dropdown-container:hover .add-dropdown-menu {
+.add-dropdown-container:hover .add-dropdown-menu,
+.add-dropdown-menu:hover {
     opacity: 1;
     visibility: visible;
 }
 
 .dropdown-item {
-    width: calc(100% - 18px);
     display: flex;
     align-items: center;
-    gap: 9px;
-    padding: 4px 6px;
-    margin: 0 9px;
+    gap: 12px;
+    padding: 10px 12px;
     background: transparent;
     border: none;
-    color: #7e8590;
-    text-align: left;
+    border-radius: 8px;
     cursor: pointer;
-    border-radius: 5px;
-    transition: all 0.3s ease-out;
+    transition: all 0.2s ease;
+    color: #ddd;
     font-family: 'Nunito', sans-serif !important;
-    font-size: 0.8rem;
-    font-weight: 600;
+    font-size: 0.80rem;
+    font-weight: 500;
+    text-align: left;
     height: auto;
     justify-content: flex-start;
+    width: 100%;
+    margin: 0;
 }
 
 .dropdown-item:hover {
-    background-color: #5353ff;
-    color: #ffffff;
-    transform: translate(1px, -1px);
+    background: #2a2a2a;
+    transform: translateX(2px);
 }
 
 /* File structure dropdown */
 .file-structure-dropdown {
     position: absolute;
     left: 0;
-    margin-top: 10px;
+    top: calc(100% + 5px);
     width: 220px;
-    background: #000000;
-    border-radius: 9px;
+    background: #131313;
+    border-radius: 12px;
+    padding: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
     opacity: 0;
     visibility: hidden;
     transition: opacity 0.3s ease, visibility 0.3s ease;
@@ -537,26 +542,26 @@ body.with-background #topBar {
 }
 
 .file-structure-list {
-    padding: 16px;
+    padding: 0;
     margin: 0;
     list-style: none;
 }
 
 .file-structure-list li {
-    padding: 6px 12px;
-    color: #7e8590;
-    font-size: 12px;
+    padding: 10px 12px;
+    color: #ddd;
     font-family: 'Nunito', sans-serif !important;
+    font-size: 0.80rem;
+    font-weight: 500;
     cursor: pointer;
-    transition: all 0.3s ease-out;
-    border-radius: 5px;
+    transition: all 0.2s ease;
+    border-radius: 8px;
     margin: 2px 0;
 }
 
 .file-structure-list li:hover {
-    background-color: #5353ff;
-    color: #ffffff;
-    transform: translate(1px, -1px);
+    background: #2a2a2a;
+    transform: translateX(2px);
 }
 
 .file-structure-list li.category-item {
@@ -572,18 +577,18 @@ body.with-background #topBar {
 /* Customization submenu */
 .customization-submenu {
     position: absolute;
-    left: calc(100% + 2px);
-    top: -0.9rem;
-    background: #000;
-    border-radius: 0.36rem;
-    padding: 0.9rem;
+    left: calc(100% + 5px);
+    top: 0;
+    background: #131313;
+    border-radius: 12px;
+    padding: 8px;
     opacity: 0;
     visibility: hidden;
-    transform: translateX(-10px);
-    transition: opacity 0.15s ease, transform 0.15s ease, visibility 0s 0.3s;
+    transition: opacity 0.2s, visibility 0.2s;
     display: flex;
     flex-direction: column;
-    gap: 0.72rem;
+    gap: 4px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
     min-width: 150px;
     pointer-events: none;
     z-index: 1001;
@@ -599,19 +604,24 @@ body.with-background #topBar {
 }
 
 .bg-option {
-    padding: 0.72rem;
-    border-radius: 0.27rem;
+    padding: 10px 12px;
+    border-radius: 8px;
     cursor: pointer;
-    transition: background 0.2s;
+    transition: all 0.2s ease;
     color: #ddd;
-    font-size: 0.81rem;
+    font-size: 0.80rem;
+    font-weight: 500;
     font-family: 'Nunito', sans-serif !important;
     user-select: none;
     white-space: nowrap;
+    display: flex;
+    align-items: center;
+    gap: 12px;
 }
 
 .bg-option:hover {
-    background: #2b2a2a;
+    background: #2a2a2a;
+    transform: translateX(2px);
 }
 
 .bg-option.active {

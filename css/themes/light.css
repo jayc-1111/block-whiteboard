@@ -460,6 +460,9 @@
 
 .light-mode .settings-option {
     color: #5c5c5c !important;
+    padding: 10px 12px !important;
+    border-radius: 8px !important;
+    gap: 6px !important;
 }
 
 .light-mode .settings-option:hover {
@@ -473,11 +476,16 @@
 .light-mode .customization-submenu {
     background: #FFFFFF !important;
     border: 2px solid #ffffff !important;
+    border-radius: 8px !important;
+    padding: 8px !important;
     box-shadow: none !important;
 }
 
 .light-mode .bg-option {
     color: #5c5c5c !important;
+    padding: 10px 12px !important;
+    border-radius: 8px !important;
+    gap: 6px !important;
 }
 
 .light-mode .bg-option:hover {
@@ -500,6 +508,9 @@
 
 .light-mode .dropdown-item {
     color: #5c5c5c !important;
+    padding: 10px 12px !important;
+    border-radius: 8px !important;
+    gap: 6px !important;
 }
 
 .light-mode .dropdown-item:hover {
@@ -515,6 +526,9 @@
 
 .light-mode .file-structure-list li {
     color: #5c5c5c !important;
+    padding: 10px 12px !important;
+    border-radius: 8px !important;
+    gap: 6px !important;
 }
 
 .light-mode .file-structure-list li:hover {
@@ -680,8 +694,8 @@
 }
 
 .light-mode .board-dropdown .element:hover {
-    background-color: #3B82F6 !important;
-    color: #FFFFFF !important;
+    background-color: #E8EBF0 !important;
+    color: #5c5c5c !important;
 }
 
 .light-mode .board-dropdown .element.active {
@@ -800,8 +814,8 @@
     border: 1px solid #ffffff !important;
 }
 
-/* Transitions for smooth theme switching */
+/* Transitions for smooth theme switching - exclude dropdowns */
 .light-mode,
-.light-mode * {
+.light-mode *:not(.board-dropdown):not(.settings-menu):not(.add-dropdown-menu):not(.file-structure-dropdown):not(.hamburger-dropdown):not(.customization-submenu) {
     transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
 }

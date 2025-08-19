@@ -3,22 +3,22 @@
 /* Main dropdown container - CSS hover solution */
 #yourFilesItem .file-structure-dropdown {
     position: absolute;
-    left: 100%;
+    left: calc(100% + 5px);
     top: 0;
-    background: #131313; /* Same as toolbar */
-    border-radius: 8px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-    padding: 16px;
+    background: #131313;
+    border-radius: 12px;
+    padding: 8px;
     min-width: 280px;
     max-width: 400px;
     z-index: 1002;
     margin: 0;
     font-family: 'Nunito', sans-serif;
-    font-size: 13px;
-    /* Hidden by default */
+    font-size: 0.80rem;
+    font-weight: 500;
     opacity: 0;
     visibility: hidden;
     transition: opacity 0.2s, visibility 0.2s;
+    border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 /* Show dropdown on hover */
@@ -86,14 +86,15 @@
     cursor: pointer;
     display: flex;
     align-items: center;
-    gap: 6px;
-    padding: 4px 8px;
-    border-radius: 4px;
-    transition: background-color 0.2s;
+    gap: 12px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    transition: all 0.2s ease;
 }
 
 .file-tree details summary:hover {
-    background-color: #1a1a1a;
+    background: #2a2a2a;
+    transform: translateX(2px);
 }
 
 /* Remove default marker */
@@ -129,7 +130,7 @@
 .category-link {
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: 12px;
     flex: 1;
     cursor: pointer;
     transition: color 0.2s;
@@ -184,16 +185,17 @@
 .file-item {
     display: flex;
     align-items: center;
-    gap: 6px;
-    padding: 4px 8px;
-    border-radius: 4px;
+    gap: 12px;
+    padding: 10px 12px;
+    border-radius: 8px;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: all 0.2s ease;
 }
 
 .file-item:hover {
-    background-color: #1a1a1a;
-    color: #3b82f6;
+    background: #2a2a2a;
+    transform: translateX(2px);
+    color: #ddd;
 }
 
 .file-item:hover .file-icon {
@@ -210,8 +212,9 @@
 
 /* Light mode support */
 .light-mode .file-structure-dropdown {
-    background: #fff;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    background: #FFFFFF;
+    border: 2px solid #ffffff;
+    box-shadow: none;
 }
 
 .light-mode .file-tree {
@@ -224,7 +227,7 @@
 }
 
 .light-mode .file-tree details summary:hover {
-    background-color: #f3f4f6;
+    background: #E8EBF0;
 }
 
 .light-mode .file-tree summary::before {
@@ -242,8 +245,8 @@
 }
 
 .light-mode .file-item:hover {
-    background-color: #f3f4f6;
-    color: #3b82f6;
+    background: #E8EBF0;
+    color: #5c5c5c;
 }
 
 .light-mode .file-tree-empty {
