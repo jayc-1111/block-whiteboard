@@ -1,5 +1,64 @@
 /* Quill Editor Overrides */
 
+/* Default (light mode) styles to match dark canvas theme */
+.card.expanded .ql-toolbar {
+    background: #ffffff !important;  /* Match card background */
+    border-color: #ffffff !important;
+}
+
+.card.expanded .ql-toolbar button {
+    color: #b0b0b0 !important;
+}
+
+.card.expanded .ql-toolbar button:hover {
+    color: #f0f0f0 !important;
+}
+
+.card.expanded .ql-toolbar button.ql-active,
+.card.expanded .ql-toolbar .ql-picker-label.ql-active,
+.card.expanded .ql-toolbar .ql-picker-item.ql-selected {
+    color: #5353ff !important;  /* Use theme blue */
+}
+
+.card.expanded .ql-toolbar .ql-stroke {
+    stroke: #b0b0b0 !important;
+}
+
+.card.expanded .ql-toolbar .ql-fill {
+    fill: #b0b0b0 !important;
+}
+
+.card.expanded .ql-toolbar .ql-picker {
+    color: #b0b0b0 !important;
+}
+
+.card.expanded .ql-editor {
+    background: #ffffff !important;  /* Match category background */
+    color: #f0f0f0 !important;  /* Match card text color */
+    caret-color: #f0f0f0;
+}
+
+.card.expanded .ql-container {
+    background: #ffffff !important;
+    border-color: #ffffff !important;
+}
+
+/* Section editor styles */
+.card-section .ql-toolbar {
+    background: #191919 !important;
+    border-color: #2a2a2a !important;
+}
+
+.card-section .ql-editor {
+    background: #131313 !important;
+    color: #f0f0f0 !important;
+}
+
+.card-section .ql-container {
+    background: #131313 !important;
+    border-color: #2a2a2a !important;
+}
+
 /* Dark mode button styling */
 .ql-dark-mode {
     width: auto !important;
@@ -13,7 +72,7 @@
     fill: currentColor;
 }
 
-/* Dark mode styles */
+/* Actual dark mode styles (even darker theme) */
 .ql-toolbar.dark-mode {
     background: #2d2d2d !important;
     border-color: #444 !important;
@@ -95,6 +154,7 @@
 /* Dark mode for bookmark cards */
 .dark-mode .bookmark-card {
     background: #2d2d2d !important;
+    border-radius: 20px !important;
     color: #e0e0e0 !important;
     box-shadow: 0 1px 3px rgba(0,0,0,0.5) !important;
 }

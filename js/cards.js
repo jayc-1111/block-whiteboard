@@ -717,36 +717,25 @@ function expandCard(card) {
 }
 
 // Create bookmark card element
-function createBookmarkCard(title, description, url, date, imageData, bookmarkIndex, expandedCard) {
+function createBookmarkCard(title, description, url, date, imageData, bookmarkIndex, expandedCard, sectionElement) {
+    console.log('🔍 DEBUG: Creating bookmark card', {
+        title,
+        hasImageData: !!imageData,
+        imageDataPreview: imageData ? imageData.substring(0, 50) + '...' : 'null',
+        dateType: typeof date,
+        date: date
+    });
+    
     const card = document.createElement('div');
-    card.className = 'bookmark-card image-style';
+    card.className = 'bookmark-card';
     card.dataset.bookmarkIndex = bookmarkIndex;
     
-    // Add margin-top to first bookmark only
-    if (bookmarkIndex === 0) {
-        card.style.marginTop = '68px';
-    }
-    
-    // Image or placeholder
-    if (imageData) {
-        const img = document.createElement('img');
-        img.className = 'bookmark-image';
-        img.src = imageData;
-        card.appendChild(img);
-    } else {
-        const imagePlaceholder = document.createElement('div');
-        imagePlaceholder.className = 'bookmark-image-placeholder';
-        card.appendChild(imagePlaceholder);
-    }
-    
-    // Create content overlay for hover effect
-    const contentOverlay = document.createElement('div');
-    contentOverlay.className = 'bookmark-content-overlay';
+    // No need for margin-top - grid handles spacing
     
     // Create controls container for top right buttons
     const controlsContainer = document.createElement('div');
     controlsContainer.className = 'bookmark-controls-container';
-    controlsContainer.style.cssText = 'display: flex; position: absolute; top: 8px; right: 8px; z-index: 10; gap: 4px;';
+    // Styles are now in CSS
     
     // Remove button
     const removeBtn = document.createElement('button');
@@ -757,25 +746,30 @@ function createBookmarkCard(title, description, url, date, imageData, bookmarkIn
         <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path>
     </svg>`;
     removeBtn.title = 'Remove bookmark';
-    removeBtn.style.cssText = 'padding: 2px 4px; background: #dc2626; border: 1px solid #ef4444; border-radius: 12px; cursor: pointer; transition: all 0.2s; height: 22px; display: flex; align-items: center;';
+    // Styles are now in CSS
     
     removeBtn.onclick = () => {
-        removeBookmark(expandedCard, bookmarkIndex);
+        removeBookmark(expandedCard, bookmarkIndex, sectionElement);
     };
     
     // Add hover effect for remove button
-    removeBtn.onmouseenter = () => {
-        removeBtn.style.background = '#ef4444';
-        removeBtn.style.transform = 'scale(1.05)';
-    };
-    removeBtn.onmouseleave = () => {
-        removeBtn.style.background = '#dc2626';
-        removeBtn.style.transform = 'scale(1)';
-    };
+    // Hover effects are now handled by CSS
     
     controlsContainer.appendChild(removeBtn);
-    contentOverlay.appendChild(controlsContainer);
+    card.appendChild(controlsContainer);
     
+    // Image or placeholder
+    if (imageData) {
+        const img = document.createElement('img');
+        img.className = 'bookmark-image';
+        img.src = imageData;
+        // Styles are now in CSS
+        card.appendChild(img);
+    } else {
+        const imagePlaceholder = document.createElement('div');
+        imagePlaceholder.className = 'bookmark-image-placeholder';
+        card.appendChild(imagePlaceholder);
+    }    
     const cardTitle = document.createElement('h3');
     cardTitle.className = 'bookmark-title';
     
@@ -792,15 +786,28 @@ function createBookmarkCard(title, description, url, date, imageData, bookmarkIn
     
     const cardDate = document.createElement('div');
     cardDate.className = 'bookmark-date';
-    cardDate.textContent = date.toLocaleDateString ? date.toLocaleDateString() : date;
+    // Styles are now in CSS
+    // Handle different date formats
+    let displayDate = date;
+    if (typeof date === 'string') {
+        try {
+            displayDate = new Date(date).toLocaleDateString();
+        } catch (e) {
+            displayDate = date;
+        }
+    } else if (date && date.toLocaleDateString) {
+        displayDate = date.toLocaleDateString();
+    }
+    cardDate.textContent = displayDate;
     
-    contentOverlay.appendChild(cardTitle);
-    contentOverlay.appendChild(cardDesc);
-    contentOverlay.appendChild(cardDate);
+    card.appendChild(cardTitle);
+    card.appendChild(cardDesc);
+    card.appendChild(cardDate);
     
     // Create controls row at the bottom
     const controlsRow = document.createElement('div');
     controlsRow.className = 'bookmark-controls';
+    // Styles are now in CSS
     
     // Move up button
     const moveUpBtn = document.createElement('button');
@@ -809,12 +816,11 @@ function createBookmarkCard(title, description, url, date, imageData, bookmarkIn
         <polyline points="18 15 12 9 6 15"></polyline>
     </svg>`;
     moveUpBtn.title = 'Move up';
-    moveUpBtn.style.cssText = 'padding: 2px 4px; background: #374151; border: 1px solid #4b5563; border-radius: 12px; cursor: pointer; transition: all 0.2s; height: 22px; display: flex; align-items: center;';
+    // Styles are now in CSS
     moveUpBtn.disabled = bookmarkIndex === 0;
-    if (bookmarkIndex === 0) moveUpBtn.style.opacity = '0.3';
     
     moveUpBtn.onclick = () => {
-        reorderBookmark(expandedCard, bookmarkIndex, bookmarkIndex - 1);
+        reorderBookmark(expandedCard, bookmarkIndex, bookmarkIndex - 1, sectionElement);
     };
     
     // Move down button
@@ -824,44 +830,43 @@ function createBookmarkCard(title, description, url, date, imageData, bookmarkIn
         <polyline points="6 9 12 15 18 9"></polyline>
     </svg>`;
     moveDownBtn.title = 'Move down';
-    moveDownBtn.style.cssText = 'padding: 2px 4px; background: #374151; border: 1px solid #4b5563; border-radius: 12px; cursor: pointer; transition: all 0.2s; height: 22px; display: flex; align-items: center;';
-    const totalBookmarks = expandedCard?.bookmarks?.length || 1;
+    // Styles are now in CSS
+    // Get total bookmarks from section if available
+    const totalBookmarks = sectionElement?.sectionData?.bookmarks?.length || 1;
     moveDownBtn.disabled = bookmarkIndex >= totalBookmarks - 1;
-    if (bookmarkIndex >= totalBookmarks - 1) moveDownBtn.style.opacity = '0.3';
     
     moveDownBtn.onclick = () => {
-        reorderBookmark(expandedCard, bookmarkIndex, bookmarkIndex + 1);
+        reorderBookmark(expandedCard, bookmarkIndex, bookmarkIndex + 1, sectionElement);
     };
     
-    // Add hover effects
-    [moveUpBtn, moveDownBtn].forEach(btn => {
-        if (!btn.disabled) {
-            btn.onmouseenter = () => {
-                btn.style.background = '#4b5563';
-                btn.style.color = '#fff';
-            };
-            btn.onmouseleave = () => {
-                btn.style.background = '#374151';
-                btn.style.color = '#9ca3af';
-            };
-        }
-    });
+    // Hover effects are now handled by CSS
     
     controlsRow.appendChild(moveUpBtn);
     controlsRow.appendChild(moveDownBtn);
-    contentOverlay.appendChild(controlsRow);
-    
-    card.appendChild(contentOverlay);
+    card.appendChild(controlsRow);
     
     return card;
 }
 
 // Function to remove a bookmark
-function removeBookmark(expandedCard, bookmarkIndex) {
-    if (!expandedCard || !expandedCard.bookmarks) return;
+function removeBookmark(expandedCard, bookmarkIndex, sectionElement) {
+    // Find the section that contains this bookmark
+    if (!sectionElement) {
+        const bookmarkCard = document.querySelector(`[data-bookmark-index="${bookmarkIndex}"]`);
+        if (bookmarkCard) {
+            sectionElement = bookmarkCard.closest('.card-section');
+        }
+    }
     
-    const bookmarks = expandedCard.bookmarks;
-    if (bookmarkIndex < 0 || bookmarkIndex >= bookmarks.length) return;
+    if (!sectionElement || !sectionElement.sectionData) {
+        console.error('Cannot find section for bookmark removal');
+        return;
+    }
+    
+    const sectionData = sectionElement.sectionData;
+    const bookmarks = sectionData.bookmarks;
+    
+    if (!bookmarks || bookmarkIndex < 0 || bookmarkIndex >= bookmarks.length) return;
     
     // Get the bookmark being removed for potential confirmation
     const removedBookmark = bookmarks[bookmarkIndex];
@@ -883,9 +888,18 @@ function removeBookmark(expandedCard, bookmarkIndex) {
                 if (board && board.categories) {
                     const { categoryIndex, cardIndex } = expandedCard.appStateLocation;
                     if (board.categories[categoryIndex] && board.categories[categoryIndex].cards[cardIndex]) {
-                        board.categories[categoryIndex].cards[cardIndex].bookmarks = [...expandedCard.bookmarks];
+                        // Find and update the specific section
+                        if (!board.categories[categoryIndex].cards[cardIndex].sections) {
+                            board.categories[categoryIndex].cards[cardIndex].sections = [];
+                        }
+                        
+                        const sectionIndex = board.categories[categoryIndex].cards[cardIndex].sections.findIndex(s => s.id === sectionData.id);
+                        if (sectionIndex !== -1) {
+                            board.categories[categoryIndex].cards[cardIndex].sections[sectionIndex].bookmarks = [...bookmarks];
+                        }
+                        
                         AppState.set('boards', boards);
-                        console.log('🗑️ BOOKMARK: Updated AppState after removing bookmark');
+                        console.log('🗑️ BOOKMARK: Updated AppState after removing bookmark from section');
                     }
                 }
             }
@@ -894,10 +908,10 @@ function removeBookmark(expandedCard, bookmarkIndex) {
             const existingDialogs = document.querySelectorAll('.dialog-overlay, .confirm-dialog');
             existingDialogs.forEach(dialog => dialog.remove());
             
-            // Refresh the bookmarks display
-            const bookmarksSection = expandedCard.querySelector('.bookmarks-section');
-            if (bookmarksSection) {
-                bookmarksSection.innerHTML = '';
+            // Refresh the bookmarks display for this specific section
+            const bookmarksContainer = sectionElement.querySelector('.section-bookmarks');
+            if (bookmarksContainer) {
+                bookmarksContainer.innerHTML = '';
                 
                 // Re-create all bookmark cards with updated indices
                 if (bookmarks.length > 0) {
@@ -909,14 +923,15 @@ function removeBookmark(expandedCard, bookmarkIndex) {
                             bookmark.timestamp || new Date(),
                             bookmark.screenshot || bookmark.image,
                             index,
-                            expandedCard
+                            expandedCard,
+                            sectionElement
                         );
-                        bookmarksSection.appendChild(bookmarkCard);
+                        bookmarksContainer.appendChild(bookmarkCard);
                     });
                 } else {
                     // Show placeholder when no bookmarks remain
-                    const bookmarkCard = createBookmarkCard('Example Bookmark', 'This is a sample bookmark description that shows how bookmarks will appear.', 'https://example.com', new Date(), null, 0, expandedCard);
-                    bookmarksSection.appendChild(bookmarkCard);
+                    const bookmarkCard = createBookmarkCard('Example Bookmark', 'This is a sample bookmark description that shows how bookmarks will appear.', 'https://example.com', new Date(), null, 0, expandedCard, sectionElement);
+                    bookmarksContainer.appendChild(bookmarkCard);
                 }
             }
             
@@ -941,11 +956,25 @@ function removeBookmark(expandedCard, bookmarkIndex) {
 }
 
 // Function to reorder bookmarks
-function reorderBookmark(expandedCard, fromIndex, toIndex) {
-    if (!expandedCard || !expandedCard.bookmarks) return;
+function reorderBookmark(expandedCard, fromIndex, toIndex, sectionElement) {
+    // Find the section that contains this bookmark
+    if (!sectionElement) {
+        // Try to find section from the bookmark card that was clicked
+        const bookmarkCard = document.querySelector(`[data-bookmark-index="${fromIndex}"]`);
+        if (bookmarkCard) {
+            sectionElement = bookmarkCard.closest('.card-section');
+        }
+    }
     
-    const bookmarks = expandedCard.bookmarks;
-    if (toIndex < 0 || toIndex >= bookmarks.length) return;
+    if (!sectionElement || !sectionElement.sectionData) {
+        console.error('Cannot find section for bookmark reorder');
+        return;
+    }
+    
+    const sectionData = sectionElement.sectionData;
+    const bookmarks = sectionData.bookmarks;
+    
+    if (!bookmarks || toIndex < 0 || toIndex >= bookmarks.length) return;
 
     const wasExpanded = expandedCard.classList.contains('expanded');
     let cardContentToRestore = null;
@@ -970,17 +999,26 @@ function reorderBookmark(expandedCard, fromIndex, toIndex) {
         if (board && board.categories) {
             const { categoryIndex, cardIndex } = expandedCard.appStateLocation;
             if (board.categories[categoryIndex] && board.categories[categoryIndex].cards[cardIndex]) {
-                board.categories[categoryIndex].cards[cardIndex].bookmarks = [...expandedCard.bookmarks];
+                // Find and update the specific section
+                if (!board.categories[categoryIndex].cards[cardIndex].sections) {
+                    board.categories[categoryIndex].cards[cardIndex].sections = [];
+                }
+                
+                const sectionIndex = board.categories[categoryIndex].cards[cardIndex].sections.findIndex(s => s.id === sectionData.id);
+                if (sectionIndex !== -1) {
+                    board.categories[categoryIndex].cards[cardIndex].sections[sectionIndex].bookmarks = [...bookmarks];
+                }
+                
                 AppState.set('boards', boards);
-                console.log('🔖 BOOKMARK: Updated AppState with reordered bookmarks');
+                console.log('🔖 BOOKMARK: Updated AppState with reordered bookmarks in section');
             }
         }
     }
     
-    // Refresh the bookmarks display
-    const bookmarksSection = expandedCard.querySelector('.bookmarks-section');
-    if (bookmarksSection) {
-        bookmarksSection.innerHTML = '';
+    // Refresh the bookmarks display for this specific section
+    const bookmarksContainer = sectionElement.querySelector('.section-bookmarks');
+    if (bookmarksContainer) {
+        bookmarksContainer.innerHTML = '';
         
         // Re-create all bookmark cards with updated indices
         bookmarks.forEach((bookmark, index) => {
@@ -991,9 +1029,10 @@ function reorderBookmark(expandedCard, fromIndex, toIndex) {
                 bookmark.timestamp || new Date(),
                 bookmark.screenshot || bookmark.image,
                 index,
-                expandedCard
+                expandedCard,
+                sectionElement  // Pass section element
             );
-            bookmarksSection.appendChild(bookmarkCard);
+            bookmarksContainer.appendChild(bookmarkCard);
         });
     }
 
@@ -1407,7 +1446,8 @@ window.handleBookmarkData = function(data) {
             bookmark.timestamp,
             bookmark.screenshot,
             sectionData.bookmarks.length - 1,  // New bookmark is at the end
-            expandedCard
+            expandedCard,
+            activeSection  // Pass the section element
         );
         bookmarksSection.appendChild(bookmarkCard);
         console.log('🔖 BOOKMARK: Updated UI with new bookmark');
@@ -1626,14 +1666,15 @@ function createSection(card, bookmarks = [], existingSectionId = null) {
                 bookmark.timestamp || new Date(),
                 bookmark.screenshot || bookmark.image,
                 index,
-                card
+                card,
+                section  // Pass the section element
             );
             bookmarksSection.appendChild(bookmarkCard);
         });
     } else {
         console.log('🔍 DEBUG: Adding sample bookmark to section', { sectionId: sectionData.id });
         // Create sample bookmark card
-        const bookmarkCard = createBookmarkCard('Example Bookmark', 'This is a sample bookmark description that shows how bookmarks will appear.', 'https://example.com', new Date(), null, 0, card);
+        const bookmarkCard = createBookmarkCard('Example Bookmark', 'This is a sample bookmark description that shows how bookmarks will appear.', 'https://example.com', new Date(), null, 0, card, section);
         bookmarksSection.appendChild(bookmarkCard);
     }
     

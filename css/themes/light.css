@@ -142,6 +142,7 @@
 /* Bookmarks */
 .light-mode .bookmark-card {
     background: #FFFFFF !important;
+    border-radius: 20px !important;
     box-shadow: none !important;
 }
 
@@ -164,6 +165,7 @@
 
 .light-mode .bookmark-image-placeholder {
     background: #E8EBF0 !important;
+    border-radius: 20px !important;
 }
 
 /* Toolbar */

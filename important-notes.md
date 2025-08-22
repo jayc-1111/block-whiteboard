@@ -208,6 +208,24 @@
   - Test with mock data before extension integration
 - **Key Learning**: Start simple, focus on styling and UX before complex integration
 
+## Recent Issues Fixed (8/20/2025)
+
+### 53. Fixed Bookmark Screenshot & Timestamp Issues (8/20/2025)
+- **Problem 1**: Extension sending malformed Unix timestamp (1755679823111 = year 2525)
+- **Problem 2**: Screenshot data not displaying despite being captured
+- **Root Causes**:
+  - Extension generating incorrect timestamp (possibly Date.now() error)
+  - Property mismatch: extension sends `screenshotData` but code looked for `screenshot`
+- **Solutions**:
+  - Added timestamp validation: if > 10000000000000, use current time
+  - Check `bookmarkData.screenshotData` first, then fallback to `screenshot`
+  - Fixed date display to handle ISO strings properly
+  - Added debug logging to track data flow
+- **Files Modified**:
+  - `bookmark-destination-selector.js` - Lines 663-691 (timestamp fix & property check)
+  - `cards.js` - Lines 720-800 (debug logging & date display fix)
+- **Testing**: Look for 🔍 DEBUG logs in console when adding bookmarks
+
 ## Recent Issues Fixed (8/8/2025)
 
 ### 52. Fixed Bookmark Persistence and Card Order Issues (8/9/2025)
@@ -996,6 +1014,34 @@
   - `content-script.js` - Improved error handling
   - `extension-bridge.js` - Added success logging
   - `background.js` - Added error boundaries to prevent crashes
+
+### 47. Firefox Extension Screenshot Dialog Implementation (Current)
+- **Feature**: Added dialog asking users to choose screenshot capture method
+- **Implementation**: Shows modal with three options when extension button clicked:
+  - Full Page Screenshot (purple button) - Captures entire visible page
+  - Select Specific Element (green button) - Activates element picker for targeted capture
+  - Cancel (gray button) - Closes dialog without capturing
+- **Technical Details**:
+  - Removed old conditional logic checking `useElementPicker` setting
+  - Now always shows dialog regardless of settings (as requested)
+  - Dialog has overlay with backdrop blur effect
+  - Includes hover effects and keyboard support (ESC to cancel)
+  - Uses inline styles for reliability across different websites
+- **Function**: `showCaptureDialog()` in content-script.js
+- **Message Flow**:
+  1. Browser action triggers 'activateElementPicker' message
+  2. Content script shows dialog instead of immediately capturing
+  3. User selects capture method or cancels
+  4. Full page uses `captureForBlockWhiteboard()`
+  5. Element selection activates `window.zenbanPicker.activate()`
+- **Benefits**: 
+  - Better user control over what gets captured
+  - Clear visual feedback with modern UI
+  - Prevents accidental full-page captures
+  - Defaults to user choice rather than settings
+- **Location**: 
+  - `zenban-firefox-extension/content-script.js` (lines 213-368)
+  - Dialog created dynamically in DOM with high z-index (2147483647)
 
 ### 46. Bookmark Display After Refresh Issue - FIXED (8/9/2025)
 - **Problem**: Bookmarks loaded from Firebase but didn't display after refresh

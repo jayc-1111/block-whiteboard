@@ -501,6 +501,12 @@
                     <h3 style="margin: 0 0 16px 0; font-size: 18px;">Where would you like to add this bookmark?</h3>
                     <p style="color: #666; margin-bottom: 20px; font-size: 14px;">You currently have a card open.</p>
                     
+                    <!-- Bookmark title editing -->
+                    <div style="margin-bottom: 16px;">
+                        <label style="display: block; margin-bottom: 8px; font-size: 14px; font-weight: 500;">Bookmark Title:</label>
+                        <input type="text" id="bookmarkTitleInput" style="width: 100%; padding: 8px 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; box-sizing: border-box;" placeholder="Enter bookmark title">
+                    </div>
+                    
                     <!-- Section selection will be added here -->
                     <div id="sectionSelection" style="display: none; margin-bottom: 16px;">
                         <label style="display: block; margin-bottom: 8px; font-size: 14px; font-weight: 500;">Select a section:</label>
@@ -546,6 +552,12 @@
         
         // Get the actual DOM element for the expanded card
         const expandedCardDOM = document.querySelector('.card.expanded') || expandedCard;
+        
+        // Pre-fill the bookmark title input
+        const titleInput = document.getElementById('bookmarkTitleInput');
+        if (titleInput && bookmarkData) {
+            titleInput.value = bookmarkData.title || '';
+        }
         
         // Find all sections in the expanded card
         const sections = expandedCardDOM.querySelectorAll('.card-section');
@@ -640,6 +652,10 @@
             e.stopPropagation(); // Prevent click from reaching overlay
             modal.style.display = 'none';
             
+            // Get the edited title from the input field
+            const titleInput = document.getElementById('bookmarkTitleInput');
+            const editedTitle = titleInput ? titleInput.value : (bookmarkData.title || 'Untitled');
+            
             // Use selected section or fall back to first section
             if (expandedCardDOM && bookmarkData) {
                 let targetSection = selectedSectionElement;
@@ -661,15 +677,44 @@
                     targetSectionData.bookmarks = [];
                 }
                 
-                // Add the new bookmark
+                // Add the new bookmark with enhanced debugging
+                console.log('🔍 DEBUG: Raw bookmark data received:', {
+                    timestamp: bookmarkData.timestamp,
+                    timestampType: typeof bookmarkData.timestamp,
+                    screenshot: bookmarkData.screenshot ? `${bookmarkData.screenshot.substring(0, 50)}...` : 'null',
+                    screenshotData: bookmarkData.screenshotData ? `${bookmarkData.screenshotData.substring(0, 50)}...` : 'null'
+                });
+                
+                // Fix timestamp if it's a number (Unix timestamp)
+                let fixedTimestamp = bookmarkData.timestamp;
+                if (typeof fixedTimestamp === 'number') {
+                    // Check if it's in milliseconds and looks wrong (year 2525)
+                    if (fixedTimestamp > 10000000000000) {
+                        console.log('🔍 DEBUG: Timestamp seems incorrect, using current time');
+                        fixedTimestamp = new Date().toISOString();
+                    } else if (fixedTimestamp < 10000000000) {
+                        // Unix timestamp in seconds, convert to milliseconds
+                        fixedTimestamp = new Date(fixedTimestamp * 1000).toISOString();
+                    } else {
+                        // Unix timestamp in milliseconds
+                        fixedTimestamp = new Date(fixedTimestamp).toISOString();
+                    }
+                }
+                
                 const bookmark = {
-                    title: bookmarkData.title || 'Untitled',
+                    title: editedTitle,
                     url: bookmarkData.url || '',
                     description: bookmarkData.description || bookmarkData.url || '',
-                    screenshot: bookmarkData.screenshot || bookmarkData.image || null,
-                    timestamp: bookmarkData.timestamp || new Date().toISOString(),
+                    screenshot: bookmarkData.screenshotData || bookmarkData.screenshot || bookmarkData.image || null,
+                    timestamp: fixedTimestamp || new Date().toISOString(),
                     id: `bookmark-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
                 };
+                
+                console.log('🔍 DEBUG: Processed bookmark:', {
+                    title: bookmark.title,
+                    timestamp: bookmark.timestamp,
+                    hasScreenshot: !!bookmark.screenshot
+                });
                 
                 targetSectionData.bookmarks.push(bookmark);
                 console.log('🔖 BOOKMARK MODAL: Added bookmark to section:', targetSection.querySelector('.section-title')?.textContent);
@@ -770,8 +815,19 @@
         newAddElsewhere.addEventListener('click', (e) => {
             e.stopPropagation(); // Prevent click from reaching overlay
             modal.style.display = 'none';
+            
+            // Get the edited title from the input field
+            const titleInput = document.getElementById('bookmarkTitleInput');
+            const editedTitle = titleInput ? titleInput.value : (bookmarkData.title || 'Untitled');
+            
+            // Update the bookmark data with the edited title
+            const updatedBookmarkData = {
+                ...bookmarkData,
+                title: editedTitle
+            };
+            
             // Don't clean up localStorage here - we're passing bookmark to destination selector
-            showBookmarkDestination(bookmarkData);
+            showBookmarkDestination(updatedBookmarkData);
         });
         
         // Cancel button

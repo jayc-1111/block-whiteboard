@@ -113,30 +113,62 @@ async function captureAndSend(targetOrigin, elementBounds = null) {
     if (isCapturing) return;
     isCapturing = true;
     
-    console.log('Capturing screenshot...');
+    console.log('🎯 Capturing screenshot with element bounds:', elementBounds);
     
     try {
         // Use browser's built-in screenshot API
         const screenshot = await browser.runtime.sendMessage({ action: 'captureTab' });
         if (screenshot) {
-            console.log('Screenshot captured successfully');
-            // Show crop interface instead of sending immediately
-            if (window.showCropInterface) {
+            console.log('📸 Screenshot captured successfully, showing crop interface');
+            // Show crop interface if element bounds provided
+            if (elementBounds && window.showCropInterface) {
+                console.log('🖼️ Showing crop interface with element bounds');
                 window.showCropInterface(screenshot, targetOrigin, elementBounds);
             } else {
-                sendScreenshotData(screenshot, targetOrigin);
+                console.log('📤 Sending full screenshot directly');
+                // Send full screenshot directly to Block Whiteboard
+                await sendToBlockWhiteboard(screenshot, elementBounds);
             }
         } else {
             console.error('No screenshot data received');
-            sendError(targetOrigin, 'Failed to capture screenshot');
         }
     } catch (error) {
         console.error('Screenshot capture failed:', error);
-        sendError(targetOrigin, error.message);
     } finally {
         isCapturing = false;
     }
 }
+
+// Send cropped or full screenshot to Block Whiteboard
+async function sendToBlockWhiteboard(screenshot, elementBounds = null) {
+    const pageData = {
+        title: document.title || 'Untitled',
+        url: window.location.href,
+        description: document.querySelector('meta[name="description"]')?.content || '',
+        screenshot: screenshot,
+        image: screenshot,
+        timestamp: new Date().toISOString(),
+        elementBounds: elementBounds,
+        captureType: elementBounds ? 'element' : 'fullpage'
+    };
+    
+    console.log('📤 Sending bookmark to Block Whiteboard:', pageData.captureType);
+    
+    // Send to Block Whiteboard via background script
+    await browser.runtime.sendMessage({
+        action: 'sendToBlockWhiteboard',
+        data: pageData
+    });
+    console.log('✅ Bookmark sent to Block Whiteboard');
+}
+
+// Function for crop tool to use
+window.sendScreenshotData = function(screenshot, targetOrigin) {
+    console.log('🎨 Crop tool sending cropped screenshot');
+    sendToBlockWhiteboard(screenshot, null).catch(err => {
+        console.error('Failed to send cropped screenshot:', err);
+    });
+};
 
 function sendScreenshotData(screenshot, targetOrigin) {
     const screenshotData = {
@@ -210,6 +242,165 @@ window.captureAndSend = async function(targetOrigin, elementBounds = null) {
     }
 };
 
+// Create selection dialog
+function showCaptureDialog() {
+    // Remove any existing dialog
+    const existingDialog = document.getElementById('zenban-capture-dialog');
+    if (existingDialog) {
+        existingDialog.remove();
+    }
+    
+    // Create dialog overlay
+    const overlay = document.createElement('div');
+    overlay.id = 'zenban-capture-dialog';
+    overlay.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 2147483647;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    `;
+    
+    // Create dialog box
+    const dialog = document.createElement('div');
+    dialog.style.cssText = `
+        background: white;
+        border-radius: 12px;
+        padding: 24px;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+        max-width: 400px;
+        width: 90%;
+    `;
+    
+    dialog.innerHTML = `
+        <h2 style="margin: 0 0 20px 0; font-size: 20px; color: #1f2937;">Capture Screenshot for Zenban</h2>
+        <p style="margin: 0 0 24px 0; color: #6b7280; font-size: 14px; line-height: 1.5;">
+            Choose how you want to capture this page for your bookmark:
+        </p>
+        <div style="display: flex; flex-direction: column; gap: 12px;">
+            <button id="zenban-fullpage" style="
+                padding: 16px;
+                background: #667eea;
+                color: white;
+                border: none;
+                border-radius: 8px;
+                font-size: 16px;
+                cursor: pointer;
+                transition: background 0.2s;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 8px;
+            ">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                </svg>
+                Full Page Screenshot
+            </button>
+            <button id="zenban-element" style="
+                padding: 16px;
+                background: #22c55e;
+                color: white;
+                border: none;
+                border-radius: 8px;
+                font-size: 16px;
+                cursor: pointer;
+                transition: background 0.2s;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 8px;
+            ">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M5 12h14"></path>
+                    <path d="M12 5v14"></path>
+                </svg>
+                Select Specific Element
+            </button>
+            <button id="zenban-cancel" style="
+                padding: 12px;
+                background: #f3f4f6;
+                color: #6b7280;
+                border: 1px solid #e5e7eb;
+                border-radius: 8px;
+                font-size: 14px;
+                cursor: pointer;
+                transition: all 0.2s;
+            ">
+                Cancel
+            </button>
+        </div>
+    `;
+    
+    overlay.appendChild(dialog);
+    document.body.appendChild(overlay);
+    
+    // Add hover effects
+    const fullpageBtn = dialog.querySelector('#zenban-fullpage');
+    const elementBtn = dialog.querySelector('#zenban-element');
+    const cancelBtn = dialog.querySelector('#zenban-cancel');
+    
+    fullpageBtn.onmouseenter = () => fullpageBtn.style.background = '#5a67d8';
+    fullpageBtn.onmouseleave = () => fullpageBtn.style.background = '#667eea';
+    
+    elementBtn.onmouseenter = () => elementBtn.style.background = '#16a34a';
+    elementBtn.onmouseleave = () => elementBtn.style.background = '#22c55e';
+    
+    cancelBtn.onmouseenter = () => {
+        cancelBtn.style.background = '#e5e7eb';
+        cancelBtn.style.color = '#374151';
+    };
+    cancelBtn.onmouseleave = () => {
+        cancelBtn.style.background = '#f3f4f6';
+        cancelBtn.style.color = '#6b7280';
+    };
+    
+    // Handle button clicks
+    fullpageBtn.onclick = () => {
+        overlay.remove();
+        console.log('📸 CONTENT: User selected full page capture');
+        captureForBlockWhiteboard();
+    };
+    
+    elementBtn.onclick = () => {
+        overlay.remove();
+        console.log('🎯 CONTENT: User selected element picker');
+        // Wait for element picker to load
+        setTimeout(() => {
+            if (window.zenbanPicker && window.zenbanPicker.activate) {
+                window.zenbanPicker.activate();
+                console.log('Element picker activated');
+            } else {
+                console.error('Element picker not available, falling back to full page capture');
+                // Fallback to full page capture
+                captureForBlockWhiteboard().catch(err => {
+                    console.error('Fallback capture failed:', err);
+                });
+            }
+        }, 100);
+    };
+    
+    cancelBtn.onclick = () => {
+        overlay.remove();
+        console.log('❌ CONTENT: User cancelled capture');
+    };
+    
+    // Close on escape key
+    const handleEscape = (e) => {
+        if (e.key === 'Escape') {
+            overlay.remove();
+            document.removeEventListener('keydown', handleEscape);
+        }
+    };
+    document.addEventListener('keydown', handleEscape);
+}
+
 // Handle browser action click - single message listener
 browser.runtime.onMessage.addListener((request, sender, sendResponse) => {
     messageCount++;
@@ -223,32 +414,13 @@ browser.runtime.onMessage.addListener((request, sender, sendResponse) => {
     
     if (request.action === 'activateElementPicker') {
         console.log('🎆 CONTENT: Received activateElementPicker command');
+        console.log('🎆 CONTENT: Always showing capture dialog now');
         
-        // Check if we should use element picker or direct capture
-        if (request.useElementPicker || useElementPicker) {
-            console.log('Activating element picker mode');
-            // Wait for element picker to load
-            setTimeout(() => {
-                if (window.zenbanPicker && window.zenbanPicker.activate) {
-                    window.zenbanPicker.activate();
-                    console.log('Element picker activated');
-                } else {
-                    console.error('Element picker not available, falling back to full page capture');
-                    // Fallback to full page capture
-                    captureForBlockWhiteboard().catch(err => {
-                        console.error('Fallback capture failed:', err);
-                    });
-                }
-            }, 100);
-        } else {
-            console.log('Direct capture mode - capturing immediately');
-            captureForBlockWhiteboard().catch(err => {
-                console.error('Direct capture failed:', err);
-            });
-        }
+        // Always show the selection dialog regardless of settings
+        showCaptureDialog();
         
         // Send response immediately
-        sendResponse({ status: 'processing' });
+        sendResponse({ status: 'dialog_shown' });
         return false; // Synchronous response
         
     } else if (request.action === 'captureForZenban') {
