@@ -13,9 +13,9 @@
     font-size: 18px;
     font-weight: 600;
     color: #111827;
-    border: 1px solid #ffffff;
+    border: 1px solid #F8F9FF;
     border-radius: 4px;
-    background: #ffffff;
+    background: #F8F9FF;
 }
 
 /* Section title when focused */
@@ -38,7 +38,6 @@
 /* Section bookmarks container - Flex Grid Layout */
 .section-bookmarks {
     flex: 2; /* Increased from 1.2 to give more space to bookmarks */
-    padding-left: 30px;
     display: flex;
     flex-wrap: wrap;
     gap: 2px; /* Changed to 2px gap */
@@ -59,10 +58,9 @@
 .card.expanded .bookmarks-section,
 .expanded .section-bookmarks {
     flex: 2; /* Increased from 1.2 for more space */
-    padding-left: 30px;
     display: flex;
     flex-wrap: wrap;
-    gap: 2px; /* Changed to 2px gap */
+    gap: 15px; /* Changed to 2px gap */
     align-content: flex-start;
     box-sizing: border-box;
 }

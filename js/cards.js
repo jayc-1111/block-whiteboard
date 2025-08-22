@@ -126,6 +126,7 @@ function addCardToCategory(categoryOrIndex, title = 'New Card', content = null, 
 
     const cardContent = document.createElement('div');
     cardContent.className = 'card-content';
+    cardContent.style.display = 'none'; // Ensure it's hidden by default
 
     // Create container for Editor.js (will be initialized when expanded)
     const editorContainer = document.createElement('div');
@@ -729,121 +730,125 @@ function createBookmarkCard(title, description, url, date, imageData, bookmarkIn
     const card = document.createElement('div');
     card.className = 'bookmark-card';
     card.dataset.bookmarkIndex = bookmarkIndex;
+    card.dataset.index = bookmarkIndex; // For demo styling compatibility
     
-    // No need for margin-top - grid handles spacing
+    // Match the demo structure exactly with image container
+    const imageContainer = document.createElement('div');
+    imageContainer.className = 'image-container';
     
-    // Create controls container for top right buttons
-    const controlsContainer = document.createElement('div');
-    controlsContainer.className = 'bookmark-controls-container';
-    // Styles are now in CSS
+    // Image overlay
+    const imageOverlay = document.createElement('div');
+    imageOverlay.className = 'image-overlay';
+    if (imageData) {
+        imageOverlay.style.backgroundImage = `url('${imageData}')`;
+        // Also set on card for blurred background
+        card.style.setProperty('--bookmark-bg-image', `url('${imageData}')`);
+    }
+    imageContainer.appendChild(imageOverlay);
     
-    // Remove button
-    const removeBtn = document.createElement('button');
-    removeBtn.className = 'bookmark-remove-btn';
-    removeBtn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <path d="M3 6h18"></path>
-        <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
-        <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path>
-    </svg>`;
-    removeBtn.title = 'Remove bookmark';
-    // Styles are now in CSS
-    
-    removeBtn.onclick = () => {
+    // Delete button in image container
+    const deleteBtn = document.createElement('button');
+    deleteBtn.className = 'delete-button';
+    deleteBtn.setAttribute('aria-label', 'Delete bookmark');
+    deleteBtn.innerHTML = `
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="#ffffff">
+            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+            <path d="M20 6a1 1 0 0 1 .117 1.993l-.117 .007h-.081l-.919 11a3 3 0 0 1 -2.824 2.995l-.176 .005h-8c-1.598 0 -2.904 -1.249 -2.992 -2.75l-.005 -.167l-.923 -11.083h-.08a1 1 0 0 1 -.117 -1.993l.117 -.007h16zm-9.489 5.14a1 1 0 0 0 -1.218 1.567l1.292 1.293l-1.292 1.293l-.083 .094a1 1 0 0 0 1.497 1.32l1.293 -1.292l1.293 1.292l.094 .083a1 1 0 0 0 1.32 -1.497l-1.292 -1.293l1.292 -1.293l.083 -.094a1 1 0 0 0 -1.497 -1.32l-1.293 1.292l-1.293 -1.292l-.094 -.083z"/>
+            <path d="M14 2a2 2 0 0 1 2 2a1 1 0 0 1 -1.993 .117l-.007 -.117h-4l-.007 .117a1 1 0 0 1 -1.993 -.117a2 2 0 0 1 1.85 -1.995l.15 -.005h4z"/>
+        </svg>
+    `;
+    deleteBtn.onclick = (e) => {
+        e.preventDefault();
         removeBookmark(expandedCard, bookmarkIndex, sectionElement);
     };
+    imageContainer.appendChild(deleteBtn);
     
-    // Add hover effect for remove button
-    // Hover effects are now handled by CSS
+    // External link button
+    const externalLink = document.createElement('a');
+    externalLink.href = url;
+    externalLink.target = '_blank';
+    externalLink.className = 'external-link-button';
+    externalLink.setAttribute('aria-label', 'Open bookmark');
+    externalLink.innerHTML = `
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+            <path d="M12 6h-6a2 2 0 0 0 -2 2v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-6"/>
+            <path d="M11 13l9 -9"/>
+            <path d="M15 4h5v5"/>
+        </svg>
+    `;
+    externalLink.onclick = (e) => e.stopPropagation();
+    imageContainer.appendChild(externalLink);
     
-    controlsContainer.appendChild(removeBtn);
-    card.appendChild(controlsContainer);
+    card.appendChild(imageContainer);
     
-    // Image or placeholder
-    if (imageData) {
-        const img = document.createElement('img');
-        img.className = 'bookmark-image';
-        img.src = imageData;
-        // Styles are now in CSS
-        card.appendChild(img);
-    } else {
-        const imagePlaceholder = document.createElement('div');
-        imagePlaceholder.className = 'bookmark-image-placeholder';
-        card.appendChild(imagePlaceholder);
-    }    
+    // Up/Down buttons outside image container
+    const upBtn = document.createElement('button');
+    upBtn.className = 'up-button';
+    upBtn.setAttribute('aria-label', 'Move card up');
+    upBtn.innerHTML = `
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 19V5M5 12l7-7 7 7"/>
+        </svg>
+    `;
+    upBtn.disabled = bookmarkIndex === 0;
+    upBtn.onclick = () => {
+        reorderBookmark(expandedCard, bookmarkIndex, bookmarkIndex - 1, sectionElement);
+    };
+    card.appendChild(upBtn);
+    
+    const downBtn = document.createElement('button');
+    downBtn.className = 'down-button';
+    downBtn.setAttribute('aria-label', 'Move card down');
+    downBtn.innerHTML = `
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 5v14M5 12l7 7 7-7"/>
+        </svg>
+    `;
+    const totalBookmarks = sectionElement?.sectionData?.bookmarks?.length || 1;
+    downBtn.disabled = bookmarkIndex >= totalBookmarks - 1;
+    downBtn.onclick = () => {
+        reorderBookmark(expandedCard, bookmarkIndex, bookmarkIndex + 1, sectionElement);
+    };
+    card.appendChild(downBtn);
+    
+    // Card content section - use bookmark-specific classes to avoid conflicts
+    const cardContent = document.createElement('div');
+    cardContent.className = 'bookmark-content';
+    
     const cardTitle = document.createElement('h3');
-    cardTitle.className = 'bookmark-title';
+    cardTitle.className = 'bookmark-card-title';
+    cardTitle.textContent = title;
+    cardTitle.title = title; // Tooltip for long titles
     
-    // Create title as a link using the bookmark URL
-    const titleLink = document.createElement('a');
-    titleLink.href = url;
-    titleLink.target = '_blank';
-    titleLink.textContent = title;
-    cardTitle.appendChild(titleLink);
-    
-    const cardDesc = document.createElement('p');
-    cardDesc.className = 'bookmark-description';
-    cardDesc.textContent = description;
-    
-    const cardDate = document.createElement('div');
-    cardDate.className = 'bookmark-date';
-    // Styles are now in CSS
-    // Handle different date formats
+    const dateAdded = document.createElement('p');
+    dateAdded.className = 'bookmark-date-added';
+    // Format date consistently
     let displayDate = date;
     if (typeof date === 'string') {
         try {
-            displayDate = new Date(date).toLocaleDateString();
+            const dateObj = new Date(date);
+            const months = ['January', 'February', 'March', 'April', 'May', 'June', 
+                          'July', 'August', 'September', 'October', 'November', 'December'];
+            displayDate = `${months[dateObj.getMonth()]} ${dateObj.getDate()}, ${dateObj.getFullYear()}`;
         } catch (e) {
             displayDate = date;
         }
     } else if (date && date.toLocaleDateString) {
-        displayDate = date.toLocaleDateString();
+        const months = ['January', 'February', 'March', 'April', 'May', 'June', 
+                      'July', 'August', 'September', 'October', 'November', 'December'];
+        displayDate = `${months[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`;
     }
-    cardDate.textContent = displayDate;
+    dateAdded.textContent = `Added: ${displayDate}`;
     
-    card.appendChild(cardTitle);
-    card.appendChild(cardDesc);
-    card.appendChild(cardDate);
+    cardContent.appendChild(cardTitle);
+    cardContent.appendChild(dateAdded);
+    card.appendChild(cardContent);
     
-    // Create controls row at the bottom
-    const controlsRow = document.createElement('div');
-    controlsRow.className = 'bookmark-controls';
-    // Styles are now in CSS
-    
-    // Move up button
-    const moveUpBtn = document.createElement('button');
-    moveUpBtn.className = 'bookmark-move-btn';
-    moveUpBtn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <polyline points="18 15 12 9 6 15"></polyline>
-    </svg>`;
-    moveUpBtn.title = 'Move up';
-    // Styles are now in CSS
-    moveUpBtn.disabled = bookmarkIndex === 0;
-    
-    moveUpBtn.onclick = () => {
-        reorderBookmark(expandedCard, bookmarkIndex, bookmarkIndex - 1, sectionElement);
-    };
-    
-    // Move down button
-    const moveDownBtn = document.createElement('button');
-    moveDownBtn.className = 'bookmark-move-btn';
-    moveDownBtn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <polyline points="6 9 12 15 18 9"></polyline>
-    </svg>`;
-    moveDownBtn.title = 'Move down';
-    // Styles are now in CSS
-    // Get total bookmarks from section if available
-    const totalBookmarks = sectionElement?.sectionData?.bookmarks?.length || 1;
-    moveDownBtn.disabled = bookmarkIndex >= totalBookmarks - 1;
-    
-    moveDownBtn.onclick = () => {
-        reorderBookmark(expandedCard, bookmarkIndex, bookmarkIndex + 1, sectionElement);
-    };
-    
-    // Hover effects are now handled by CSS
-    
-    controlsRow.appendChild(moveUpBtn);
-    controlsRow.appendChild(moveDownBtn);
-    card.appendChild(controlsRow);
+    // Add no-image class if no image data
+    if (!imageData) {
+        card.classList.add('no-image');
+    }
     
     return card;
 }
@@ -1072,6 +1077,18 @@ function collapseCard(card) {
     if (!card || !card.classList.contains('expanded')) return;
     
     console.log('🔍 DEBUG: collapseCard called', { cardId: card.id });
+    
+    // Clean up any sections from card-content to prevent them showing in minimized state
+    const cardContent = card.querySelector('.card-content');
+    if (cardContent) {
+        // Remove any sections that might have been added
+        const sections = cardContent.querySelectorAll('.card-section');
+        sections.forEach(section => section.remove());
+        
+        // Ensure card-content is empty and hidden
+        cardContent.innerHTML = '';
+        cardContent.style.display = 'none';
+    }
     
     // Save sections data before collapsing
     if (card.sections && card.appStateLocation) {

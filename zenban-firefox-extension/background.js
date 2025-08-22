@@ -96,7 +96,7 @@ browser.runtime.onMessage.addListener((request, sender) => {
             // Return a Promise for async operations
             return browser.tabs.captureVisibleTab(null, {
                 format: 'jpeg',
-                quality: 80
+                quality: 92  // Increased from 80 - still safe for 1MB Firestore limit
             }).then(screenshot => {
                 console.log('Background: Screenshot captured, type:', typeof screenshot, 'length:', screenshot ? screenshot.length : 0);
                 return screenshot;

@@ -2,8 +2,8 @@
 
 /* Default (light mode) styles to match dark canvas theme */
 .card.expanded .ql-toolbar {
-    background: #ffffff !important;  /* Match card background */
-    border-color: #ffffff !important;
+    background: #F8F9FF !important;  /* Match card background */
+    border-color: #F8F9FF !important;
 }
 
 .card.expanded .ql-toolbar button {
@@ -33,7 +33,7 @@
 }
 
 .card.expanded .ql-editor {
-    background: #ffffff !important;  /* Match category background */
+    background: #F8F9FF !important;  /* Match category background */
     color: #f0f0f0 !important;  /* Match card text color */
     caret-color: #f0f0f0;
 }
