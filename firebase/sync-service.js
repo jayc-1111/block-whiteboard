@@ -1014,7 +1014,13 @@ export const syncService = {
                                         title: bookmark.title,
                                         url: bookmark.url
                                     });
-                                    return false;
+                                    // Try to compress the bookmark again as a last resort
+                                    if (bookmark.screenshot) {
+                                        console.log('[SYNC DEBUG] Attempting last-resort compression of large bookmark');
+                                        // This will be handled by cleanBookmarkData before saving
+                                    } else {
+                                        return false;
+                                    }
                                 }
                                 
                                 // Check for valid URL format
@@ -1274,32 +1280,117 @@ export const syncService = {
             }
             
             const originalSize = Math.round(imageData.length / 1024); // KB
+            const originalSizeBytes = imageData.length;
             
             // Convert data URL to Blob
             fetch(imageData)
                 .then(res => res.blob())
                 .then(blob => {
+                    // Primary compression: 15% quality with 92% JPEG quality setting, max dimensions 800x600
                     new Compressor(blob, {
-                        quality: maxSizeKB / 500, // Adjust quality based on target size
+                        quality: 0.15, // 15% quality
                         maxWidth: 800,
                         maxHeight: 600,
-                        convertSize: maxSizeKB * 1024, // Target size in bytes
+                        mimeType: 'image/jpeg',
+                        convertSize: 0, // Always convert to JPEG
                         success(result) {
                             // Convert compressed blob back to data URL
                             const reader = new FileReader();
-                            reader.onload = () => {
-                                const compressedSize = Math.round(reader.result.length / 1024);
+                            reader.onload = async () => {
+                                const compressedData = reader.result;
+                                const compressedSize = Math.round(compressedData.length / 1024);
+                                const compressedSizeBytes = compressedData.length;
                                 const reduction = originalSize - compressedSize;
                                 const percentReduction = ((reduction / originalSize) * 100).toFixed(1);
                                 
-                                console.log(`[COMPRESSION] ${originalSize}KB → ${compressedSize}KB (${percentReduction}% reduction)`);
-                                resolve(reader.result);
+                                console.log(`[COMPRESSION] Primary: ${originalSize}KB → ${compressedSize}KB (${percentReduction}% reduction)`);
+                                
+                                // Check if compressed image is under 1MB (1,048,576 bytes)
+                                if (compressedSizeBytes <= 1048576) {
+                                    console.log(`[COMPRESSION] Image under 1MB, using primary compression`);
+                                    resolve(compressedData);
+                                } else {
+                                    console.log(`[COMPRESSION] Image still over 1MB (${compressedSizeBytes} bytes), applying aggressive fallback`);
+                                    // Single aggressive fallback: 10% quality with 80% JPEG quality, max dimensions 600x450
+                                    new Compressor(blob, {
+                                        quality: 0.10, // 10% quality
+                                        maxWidth: 600,
+                                        maxHeight: 450,
+                                        mimeType: 'image/jpeg',
+                                        convertSize: 0, // Always convert to JPEG
+                                        success(fallbackResult) {
+                                            // Convert fallback compressed blob back to data URL
+                                            const fallbackReader = new FileReader();
+                                            fallbackReader.onload = () => {
+                                                const fallbackData = fallbackReader.result;
+                                                const fallbackSize = Math.round(fallbackData.length / 1024);
+                                                const fallbackSizeBytes = fallbackData.length;
+                                                const fallbackReduction = originalSize - fallbackSize;
+                                                const fallbackPercentReduction = ((fallbackReduction / originalSize) * 100).toFixed(1);
+                                                
+                                                console.log(`[COMPRESSION] Fallback: ${originalSize}KB → ${fallbackSize}KB (${fallbackPercentReduction}% reduction)`);
+                                                
+                                                // Final check to ensure we're under 1MB
+                                                if (fallbackSizeBytes <= 1048576) {
+                                                    console.log(`[COMPRESSION] Fallback compression successful, final size: ${fallbackSizeBytes} bytes`);
+                                                    resolve(fallbackData);
+                                                } else {
+                                                    console.warn(`[COMPRESSION] Even fallback compression failed, image still over 1MB (${fallbackSizeBytes} bytes)`);
+                                                    // If still over 1MB, remove image entirely
+                                                    resolve(null);
+                                                }
+                                            };
+                                            fallbackReader.readAsDataURL(fallbackResult);
+                                        },
+                                        error(fallbackErr) {
+                                            console.warn('[COMPRESSION] Fallback compression failed:', fallbackErr);
+                                            // If fallback fails, remove image entirely
+                                            resolve(null);
+                                        },
+                                    });
+                                }
                             };
                             reader.readAsDataURL(result);
                         },
                         error(err) {
-                            console.warn('[COMPRESSION] Failed to compress image:', err);
-                            resolve(imageData); // Fallback to original
+                            console.warn('[COMPRESSION] Primary compression failed:', err);
+                            // If primary compression fails, try fallback
+                            new Compressor(blob, {
+                                quality: 0.10, // 10% quality
+                                maxWidth: 600,
+                                maxHeight: 450,
+                                mimeType: 'image/jpeg',
+                                convertSize: 0, // Always convert to JPEG
+                                success(fallbackResult) {
+                                    // Convert fallback compressed blob back to data URL
+                                    const fallbackReader = new FileReader();
+                                    fallbackReader.onload = () => {
+                                        const fallbackData = fallbackReader.result;
+                                        const fallbackSize = Math.round(fallbackData.length / 1024);
+                                        const fallbackSizeBytes = fallbackData.length;
+                                        const fallbackReduction = originalSize - fallbackSize;
+                                        const fallbackPercentReduction = ((fallbackReduction / originalSize) * 100).toFixed(1);
+                                        
+                                        console.log(`[COMPRESSION] Fallback (primary failed): ${originalSize}KB → ${fallbackSize}KB (${fallbackPercentReduction}% reduction)`);
+                                        
+                                        // Final check to ensure we're under 1MB
+                                        if (fallbackSizeBytes <= 1048576) {
+                                            console.log(`[COMPRESSION] Fallback compression successful, final size: ${fallbackSizeBytes} bytes`);
+                                            resolve(fallbackData);
+                                        } else {
+                                            console.warn(`[COMPRESSION] Even fallback compression failed, image still over 1MB (${fallbackSizeBytes} bytes)`);
+                                            // If still over 1MB, remove image entirely
+                                            resolve(null);
+                                        }
+                                    };
+                                    fallbackReader.readAsDataURL(fallbackResult);
+                                },
+                                error(fallbackErr) {
+                                    console.warn('[COMPRESSION] Both primary and fallback compression failed:', fallbackErr);
+                                    // If both fail, remove image entirely
+                                    resolve(null);
+                                },
+                            });
                         },
                     });
                 })

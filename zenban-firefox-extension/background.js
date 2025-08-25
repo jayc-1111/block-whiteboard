@@ -138,13 +138,24 @@ browser.runtime.onMessage.addListener((request, sender) => {
                 console.log('📦 BACKGROUND: Tab active:', blockWhiteboardTab.active);
                 console.log('📦 BACKGROUND: Tab status:', blockWhiteboardTab.status);
                 
-                // Execute script to write to localStorage
+                // Execute script to write to localStorage and trigger modal
                 browser.tabs.executeScript(blockWhiteboardTab.id, {
                     code: `
                         (function() {
                             console.log('🎯 EXTENSION: Writing bookmark to localStorage at', new Date().toLocaleTimeString());
                             console.log('🎯 EXTENSION: Page URL:', window.location.href);
                             console.log('🎯 EXTENSION: Document ready state:', document.readyState);
+                            
+                            // Clear old bookmarks first
+                            const keysToRemove = [];
+                            for (let i = 0; i < localStorage.length; i++) {
+                                const key = localStorage.key(i);
+                                if (key && (key.startsWith('zenban_bookmark_') || key.startsWith('zenban_saved_bookmark_'))) {
+                                    keysToRemove.push(key);
+                                }
+                            }
+                            console.log('🎯 EXTENSION: Clearing ' + keysToRemove.length + ' old bookmarks');
+                            keysToRemove.forEach(key => localStorage.removeItem(key));
                             
                             const bookmarkData = ${JSON.stringify(request.data)};
                             const storageKey = '${storageKey}';
@@ -160,8 +171,8 @@ browser.runtime.onMessage.addListener((request, sender) => {
                                 console.log('🎯 EXTENSION: Bookmark saved to localStorage with key:', storageKey);
                                 console.log('🎯 EXTENSION: Data size written:', JSON.stringify(bookmarkData).length, 'bytes');
                                 
-                                // Trigger storage event for same-tab detection
-                                console.log('🎯 EXTENSION: Dispatching storage event...');
+                                // Dispatch storage event for the page to detect
+                                console.log('🎯 EXTENSION: Dispatching storage event');
                                 window.dispatchEvent(new StorageEvent('storage', {
                                     key: storageKey,
                                     newValue: JSON.stringify(bookmarkData),
@@ -169,7 +180,12 @@ browser.runtime.onMessage.addListener((request, sender) => {
                                     storageArea: localStorage
                                 }));
                                 
-                                console.log('🎯 EXTENSION: Storage event dispatched successfully');
+                                // Also directly call handleBookmarkData if available
+                                if (typeof window.handleBookmarkData === 'function') {
+                                    console.log('🎯 EXTENSION: Directly calling handleBookmarkData');
+                                    window.handleBookmarkData(bookmarkData);
+                                }
+                                
                                 return true; // Return value for executeScript
                             } catch (error) {
                                 console.error('🎯 EXTENSION: Failed to save bookmark:', error);

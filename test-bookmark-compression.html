@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Bookmark Compression Test</title>
+    <script src="https://cdn.jsdelivr.net/npm/compressorjs/dist/compressor.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .test-container {
+            border: 1px solid #ccc;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+        .result {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 3px;
+        }
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        textarea {
+            width: 100%;
+            height: 100px;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>Bookmark Compression Test</h1>
+    
+    <div class="test-container">
+        <h2>Test 1: Large Image Compression</h2>
+        <p>This test simulates compressing a large bookmark image to under 1MB.</p>
+        <button id="test1">Run Test 1</button>
+        <div id="result1"></div>
+    </div>
+    
+    <div class="test-container">
+        <h2>Test 2: Extremely Large Image Compression</h2>
+        <p>This test simulates compressing an extremely large bookmark image with fallback.</p>
+        <button id="test2">Run Test 2</button>
+        <div id="result2"></div>
+    </div>
+    
+    <div class="test-container">
+        <h2>Test 3: Validation Test</h2>
+        <p>This test validates that our compression keeps images under 1MB.</p>
+        <button id="test3">Run Test 3</button>
+        <div id="result3"></div>
+    </div>
+    
+    <script>
+        // Function to generate a test image data URL of specified size
+        function generateTestDataUrl(targetSizeKB) {
+            // Create a canvas with a specific size to generate the desired data URL size
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            
+            // Calculate approximate dimensions needed for target size
+            // This is a rough estimation - real implementation would be more precise
+            const dimension = Math.sqrt(targetSizeKB * 1024 / 4 * 0.75); // Rough approximation
+            canvas.width = Math.min(Math.max(dimension, 100), 2000);
+            canvas.height = Math.min(Math.max(dimension, 100), 2000);
+            
+            // Fill with a pattern to make compression more realistic
+            ctx.fillStyle = 'lightblue';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Add some random shapes to make it more complex
+            ctx.fillStyle = 'red';
+            for (let i = 0; i < 100; i++) {
+                const x = Math.random() * canvas.width;
+                const y = Math.random() * canvas.height;
+                const radius = Math.random() * 20;
+                ctx.beginPath();
+                ctx.arc(x, y, radius, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            
+            // Start with high quality to ensure we have a large image
+            return canvas.toDataURL('image/jpeg', 0.95);
+        }
+        
+        // Our updated compression function based on the fix
+        async function compressImageData(imageData) {
+            return new Promise((resolve) => {
+                if (!imageData || !imageData.startsWith('data:image/')) {
+                    resolve(imageData);
+                    return;
+                }
+                
+                const originalSize = Math.round(imageData.length / 1024); // KB
+                const originalSizeBytes = imageData.length;
+                
+                console.log(`Original size: ${originalSize}KB (${originalSizeBytes} bytes)`);
+                
+                // Convert data URL to Blob
+                fetch(imageData)
+                    .then(res => res.blob())
+                    .then(blob => {
+                        // Primary compression: 15% quality with 92% JPEG quality setting, max dimensions 800x600
+                        new Compressor(blob, {
+                            quality: 0.15, // 15% quality
+                            maxWidth: 800,
+                            maxHeight: 600,
+                            mimeType: 'image/jpeg',
+                            convertSize: 0, // Always convert to JPEG
+                            success(result) {
+                                // Convert compressed blob back to data URL
+                                const reader = new FileReader();
+                                reader.onload = async () => {
+                                    const compressedData = reader.result;
+                                    const compressedSize = Math.round(compressedData.length / 1024);
+                                    const compressedSizeBytes = compressedData.length;
+                                    const reduction = originalSize - compressedSize;
+                                    const percentReduction = ((reduction / originalSize) * 100).toFixed(1);
+                                    
+                                    console.log(`Primary compression: ${originalSize}KB → ${compressedSize}KB (${percentReduction}% reduction)`);
+                                    
+                                    // Check if compressed image is under 1MB (1,048,576 bytes)
+                                    if (compressedSizeBytes <= 1048576) {
+                                        console.log(`Image under 1MB, using primary compression`);
+                                        resolve({ 
+                                            data: compressedData, 
+                                            size: compressedSizeBytes,
+                                            reduction: percentReduction,
+                                            method: 'primary'
+                                        });
+                                    } else {
+                                        console.log(`Image still over 1MB (${compressedSizeBytes} bytes), applying aggressive fallback`);
+                                        // Single aggressive fallback: 10% quality with 80% JPEG quality, max dimensions 600x450
+                                        new Compressor(blob, {
+                                            quality: 0.10, // 10% quality
+                                            maxWidth: 600,
+                                            maxHeight: 450,
+                                            mimeType: 'image/jpeg',
+                                            convertSize: 0, // Always convert to JPEG
+                                            success(fallbackResult) {
+                                                // Convert fallback compressed blob back to data URL
+                                                const fallbackReader = new FileReader();
+                                                fallbackReader.onload = () => {
+                                                    const fallbackData = fallbackReader.result;
+                                                    const fallbackSize = Math.round(fallbackData.length / 1024);
+                                                    const fallbackSizeBytes = fallbackData.length;
+                                                    const fallbackReduction = originalSize - fallbackSize;
+                                                    const fallbackPercentReduction = ((fallbackReduction / originalSize) * 100).toFixed(1);
+                                                    
+                                                    console.log(`Fallback compression: ${originalSize}KB → ${fallbackSize}KB (${fallbackPercentReduction}% reduction)`);
+                                                    
+                                                    // Final check to ensure we're under 1MB
+                                                    if (fallbackSizeBytes <= 1048576) {
+                                                        console.log(`Fallback compression successful, final size: ${fallbackSizeBytes} bytes`);
+                                                        resolve({ 
+                                                            data: fallbackData, 
+                                                            size: fallbackSizeBytes,
+                                                            reduction: fallbackPercentReduction,
+                                                            method: 'fallback'
+                                                        });
+                                                    } else {
+                                                        console.warn(`Even fallback compression failed, image still over 1MB (${fallbackSizeBytes} bytes)`);
+                                                        // If still over 1MB, remove image entirely
+                                                        resolve({ 
+                                                            data: null, 
+                                                            size: 0,
+                                                            reduction: 0,
+                                                            method: 'removed'
+                                                        });
+                                                    }
+                                                };
+                                                fallbackReader.readAsDataURL(fallbackResult);
+                                            },
+                                            error(fallbackErr) {
+                                                console.warn('Fallback compression failed:', fallbackErr);
+                                                // If fallback fails, remove image entirely
+                                                resolve({ 
+                                                    data: null, 
+                                                    size: 0,
+                                                    reduction: 0,
+                                                    method: 'removed'
+                                                });
+                                            },
+                                        });
+                                    }
+                                };
+                                reader.readAsDataURL(result);
+                            },
+                            error(err) {
+                                console.warn('Primary compression failed:', err);
+                                // If primary compression fails, try fallback
+                                new Compressor(blob, {
+                                    quality: 0.10, // 10% quality
+                                    maxWidth: 600,
+                                    maxHeight: 450,
+                                    mimeType: 'image/jpeg',
+                                    convertSize: 0, // Always convert to JPEG
+                                    success(fallbackResult) {
+                                        // Convert fallback compressed blob back to data URL
+                                        const fallbackReader = new FileReader();
+                                        fallbackReader.onload = () => {
+                                            const fallbackData = fallbackReader.result;
+                                            const fallbackSize = Math.round(fallbackData.length / 1024);
+                                            const fallbackSizeBytes = fallbackData.length;
+                                            const fallbackReduction = originalSize - fallbackSize;
+                                            const fallbackPercentReduction = ((fallbackReduction / originalSize) * 100).toFixed(1);
+                                            
+                                            console.log(`Fallback (primary failed): ${originalSize}KB → ${fallbackSize}KB (${fallbackPercentReduction}% reduction)`);
+                                            
+                                            // Final check to ensure we're under 1MB
+                                            if (fallbackSizeBytes <= 1048576) {
+                                                console.log(`Fallback compression successful, final size: ${fallbackSizeBytes} bytes`);
+                                                resolve({ 
+                                                    data: fallbackData, 
+                                                    size: fallbackSizeBytes,
+                                                    reduction: fallbackPercentReduction,
+                                                    method: 'fallback'
+                                                });
+                                            } else {
+                                                console.warn(`Even fallback compression failed, image still over 1MB (${fallbackSizeBytes} bytes)`);
+                                                // If still over 1MB, remove image entirely
+                                                resolve({ 
+                                                    data: null, 
+                                                    size: 0,
+                                                    reduction: 0,
+                                                    method: 'removed'
+                                                });
+                                            }
+                                        };
+                                        fallbackReader.readAsDataURL(fallbackResult);
+                                    },
+                                    error(fallbackErr) {
+                                        console.warn('Both primary and fallback compression failed:', fallbackErr);
+                                        // If both fail, remove image entirely
+                                        resolve({ 
+                                            data: null, 
+                                            size: 0,
+                                            reduction: 0,
+                                            method: 'removed'
+                                        });
+                                    },
+                                });
+                            },
+                        });
+                    })
+                    .catch(() => resolve({ 
+                        data: imageData, 
+                        size: imageData.length,
+                        reduction: 0,
+                        method: 'original'
+                    })); // Fallback to original
+            });
+        }
+        
+        // Test 1: Large Image Compression
+        document.getElementById('test1').addEventListener('click', async function() {
+            const resultDiv = document.getElementById('result1');
+            resultDiv.innerHTML = '<p>Running test...</p>';
+            
+            try {
+                // Generate a test image of approximately 1.5MB
+                const testDataUrl = generateTestDataUrl(1500);
+                const originalSize = Math.round(testDataUrl.length / 1024);
+                const originalSizeBytes = testDataUrl.length;
+                
+                resultDiv.innerHTML += `<p>Generated test image: ${originalSize}KB (${originalSizeBytes} bytes)</p>`;
+                
+                // Compress the image
+                const result = await compressImageData(testDataUrl);
+                
+                if (result.method === 'removed') {
+                    resultDiv.innerHTML += `<div class="result error">FAILED: Image was removed because it couldn't be compressed under 1MB</div>`;
+                } else {
+                    const success = result.size <= 1048576;
+                    const resultClass = success ? 'success' : 'error';
+                    const resultText = success ? 'PASSED' : 'FAILED';
+                    
+                    resultDiv.innerHTML += `
+                        <div class="result ${resultClass}">
+                            <p>${resultText}: Compressed image to ${Math.round(result.size / 1024)}KB (${result.size} bytes)</p>
+                            <p>Compression method: ${result.method}</p>
+                            <p>Reduction: ${result.reduction}%</p>
+                            <p>Under 1MB: ${success ? 'Yes' : 'No'}</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.innerHTML += `<div class="result error">ERROR: ${error.message}</div>`;
+            }
+        });
+        
+        // Test 2: Extremely Large Image Compression
+        document.getElementById('test2').addEventListener('click', async function() {
+            const resultDiv = document.getElementById('result2');
+            resultDiv.innerHTML = '<p>Running test...</p>';
+            
+            try {
+                // Generate a test image of approximately 3MB
+                const testDataUrl = generateTestDataUrl(3000);
+                const originalSize = Math.round(testDataUrl.length / 1024);
+                const originalSizeBytes = testDataUrl.length;
+                
+                resultDiv.innerHTML += `<p>Generated test image: ${originalSize}KB (${originalSizeBytes} bytes)</p>`;
+                
+                // Compress the image
+                const result = await compressImageData(testDataUrl);
+                
+                if (result.method === 'removed') {
+                    resultDiv.innerHTML += `<div class="result error">EXPECTED: Image was removed because it couldn't be compressed under 1MB</div>`;
+                } else {
+                    const success = result.size <= 1048576;
+                    const resultClass = success ? 'success' : 'error';
+                    const resultText = success ? 'PASSED' : 'FAILED';
+                    
+                    resultDiv.innerHTML += `
+                        <div class="result ${resultClass}">
+                            <p>${resultText}: Compressed image to ${Math.round(result.size / 1024)}KB (${result.size} bytes)</p>
+                            <p>Compression method: ${result.method}</p>
+                            <p>Reduction: ${result.reduction}%</p>
+                            <p>Under 1MB: ${success ? 'Yes' : 'No'}</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.innerHTML += `<div class="result error">ERROR: ${error.message}</div>`;
+            }
+        });
+        
+        // Test 3: Validation Test
+        document.getElementById('test3').addEventListener('click', async function() {
+            const resultDiv = document.getElementById('result3');
+            resultDiv.innerHTML = '<p>Running test...</p>';
+            
+            try {
+                // Test multiple sizes
+                const testSizes = [800, 1200, 1800, 2500];
+                let allPassed = true;
+                
+                for (const size of testSizes) {
+                    resultDiv.innerHTML += `<p>Testing compression of ${size}KB image...</p>`;
+                    
+                    const testDataUrl = generateTestDataUrl(size);
+                    const result = await compressImageData(testDataUrl);
+                    
+                    const passed = result.size <= 1048576;
+                    allPassed = allPassed && passed;
+                    
+                    const resultClass = passed ? 'success' : 'error';
+                    resultDiv.innerHTML += `
+                        <div class="result ${resultClass}">
+                            <p>${size}KB image: ${passed ? 'PASSED' : 'FAILED'} - Final size: ${Math.round(result.size / 1024)}KB</p>
+                        </div>
+                    `;
+                }
+                
+                const finalResultClass = allPassed ? 'success' : 'error';
+                const finalResultText = allPassed ? 'ALL TESTS PASSED' : 'SOME TESTS FAILED';
+                
+                resultDiv.innerHTML += `
+                    <div class="result ${finalResultClass}">
+                        <h3>${finalResultText}</h3>
+                        <p>Compression function correctly handles images of various sizes</p>
+                    </div>
+                `;
+            } catch (error) {
+                resultDiv.innerHTML += `<div class="result error">ERROR: ${error.message}</div>`;
+            }
+        });
+    </script>
+</body>
+</html>

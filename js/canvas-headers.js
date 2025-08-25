@@ -10,6 +10,10 @@ function addCanvasHeader(x = null, y = null) {
     const canvasHeader = document.createElement('div');
     canvasHeader.className = 'canvas-header';
     canvasHeader.textContent = 'New Header';
+    canvasHeader.autocomplete = 'off';
+    canvasHeader.autocorrect = 'off';
+    canvasHeader.autocapitalize = 'off';
+    canvasHeader.spellcheck = false;
     
     // Generate unique ID
     const headerId = Date.now() + Math.random();

@@ -103,6 +103,11 @@
     justify-content: center;
 }
 
+/* Section bookmarks - align to end */
+.section-bookmarks {
+    justify-content: end;
+}
+
 /* Bookmark Card */
 .bookmark-card {
     width: 170px;

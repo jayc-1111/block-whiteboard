@@ -72,10 +72,11 @@ function handleClick(e) {
         
         console.log('Element selected with bounds:', bounds);
         
-        // Capture with bounds data
-        if (typeof captureAndSend === 'function') {
-            captureAndSend(window.location.origin, bounds);
-        }
+        // Send message to content script via postMessage
+        window.postMessage({
+            type: 'ZENBAN_ELEMENT_SELECTED',
+            bounds: bounds
+        }, '*');
     }
 }
 

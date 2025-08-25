@@ -16,8 +16,27 @@ let fileViewerData = {
 function initializeFileViewer() {
     console.log('Initializing File Viewer');
     
+    // First ensure current board is saved
+    if (typeof saveCurrentBoard === 'function') {
+        saveCurrentBoard();
+    }
+    
     // Load saved boards from AppState
     const boards = AppState.get('boards') || [];
+    console.log('📁 FILE VIEWER: Found boards:', boards.length);
+    boards.forEach((board, i) => {
+        console.log(`  Board ${i}: "${board.name}" - Categories: ${board.categories?.length || 0}`);
+        if (board.categories) {
+            board.categories.forEach((cat, j) => {
+                console.log(`    Category ${j}: "${cat.title}" - Cards: ${cat.cards?.length || 0}`);
+                if (cat.cards) {
+                    cat.cards.forEach((card, k) => {
+                        console.log(`      Card ${k}: "${card.title}"`);
+                    });
+                }
+            });
+        }
+    });
     
     // Collect all cards from all boards
     fileViewerData.allFiles = [];

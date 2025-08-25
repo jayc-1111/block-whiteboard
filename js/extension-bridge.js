@@ -1,157 +1,205 @@
-/**
- * Extension Bridge - Handles communication between Firefox extension and app via localStorage
- * This replaces the unreliable script injection method
- */
+// Extension Bridge - handles communication between Zenban app and browser extension
+console.log('Extension bridge loaded');
 
-(function() {
-    const STORAGE_KEY_PREFIX = 'zenban_bookmark_';
-    const PENDING_KEY = 'zenban_bookmark_pending';
-    const HANDSHAKE_KEY = 'zenban_extension_handshake';
-    const MAX_BOOKMARKS_IN_STORAGE = 5; // Keep only last 5 bookmarks
-    
-    console.log('🌉 Extension Bridge: Initializing localStorage listener');
-    
-    // Clean up old bookmarks on initialization
-    cleanupOldBookmarks();
-    
-    // Listen for storage events from the extension
-    window.addEventListener('storage', function(event) {
-        console.log('🌉 Extension Bridge: Storage event detected', event.key);
-        
-        // Check if this is a bookmark from our extension
-        if (event.key && event.key.startsWith(STORAGE_KEY_PREFIX)) {
-            console.log('🌉 Extension Bridge: Bookmark data detected!');
-            
-            try {
-                const bookmarkData = JSON.parse(event.newValue);
-                console.log('🌉 Extension Bridge: Parsed bookmark data:', bookmarkData);
-                
-                // Process the bookmark
-                processExtensionBookmark(bookmarkData);
-                
-                // Clean up the storage key
-                localStorage.removeItem(event.key);
-                console.log('🌉 Extension Bridge: Cleaned up storage key');
-                
-                // Clean up old bookmarks after processing new one
-                cleanupOldBookmarks();
-                
-                // Log success
-                console.log('🌉 Extension Bridge: Bookmark processed successfully');
-                
-            } catch (error) {
-                console.error('🌉 Extension Bridge: Error processing bookmark:', error);
-            }
-        }
-        
-        // Handle handshake from extension to confirm connection
-        if (event.key === HANDSHAKE_KEY && event.newValue === 'ping') {
-            console.log('🌉 Extension Bridge: Handshake received from extension');
-            localStorage.setItem(HANDSHAKE_KEY, 'pong');
-            setTimeout(() => localStorage.removeItem(HANDSHAKE_KEY), 1000);
-        }
-    });
-    
-    // Also check for existing pending bookmarks on page load
-    window.addEventListener('load', function() {
-        console.log('🌉 Extension Bridge: Checking for pending bookmarks on load');
-        
-        // Clean up old bookmarks first
-        cleanupOldBookmarks();
-        
-        // Look for the most recent pending bookmark
-        const bookmarkKeys = getBookmarkKeys();
-        if (bookmarkKeys.length > 0) {
-            // Process only the most recent one
-            const mostRecentKey = bookmarkKeys[bookmarkKeys.length - 1];
-            console.log('🌉 Extension Bridge: Found pending bookmark:', mostRecentKey);
-            
-            try {
-                const bookmarkData = JSON.parse(localStorage.getItem(mostRecentKey));
-                processExtensionBookmark(bookmarkData);
-                localStorage.removeItem(mostRecentKey);
-            } catch (error) {
-                console.error('🌉 Extension Bridge: Error processing pending bookmark:', error);
-                localStorage.removeItem(mostRecentKey); // Clean up invalid data
-            }
-        }
-    });
-    
-    // Process bookmark data from extension
-    function processExtensionBookmark(data) {
-        console.log('🌉 Extension Bridge: Processing bookmark:', data.title || 'Untitled');
-        
-        // Check if handleBookmarkData exists (from cards.js)
-        if (typeof window.handleBookmarkData === 'function') {
-            console.log('🌉 Extension Bridge: Calling handleBookmarkData');
-            window.handleBookmarkData(data);
-        } else {
-            console.error('🌉 Extension Bridge: handleBookmarkData not found! Is cards.js loaded?');
-            // Store for later if the function isn't ready yet
-            window._pendingBookmark = data;
+// Maximum storage management
+const MAX_BOOKMARKS = 1; // Only keep 1 bookmark
+const MAX_IMAGE_SIZE_KB = 500; // 500KB max
+
+// Get localStorage usage
+function getStorageSize() {
+    let totalSize = 0;
+    for (let key in localStorage) {
+        if (localStorage.hasOwnProperty(key)) {
+            totalSize += localStorage[key].length + key.length;
         }
     }
-    
-    // Expose a way to manually trigger bookmark processing (for testing)
-    window.testExtensionBridge = function() {
-        const testData = {
-            title: 'Test Bookmark - ' + new Date().toLocaleTimeString(),
-            url: 'https://example.com',
-            description: 'This is a test bookmark',
-            screenshot: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==',
-            timestamp: new Date().toISOString()
+    return totalSize;
+}
+
+// Clear ALL bookmark data
+function clearAllBookmarks() {
+    const keys = [];
+    for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && (key.startsWith('zenban_bookmark_') || key.startsWith('zenban_saved_bookmark_'))) {
+            keys.push(key);
+        }
+    }
+    keys.forEach(key => localStorage.removeItem(key));
+    return keys.length;
+}
+
+// Test if we can store data
+function canStore(data) {
+    const testKey = 'test_' + Date.now();
+    try {
+        localStorage.setItem(testKey, data);
+        localStorage.removeItem(testKey);
+        return true;
+    } catch (e) {
+        return false;
+    }
+}
+
+// Compress image aggressively
+function compressImage(dataUrl) {
+    return new Promise((resolve) => {
+        const img = new Image();
+        img.onload = function() {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            
+            // Start with more aggressive dimensions
+            let width = Math.min(img.width, 800);
+            let height = Math.min(img.height, 600);
+            
+            if (img.width > img.height) {
+                height = (width / img.width) * img.height;
+            } else {
+                width = (height / img.height) * img.width;
+            }
+            
+            canvas.width = width;
+            canvas.height = height;
+            ctx.drawImage(img, 0, 0, width, height);
+            
+            // Try 70% quality first (more aggressive)
+            let result = canvas.toDataURL('image/jpeg', 0.70);
+            let sizeKB = (result.length * 0.75) / 1024;
+            
+            // If still too big, reduce further with 50% quality
+            if (sizeKB > MAX_IMAGE_SIZE_KB) {
+                width = Math.floor(width * 0.7);
+                height = Math.floor(height * 0.7);
+                canvas.width = width;
+                canvas.height = height;
+                ctx.drawImage(img, 0, 0, width, height);
+                result = canvas.toDataURL('image/jpeg', 0.50);
+                sizeKB = (result.length * 0.75) / 1024;
+            }
+            
+            // If still too big, go even more aggressive with 30% quality and smaller dimensions
+            if (sizeKB > MAX_IMAGE_SIZE_KB) {
+                width = Math.floor(width * 0.6);
+                height = Math.floor(height * 0.6);
+                canvas.width = width;
+                canvas.height = height;
+                ctx.drawImage(img, 0, 0, width, height);
+                result = canvas.toDataURL('image/jpeg', 0.30);
+                sizeKB = (result.length * 0.75) / 1024;
+            }
+            
+            console.log(`Compressed to ${Math.round(sizeKB)}KB (${width}x${height})`);
+            resolve(result);
         };
-        
-        const key = STORAGE_KEY_PREFIX + Date.now();
-        localStorage.setItem(key, JSON.stringify(testData));
-        console.log('🌉 Extension Bridge: Test bookmark set with key:', key);
-        
-        // Trigger storage event manually for same-tab testing
-        processExtensionBookmark(testData);
-        localStorage.removeItem(key);
-    };
-    
-    // Check if cards.js loaded its functions properly
-    setTimeout(() => {
-        if (window._pendingBookmark && typeof window.handleBookmarkData === 'function') {
-            console.log('🌉 Extension Bridge: Processing delayed bookmark');
-            window.handleBookmarkData(window._pendingBookmark);
-            delete window._pendingBookmark;
-        }
-    }, 2000);
-    
-    // Get all bookmark keys sorted by timestamp
-    function getBookmarkKeys() {
-        const keys = [];
-        for (let i = 0; i < localStorage.length; i++) {
-            const key = localStorage.key(i);
-            if (key && key.startsWith(STORAGE_KEY_PREFIX)) {
-                keys.push(key);
-            }
-        }
-        // Sort by timestamp in key (zenban_bookmark_TIMESTAMP)
-        return keys.sort((a, b) => {
-            const timeA = parseInt(a.replace(STORAGE_KEY_PREFIX, ''));
-            const timeB = parseInt(b.replace(STORAGE_KEY_PREFIX, ''));
-            return timeA - timeB;
-        });
-    }
-    
-    // Clean up old bookmarks, keeping only the most recent ones
-    function cleanupOldBookmarks() {
-        const bookmarkKeys = getBookmarkKeys();
-        
-        if (bookmarkKeys.length > MAX_BOOKMARKS_IN_STORAGE) {
-            const keysToRemove = bookmarkKeys.slice(0, bookmarkKeys.length - MAX_BOOKMARKS_IN_STORAGE);
-            console.log(`🌉 Extension Bridge: Cleaning up ${keysToRemove.length} old bookmarks`);
+        img.src = dataUrl;
+    });
+}
+
+// Listen for storage events from extension
+window.addEventListener('storage', function(event) {
+    if (event.key && event.key.startsWith('zenban_bookmark_')) {
+        console.log('🎯 EXTENSION BRIDGE: Storage event detected:', event.key);
+        try {
+            // For synthetic storage events (same page), get data from localStorage
+            const bookmarkData = event.newValue ? JSON.parse(event.newValue) : JSON.parse(localStorage.getItem(event.key));
             
-            keysToRemove.forEach(key => {
-                localStorage.removeItem(key);
-                console.log(`🌉 Extension Bridge: Removed old bookmark: ${key}`);
-            });
+            if (!bookmarkData) {
+                console.log('🎯 EXTENSION BRIDGE: No bookmark data found');
+                return;
+            }
+            
+            console.log('🎯 EXTENSION BRIDGE: Parsed bookmark data:', bookmarkData);
+            
+            // Trigger the modal
+            if (window.handleBookmarkData) {
+                console.log('🎯 EXTENSION BRIDGE: Calling handleBookmarkData');
+                window.handleBookmarkData(bookmarkData);
+            } else {
+                console.log('🎯 EXTENSION BRIDGE: handleBookmarkData not found');
+            }
+            
+            // Clean up localStorage after processing
+            setTimeout(() => {
+                localStorage.removeItem(event.key);
+            }, 1000);
+        } catch (e) {
+            console.error('🎯 EXTENSION BRIDGE: Error processing bookmark:', e);
         }
     }
-    
-    console.log('🌉 Extension Bridge: Ready for bookmarks via localStorage');
-    console.log(`🌉 Extension Bridge: Max bookmarks in storage: ${MAX_BOOKMARKS_IN_STORAGE}`);
-})();
+});
+
+// Listen for messages from extension
+window.addEventListener('message', async function(event) {
+    if (event.data.type === 'BOOKMARK_SAVED_FROM_EXTENSION') {
+        console.log('🎯 EXTENSION: Bookmark received');
+        
+        try {
+            const bookmarkData = event.data.data;
+            
+            // Check current storage size
+            const currentSize = getStorageSize();
+            console.log(`Current localStorage usage: ${Math.round(currentSize/1024)}KB`);
+            
+            // Clear all bookmarks first
+            const cleared = clearAllBookmarks();
+            console.log(`Cleared ${cleared} old bookmarks`);
+            
+            // Compress screenshot
+            if (bookmarkData.screenshot) {
+                const originalSize = Math.round((bookmarkData.screenshot.length * 0.75) / 1024);
+                console.log(`Original screenshot: ${originalSize}KB`);
+                bookmarkData.screenshot = await compressImage(bookmarkData.screenshot);
+                bookmarkData.image = bookmarkData.screenshot;
+            }
+            
+            const dataString = JSON.stringify(bookmarkData);
+            const dataSize = Math.round(dataString.length / 1024);
+            console.log(`Bookmark data size: ${dataSize}KB`);
+            
+            // Test if we can store
+            if (!canStore(dataString)) {
+                console.log('Cannot store, clearing all localStorage bookmarks');
+                clearAllBookmarks();
+                
+                // Try smaller image
+                if (bookmarkData.screenshot) {
+                    delete bookmarkData.screenshot;
+                    delete bookmarkData.image;
+                    console.log('Removed image to save space');
+                }
+            }
+            
+            // Save with timestamp key
+            const timestamp = Date.now();
+            const savedKey = `zenban_saved_bookmark_${timestamp}`;
+            
+            try {
+                localStorage.setItem(savedKey, JSON.stringify(bookmarkData));
+                console.log('✅ Bookmark saved');
+                
+                // Dispatch event for UI update
+                window.dispatchEvent(new StorageEvent('storage', {
+                    key: `zenban_bookmark_${timestamp}`,
+                    newValue: JSON.stringify(bookmarkData),
+                    url: window.location.href
+                }));
+                
+            } catch (e) {
+                console.error('Still failed:', e);
+                // Save without image as last resort
+                delete bookmarkData.screenshot;
+                delete bookmarkData.image;
+                localStorage.setItem(savedKey, JSON.stringify(bookmarkData));
+                console.log('✅ Saved without image');
+            }
+            
+        } catch (error) {
+            console.error('Failed to save bookmark:', error);
+        }
+    }
+});
+
+// Initial cleanup on load
+clearAllBookmarks();
+console.log('Extension bridge ready');

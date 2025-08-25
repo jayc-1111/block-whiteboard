@@ -1,24 +1,27 @@
 /* File Tree Dropdown Styles */
 
-/* Main dropdown container - CSS hover solution */
+/* Main dropdown container */
 #yourFilesItem .file-structure-dropdown {
     position: absolute;
     left: calc(100% + 5px);
     top: 0;
     background: #131313;
     border-radius: 12px;
-    padding: 8px;
-    min-width: 280px;
-    max-width: 400px;
+    padding: 12px;
+    min-width: 320px;
+    max-width: 450px;
+    max-height: 500px;
+    overflow-y: auto;
     z-index: 1002;
     margin: 0;
     font-family: 'Nunito', sans-serif;
-    font-size: 0.80rem;
+    font-size: 13px;
     font-weight: 500;
     opacity: 0;
     visibility: hidden;
     transition: opacity 0.2s, visibility 0.2s;
-    border: 1px solid rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
 /* Show dropdown on hover */
@@ -33,67 +36,47 @@
 }
 
 .file-tree ul {
-    padding-left: 5px;
+    padding-left: 20px;
     list-style: none;
     margin: 0;
 }
 
+/* Root level no padding */
+.file-tree > ul {
+    padding-left: 0;
+}
+
 .file-tree li {
     position: relative;
-    padding-top: 5px;
-    padding-bottom: 5px;
-    padding-left: 15px;
-    box-sizing: border-box;
-    user-select: none;
+    margin: 2px 0;
 }
 
-/* Tree connecting lines */
-.file-tree li:before {
-    position: absolute;
-    top: 15px;
-    left: 0;
-    width: 10px;
-    height: 1px;
-    margin: auto;
-    content: '';
-    background-color: #444;
-}
-
+/* Remove tree lines - cleaner look */
+.file-tree li:before,
 .file-tree li:after {
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    left: 0;
-    width: 1px;
-    height: 100%;
-    content: '';
-    background-color: #444;
-}
-
-.file-tree li:last-child:after {
-    height: 15px;
-}
-
-/* Root level doesn't need lines */
-.file-tree > ul > li:before,
-.file-tree > ul > li:after {
     display: none;
 }
 
 /* Details/Summary styling */
+.file-tree details {
+    margin: 2px 0;
+}
+
 .file-tree details summary {
     outline: none;
     cursor: pointer;
     display: flex;
     align-items: center;
-    gap: 12px;
-    padding: 10px 12px;
-    border-radius: 8px;
+    gap: 8px;
+    padding: 6px 8px;
+    border-radius: 6px;
     transition: all 0.2s ease;
+    user-select: none;
+    margin: 0;
 }
 
 .file-tree details summary:hover {
-    background: #2a2a2a;
+    background: rgba(255, 255, 255, 0.05);
 }
 
 /* Remove default marker */
@@ -108,6 +91,7 @@
     transition: transform 0.2s;
     display: inline-block;
     width: 12px;
+    flex-shrink: 0;
 }
 
 .file-tree details[open] > summary::before {
@@ -117,59 +101,23 @@
 /* Icons */
 .folder-icon, .file-icon {
     flex-shrink: 0;
+    opacity: 0.7;
+}
+
+.folder-icon {
+    stroke: #fbbf24;
 }
 
 .file-icon {
-    stroke: #9ca3af;
-    fill: none;
+    stroke: #60a5fa;
 }
 
-
-/* Category link for glow navigation */
-.category-link {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    flex: 1;
-    cursor: pointer;
-    transition: color 0.2s;
-}
-
-.category-link:hover {
-    color: #60a5fa;
-}
-
-/* Category name */
+/* Category and file names */
 .category-name {
     flex: 1;
-}
-
-/* Find button */
-.find-btn {
-    background: #3b82f6;
-    color: white;
-    border: none;
-    border-radius: 6px;
-    padding: 0px 4px;
-    height: 20px;
-    width: 20px;
-    font-size: 9px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.2s;
-    margin-left: 8px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.find-btn:hover {
-    background: #2563eb;
-    transform: scale(1.05);
-}
-
-.find-btn:active {
-    transform: scale(0.95);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 /* Item count */
@@ -177,35 +125,77 @@
     font-size: 11px;
     color: #666;
     margin-left: auto;
-    font-style: italic;
+    padding: 0 4px;
+    flex-shrink: 0;
+}
+
+/* Category link */
+.category-link {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
+    min-width: 0;
 }
 
 /* File items */
 .file-item {
     display: flex;
     align-items: center;
-    gap: 12px;
-    padding: 10px 12px;
-    border-radius: 8px;
+    gap: 8px;
+    padding: 6px 8px;
+    border-radius: 6px;
     cursor: pointer;
     transition: all 0.2s ease;
+    margin: 2px 0;
 }
 
 .file-item:hover {
-    background: #2a2a2a;
-    color: #ddd;
+    background: rgba(59, 130, 246, 0.1);
+    color: #60a5fa;
 }
 
 .file-item:hover .file-icon {
-    stroke: #3b82f6;
+    stroke: #60a5fa;
+    opacity: 1;
+}
+
+.file-item span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Current board highlight */
+.current-board {
+    color: #60a5fa;
 }
 
 /* Empty state */
 .file-tree-empty {
-    padding: 8px 12px;
+    padding: 20px;
     color: #666;
     font-size: 12px;
     font-style: italic;
+    text-align: center;
+}
+
+/* Scrollbar styling */
+.file-structure-dropdown::-webkit-scrollbar {
+    width: 6px;
+}
+
+.file-structure-dropdown::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.file-structure-dropdown::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 3px;
+}
+
+.file-structure-dropdown::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.2);
 }
 
 /* Light mode support */

@@ -106,6 +106,10 @@ window.addEventListener('message', async function(event) {
         
         // Capture immediately
         captureAndSend(event.origin);
+    } else if (event.data.type === 'ZENBAN_ELEMENT_SELECTED') {
+        // Handle element selection from picker
+        console.log('Element selected:', event.data.bounds);
+        captureAndSend(window.location.origin, event.data.bounds);
     }
 });
 

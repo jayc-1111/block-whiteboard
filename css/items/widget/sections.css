@@ -2,9 +2,7 @@
 .card-section {
     background: white;
     border-radius: 8px;
-    padding: 16px;
     margin-bottom: 16px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
     border: 1px solid #e5e7eb;
 }
 
@@ -13,9 +11,9 @@
     font-size: 18px;
     font-weight: 600;
     color: #111827;
-    border: 1px solid #F8F9FF;
+    border: 1px solid #ffffff;
     border-radius: 4px;
-    background: #F8F9FF;
+    background: #ffffff;
 }
 
 /* Section title when focused */
@@ -32,12 +30,12 @@
 
 /* Section editor container */
 .section-editor {
-    flex: 2; /* Reduced from 3 to give more space to bookmarks */
+    flex: 3; /* Reduced from 3 to give more space to bookmarks */
 }
 
 /* Section bookmarks container - Flex Grid Layout */
 .section-bookmarks {
-    flex: 2; /* Increased from 1.2 to give more space to bookmarks */
+    flex: 1.2; /* Increased from 1.2 to give more space to bookmarks */
     display: flex;
     flex-wrap: wrap;
     gap: 2px; /* Changed to 2px gap */
@@ -60,9 +58,10 @@
     flex: 2; /* Increased from 1.2 for more space */
     display: flex;
     flex-wrap: wrap;
-    gap: 15px; /* Changed to 2px gap */
+    gap: 8px; /* Changed to 2px gap */
     align-content: flex-start;
     box-sizing: border-box;
+    margin-top: 75px;
 }
 
 /* Add section button container */
@@ -70,14 +69,19 @@
     margin-top: 16px;
     display: flex;
     justify-content: center;
+    position: sticky;
+    bottom: 0;
+    background: #ffffff;
+    padding: 10px 0;
+    z-index: 10;
 }
 
 /* Add section button */
 .add-section-btn {
-    background: #3b82f6;
+    background: #2d2d2d;
     color: white;
     border: none;
-    border-radius: 6px;
+    border-radius: 3px;
     padding: 10px 20px;
     font-size: 14px;
     font-weight: 500;
@@ -93,6 +97,10 @@
 }
 
 /* Dark mode support */
+.dark-mode .add-section-container {
+    background: #1f2937;
+}
+
 .dark-mode .card-section {
     background: #1f2937;
     border-color: #374151;

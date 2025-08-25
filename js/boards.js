@@ -120,7 +120,7 @@ async function saveCurrentBoard() {
                 const cardTitle = card.querySelector('.card-title');
                 
                 // Always save the card, even if title is missing or empty
-                const title = cardTitle ? cardTitle.textContent : 'Untitled Card';
+                const title = getCardTitleText(card) || 'Untitled Card';
                 
                 let content = '';
                 

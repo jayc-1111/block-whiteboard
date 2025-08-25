@@ -34,6 +34,10 @@ function createCategory(title = 'New Category', x = null, y = null) {
     categoryTitle.contentEditable = true;
     categoryTitle.textContent = title;
     categoryTitle.dataset.placeholder = title;
+    categoryTitle.autocomplete = 'off';
+    categoryTitle.autocorrect = 'off';
+    categoryTitle.autocapitalize = 'off';
+    categoryTitle.spellcheck = false;
 
     categoryTitle.addEventListener('focus', function() {
         if (this.textContent === this.dataset.placeholder) {
@@ -274,6 +278,10 @@ function addSuperHeader(x = null, y = null) {
     superHeader.contentEditable = true;
     superHeader.textContent = 'SUPER HEADER';
     superHeader.dataset.placeholder = 'SUPER HEADER';
+    superHeader.autocomplete = 'off';
+    superHeader.autocorrect = 'off';
+    superHeader.autocapitalize = 'off';
+    superHeader.spellcheck = false;
     
     superHeader.style.left = (x || Math.random() * CONSTANTS.RANDOM_POSITION_RANGE + CONSTANTS.POSITION_OFFSET) + 'px';
     superHeader.style.top = (y || Math.random() * CONSTANTS.RANDOM_POSITION_RANGE + CONSTANTS.POSITION_OFFSET) + 'px';

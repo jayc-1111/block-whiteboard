@@ -12,6 +12,33 @@ function getCardTitleText(card) {
     return cardTitle.textContent;
 }
 
+// Helper function to get the next section number for a card
+function getNewSectionNumber(card) {
+    // Count existing sections with titles starting with "New Section"
+    const existingSections = card.querySelectorAll('.section-title');
+    let maxNumber = 0;
+    
+    existingSections.forEach(section => {
+        const text = section.textContent || section.dataset.placeholder;
+        if (text && text.startsWith('New Section')) {
+            if (text === 'New Section') {
+                // This is the first section
+                maxNumber = Math.max(maxNumber, 1);
+            } else {
+                // Extract number from "New Section X"
+                const match = text.match(/^New Section (\d+)$/);
+                if (match) {
+                    const number = parseInt(match[1]);
+                    maxNumber = Math.max(maxNumber, number);
+                }
+            }
+        }
+    });
+    
+    // Return the next number
+    return maxNumber + 1;
+}
+
 // Card management
 function createCardSlot() {
     const slot = document.createElement('div');
@@ -79,6 +106,10 @@ function addCardToCategory(categoryOrIndex, title = 'New Card', content = null, 
     const cardTitle = document.createElement('div');
     cardTitle.className = 'card-title';
     cardTitle.contentEditable = true;
+    cardTitle.autocomplete = 'off';
+    cardTitle.autocorrect = 'off';
+    cardTitle.autocapitalize = 'off';
+    cardTitle.spellcheck = false;
     
     // Create text span
     const titleText = document.createElement('span');
@@ -468,7 +499,6 @@ function expandCard(card) {
     const saveBtn = document.createElement('button');
     saveBtn.className = 'save-card-btn';
     saveBtn.textContent = 'Save';
-    saveBtn.style.display = 'block';
     saveBtn.onclick = async (e) => {
         e.stopPropagation();
         saveBtn.disabled = true;
@@ -509,18 +539,21 @@ function expandCard(card) {
     darkModeBtn.className = 'dark-mode-toggle';
     darkModeBtn.innerHTML = '<svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>';
     darkModeBtn.title = 'Toggle dark mode';
-    darkModeBtn.style.cssText = 'padding: 5px 10px; background: #2d2d2d; border: 1px solid #444; border-radius: 4px; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; margin-left: 5px;';
     
     darkModeBtn.onclick = (e) => {
         e.stopPropagation();
-        const container = card.querySelector('.editor-container');
+        const containers = card.querySelectorAll('.editor-container');
+        const toolbars = card.querySelectorAll('.ql-toolbar');
+        const editors = card.querySelectorAll('.ql-editor');
         const expandedContent = card.querySelector('.expanded-card-content');
         const expandedHeader = card.querySelector('.expanded-card-header');
         const expandedMain = card.querySelector('.expanded-card-main');
         
         if (card.darkModeEnabled) {
             // Disable dark mode
-            container.classList.remove('dark-mode');
+            containers.forEach(c => c.classList.remove('dark-mode'));
+            toolbars.forEach(t => t.classList.remove('dark-mode'));
+            editors.forEach(e => e.classList.remove('dark-mode'));
             card.classList.remove('dark-mode');
             if (expandedContent) expandedContent.classList.remove('dark-mode');
             if (expandedHeader) expandedHeader.classList.remove('dark-mode');
@@ -529,7 +562,9 @@ function expandCard(card) {
             darkModeBtn.classList.remove('active');
         } else {
             // Enable dark mode
-            container.classList.add('dark-mode');
+            containers.forEach(c => c.classList.add('dark-mode'));
+            toolbars.forEach(t => t.classList.add('dark-mode'));
+            editors.forEach(e => e.classList.add('dark-mode'));
             card.classList.add('dark-mode');
             if (expandedContent) expandedContent.classList.add('dark-mode');
             if (expandedHeader) expandedHeader.classList.add('dark-mode');
@@ -543,7 +578,6 @@ function expandCard(card) {
     const deleteBtn = document.createElement('button');
     deleteBtn.className = 'delete-card-btn';
     deleteBtn.textContent = 'Delete';
-    deleteBtn.style.display = 'block';
     deleteBtn.onclick = (e) => {
         e.stopPropagation();
         showConfirmDialog(
@@ -569,6 +603,11 @@ function expandCard(card) {
     // Move title to header
     const cardTitle = card.querySelector('.card-title');
     if (cardTitle) {
+        // Ensure autocorrect is disabled on expanded title as well
+        cardTitle.autocomplete = 'off';
+        cardTitle.autocorrect = 'off';
+        cardTitle.autocapitalize = 'off';
+        cardTitle.spellcheck = false;
         header.appendChild(cardTitle);
     }
     
@@ -759,6 +798,7 @@ function createBookmarkCard(title, description, url, date, imageData, bookmarkIn
     `;
     deleteBtn.onclick = (e) => {
         e.preventDefault();
+        e.stopPropagation();
         removeBookmark(expandedCard, bookmarkIndex, sectionElement);
     };
     imageContainer.appendChild(deleteBtn);
@@ -916,11 +956,15 @@ function removeBookmark(expandedCard, bookmarkIndex, sectionElement) {
             // Refresh the bookmarks display for this specific section
             const bookmarksContainer = sectionElement.querySelector('.section-bookmarks');
             if (bookmarksContainer) {
+                // Clear container first
                 bookmarksContainer.innerHTML = '';
                 
+                // Create a copy of bookmarks array to prevent concurrent modification
+                const bookmarksCopy = [...bookmarks];
+                
                 // Re-create all bookmark cards with updated indices
-                if (bookmarks.length > 0) {
-                    bookmarks.forEach((bookmark, index) => {
+                if (bookmarksCopy.length > 0) {
+                    bookmarksCopy.forEach((bookmark, index) => {
                         const bookmarkCard = createBookmarkCard(
                             bookmark.title,
                             bookmark.description || bookmark.url,
@@ -1290,6 +1334,10 @@ function createBulletItem(list, text = '', indent = 0) {
     content.className = 'bullet-content';
     content.contentEditable = true;
     content.textContent = text;
+    content.autocomplete = 'off';
+    content.autocorrect = 'off';
+    content.autocapitalize = 'off';
+    content.spellcheck = false;
     
     if (text) {
         content.dataset.placeholder = text;
@@ -1525,12 +1573,20 @@ function createSection(card, bookmarks = [], existingSectionId = null) {
     const section = document.createElement('div');
     section.className = 'card-section';
     
-    // Create section title
+    // Create section title with automatic numbering
     const sectionTitle = document.createElement('div');
     sectionTitle.className = 'section-title';
     sectionTitle.contentEditable = true;
-    sectionTitle.textContent = 'New Section';
-    sectionTitle.dataset.placeholder = 'New Section';
+    sectionTitle.autocomplete = 'off';
+    sectionTitle.autocorrect = 'off';
+    sectionTitle.autocapitalize = 'off';
+    sectionTitle.spellcheck = false;
+    
+    // Generate numbered section title
+    const sectionNumber = getNewSectionNumber(card);
+    const titleText = sectionNumber === 1 ? 'New Section' : `New Section ${sectionNumber}`;
+    sectionTitle.textContent = titleText;
+    sectionTitle.dataset.placeholder = titleText;
     
     sectionTitle.addEventListener('focus', function() {
         if (this.textContent === this.dataset.placeholder) {
@@ -1809,118 +1865,29 @@ async function initializeEditorJS(card, container = null) {
                     [{ 'list': 'ordered'}, { 'list': 'bullet' }],
                     
                     // Alignment
-                    [{ 'align': [] }],
-                    
-                    // Dark mode toggle
-                    ['dark-mode']
-                ],
-                handlers: {
-                    'dark-mode': function() {
-                        const container = card.querySelector('.editor-container');
-                        const toolbar = card.querySelector('.ql-toolbar');
-                        const editor = card.querySelector('.ql-editor');
-                        const button = toolbar.querySelector('.ql-dark-mode');
-                        const expandedContent = card.querySelector('.expanded-card-content');
-                        const expandedHeader = card.querySelector('.expanded-card-header');
-                        const expandedMain = card.querySelector('.expanded-card-main');
-                        
-                        if (container.classList.contains('dark-mode')) {
-                            container.classList.remove('dark-mode');
-                            toolbar.classList.remove('dark-mode');
-                            editor.classList.remove('dark-mode');
-                            button.classList.remove('active');
-                            card.classList.remove('dark-mode');
-                            if (expandedContent) expandedContent.classList.remove('dark-mode');
-                            if (expandedHeader) expandedHeader.classList.remove('dark-mode');
-                            if (expandedMain) expandedMain.classList.remove('dark-mode');
-                            card.darkModeEnabled = false;
-                        } else {
-                            container.classList.add('dark-mode');
-                            toolbar.classList.add('dark-mode');
-                            editor.classList.add('dark-mode');
-                            button.classList.add('active');
-                            card.classList.add('dark-mode');
-                            if (expandedContent) expandedContent.classList.add('dark-mode');
-                            if (expandedHeader) expandedHeader.classList.add('dark-mode');
-                            if (expandedMain) expandedMain.classList.add('dark-mode');
-                            card.darkModeEnabled = true;
-                        }
-                    }
-                }
+                    [{ 'align': [] }]
+                ]
             }
         }
     });
     
-    // Create dark mode toggle button
-    setTimeout(() => {
+    // Restore dark mode state if it was previously enabled
+    if (card.darkModeEnabled) {
         const toolbar = card.querySelector('.ql-toolbar');
-        if (toolbar) {
-            // Remove existing dark mode button from toolbar if present
-            const existingDarkModeBtn = toolbar.querySelector('.ql-dark-mode');
-            if (existingDarkModeBtn) {
-                existingDarkModeBtn.remove();
-            }
-            
-            // Create new dark mode toggle button
-            const darkModeToggle = document.createElement('button');
-            darkModeToggle.className = 'dark-mode-toggle';
-            darkModeToggle.innerHTML = '<svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>';
-            darkModeToggle.title = 'Toggle dark mode';
-            darkModeToggle.style.cssText = 'padding: 5px 10px; background: #2d2d2d; border: 1px solid #444; border-radius: 4px; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; margin-left: 5px;';
-            
-            // Add click handler
-            darkModeToggle.onclick = function() {
-                const container = card.querySelector('.editor-container');
-                const editor = card.querySelector('.ql-editor');
-                const expandedContent = card.querySelector('.expanded-card-content');
-                const expandedHeader = card.querySelector('.expanded-card-header');
-                const expandedMain = card.querySelector('.expanded-card-main');
-                
-                if (container.classList.contains('dark-mode')) {
-                    container.classList.remove('dark-mode');
-                    toolbar.classList.remove('dark-mode');
-                    editor.classList.remove('dark-mode');
-                    darkModeToggle.classList.remove('active');
-                    card.classList.remove('dark-mode');
-                    if (expandedContent) expandedContent.classList.remove('dark-mode');
-                    if (expandedHeader) expandedHeader.classList.remove('dark-mode');
-                    if (expandedMain) expandedMain.classList.remove('dark-mode');
-                    card.darkModeEnabled = false;
-                } else {
-                    container.classList.add('dark-mode');
-                    toolbar.classList.add('dark-mode');
-                    editor.classList.add('dark-mode');
-                    darkModeToggle.classList.add('active');
-                    card.classList.add('dark-mode');
-                    if (expandedContent) expandedContent.classList.add('dark-mode');
-                    if (expandedHeader) expandedHeader.classList.add('dark-mode');
-                    if (expandedMain) expandedMain.classList.add('dark-mode');
-                    card.darkModeEnabled = true;
-                }
-            };
-            
-            // Add to toolbar
-            toolbar.appendChild(darkModeToggle);
-            
-            // Restore dark mode state if it was previously enabled
-            if (card.darkModeEnabled) {
-                const container = card.querySelector('.editor-container');
-                const editor = card.querySelector('.ql-editor');
-                const expandedContent = card.querySelector('.expanded-card-content');
-                const expandedHeader = card.querySelector('.expanded-card-header');
-                const expandedMain = card.querySelector('.expanded-card-main');
-                
-                container.classList.add('dark-mode');
-                toolbar.classList.add('dark-mode');
-                editor.classList.add('dark-mode');
-                darkModeToggle.classList.add('active');
-                card.classList.add('dark-mode');
-                if (expandedContent) expandedContent.classList.add('dark-mode');
-                if (expandedHeader) expandedHeader.classList.add('dark-mode');
-                if (expandedMain) expandedMain.classList.add('dark-mode');
-            }
-        }
-    }, 100);
+        const container = card.querySelector('.editor-container');
+        const editor = card.querySelector('.ql-editor');
+        const expandedContent = card.querySelector('.expanded-card-content');
+        const expandedHeader = card.querySelector('.expanded-card-header');
+        const expandedMain = card.querySelector('.expanded-card-main');
+        
+        if (container) container.classList.add('dark-mode');
+        if (toolbar) toolbar.classList.add('dark-mode');
+        if (editor) editor.classList.add('dark-mode');
+        card.classList.add('dark-mode');
+        if (expandedContent) expandedContent.classList.add('dark-mode');
+        if (expandedHeader) expandedHeader.classList.add('dark-mode');
+        if (expandedMain) expandedMain.classList.add('dark-mode');
+    }
     
     // Set initial content
     if (card.initialContent?.content) {

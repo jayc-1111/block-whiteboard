@@ -1,17 +1,28 @@
 /* Quill Editor Overrides */
 
+/* Reduce spacing between toolbar icon groups */
+.ql-toolbar.ql-snow .ql-formats {
+    margin-right: 8px; /* Reduced from default */
+}
+
+.ql-toolbar.ql-snow .ql-formats:last-child {
+    margin-right: 0;
+}
+
 /* Default (light mode) styles to match dark canvas theme */
 .card.expanded .ql-toolbar {
-    background: #F8F9FF !important;  /* Match card background */
-    border-color: #F8F9FF !important;
+    background: #ffffff !important;  /* Match card background */
+    border-color: #ffffff !important;
 }
 
 .card.expanded .ql-toolbar button {
-    color: #b0b0b0 !important;
+    color: #2D2D2D !important;
+    box-shadow: none;
+    padding: 1px;
 }
 
 .card.expanded .ql-toolbar button:hover {
-    color: #f0f0f0 !important;
+    color: #000000 !important;
 }
 
 .card.expanded .ql-toolbar button.ql-active,
@@ -21,21 +32,21 @@
 }
 
 .card.expanded .ql-toolbar .ql-stroke {
-    stroke: #b0b0b0 !important;
+    stroke: #2D2D2D !important;
 }
 
 .card.expanded .ql-toolbar .ql-fill {
-    fill: #b0b0b0 !important;
+    fill: #2D2D2D !important;
 }
 
 .card.expanded .ql-toolbar .ql-picker {
-    color: #b0b0b0 !important;
+    color: #2D2D2D !important;
 }
 
 .card.expanded .ql-editor {
-    background: #F8F9FF !important;  /* Match category background */
-    color: #f0f0f0 !important;  /* Match card text color */
-    caret-color: #f0f0f0;
+    background: #ffffff !important;  /* Match category background */
+    color: #2D2D2D !important;  /* Dark text color */
+    caret-color: #2D2D2D;
 }
 
 .card.expanded .ql-container {
@@ -201,11 +212,11 @@
 /* Expanded card specific styling */
 .card.expanded .ql-editor {
     min-height: 400px;
-    padding: 5px 20px 20px 20px;
+    padding: 5px 10px 10px 10px;
     font-size: 16px;
     line-height: 1.8;
     outline: none;
-    margin-top: -11px;
+    margin-top: 2px; /* Changed from -11px to 2px to move editor 13px lower */
 }
 
 /* Remove focus outline */
@@ -215,7 +226,8 @@
 
 /* Ensure placeholder is visible */
 .ql-editor.ql-blank::before {
-    color: #999;
+    color: #2D2D2D;
+    opacity: 0.5;
     content: attr(data-placeholder);
     font-style: italic;
     position: absolute;
@@ -250,9 +262,10 @@
 .ql-editor.ql-blank::before {
     content: attr(data-placeholder);
     position: absolute;
-    left: 20px;
-    top: -5px;
-    color: #adb5bd;
+    left: 10px;
+    top: 8px; /* Changed from -5px to 8px to match the 13px editor shift */
+    color: #2D2D2D;
+    opacity: 0.5;
     pointer-events: none;
     font-style: normal;
 }

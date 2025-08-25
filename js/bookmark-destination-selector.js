@@ -318,7 +318,7 @@
             title: bookmarkData.title || 'Untitled',
             url: bookmarkData.url || '',
             description: bookmarkData.description || bookmarkData.url || '',
-            screenshot: bookmarkData.screenshot || bookmarkData.image || null,
+            screenshot: bookmarkData.screenshotData || bookmarkData.screenshot || bookmarkData.image || null,
             timestamp: bookmarkData.timestamp || new Date().toISOString(),
             id: `bookmark-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
         };
@@ -462,6 +462,12 @@
         if (typeof saveCurrentBoard === 'function') {
             console.log('🔖 BOOKMARK: Calling saveCurrentBoard for regular card');
             await saveCurrentBoard();
+        }
+        
+        // Expand the card to show the new bookmark
+        if (window.expandCard) {
+            console.log('🎯 BOOKMARK DEST: Expanding card to show new bookmark');
+            window.expandCard(card);
         }
         
         // Save to Firebase with notification
@@ -869,6 +875,8 @@
             showBookmarkDestination(data);
         }
     };
+    
+
     
     // Update the section selection in the expanded card
     function selectSectionInExpandedCard(sectionElement) {
