@@ -169,6 +169,30 @@
         if (window.simpleNotifications) {
             window.simpleNotifications.showNotification('Bookmark moved successfully');
         }
+        
+        // Expand the target card
+        expandTargetCard(targetCard);
+    }
+    
+    // Expand the target card after moving a bookmark
+    function expandTargetCard(targetCard) {
+        // Check if targetCard is a string ID or DOM element
+        let cardElement = targetCard;
+        
+        // If it's a string ID, find the card element
+        if (typeof targetCard === 'string') {
+            cardElement = document.getElementById(targetCard);
+        }
+        
+        // If we found the card element, expand it
+        if (cardElement && typeof window.expandCard === 'function') {
+            // Use setTimeout to ensure the UI has updated before expanding
+            setTimeout(() => {
+                window.expandCard(cardElement);
+            }, 100);
+        } else {
+            console.warn('Could not find target card element to expand');
+        }
     }
     
     // Remove bookmark from source

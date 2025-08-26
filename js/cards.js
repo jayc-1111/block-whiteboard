@@ -740,7 +740,8 @@ function expandCard(card) {
     
     console.log('💚 EXPAND: Assembling wrapper components...');
     wrapper.appendChild(buttonRow);
-    wrapper.appendChild(header);
+    // Move header inside main content so it scrolls with the page
+    mainContent.insertBefore(header, mainContent.firstChild);
     wrapper.appendChild(mainContent);
     console.log('💚 EXPAND: Appending wrapper to card');
     card.appendChild(wrapper);
