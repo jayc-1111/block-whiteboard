@@ -250,7 +250,8 @@
 }
 
 .up-button,
-.down-button {
+.down-button,
+.move-button {
     position: absolute;
     width: 20px;
     height: 20px;
@@ -279,25 +280,34 @@
     right: 15px;
 }
 
+.move-button {
+    bottom: 100px;
+    right: 15px;
+}
+
 .up-button svg,
-.down-button svg {
+.down-button svg,
+.move-button svg {
     width: 12px;
     height: 12px;
     display: block;
 }
 
 .up-button:hover,
-.down-button:hover {
+.down-button:hover,
+.move-button:hover {
     background: #f0f0f0;
 }
 
 .up-button:active,
-.down-button:active {
+.down-button:active,
+.move-button:active {
     background: #e0e0e0;
 }
 
 .bookmark-card:hover .up-button,
-.bookmark-card:hover .down-button {
+.bookmark-card:hover .down-button,
+.bookmark-card:hover .move-button {
     opacity: 1;
 }
 

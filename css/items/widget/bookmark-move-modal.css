@@ -1,0 +1,205 @@
+/* Bookmark Move Modal Styles */
+.bookmark-move-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.75);
+    z-index: 10000000;
+    align-items: center;
+    justify-content: center;
+}
+
+.bookmark-move-modal.active {
+    display: flex;
+}
+
+.bookmark-move-content {
+    background: #1a1a1a;
+    border-radius: 12px;
+    width: 450px;
+    max-height: 600px;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+}
+
+.bookmark-move-header {
+    padding: 20px;
+    border-bottom: 1px solid #333;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.bookmark-move-header h3 {
+    margin: 0;
+    color: #fff;
+    font-size: 18px;
+    font-family: 'Nunito', sans-serif;
+}
+
+.bookmark-move-preview {
+    padding: 15px 20px;
+    border-bottom: 1px solid #333;
+    background: #0f0f0f;
+}
+
+.bookmark-move-preview-title {
+    color: #fff;
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 5px;
+}
+
+.bookmark-move-preview-url {
+    color: #7e8590;
+    font-size: 12px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.bookmark-move-tree {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px;
+}
+
+/* Reuse hamburger menu tree styles */
+.bookmark-move-tree .file-tree {
+    font-family: 'Nunito', sans-serif;
+    font-size: 13px;
+}
+
+.bookmark-move-tree ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.bookmark-move-tree li {
+    margin: 2px 0;
+}
+
+.bookmark-move-tree details {
+    cursor: pointer;
+    user-select: none;
+}
+
+.bookmark-move-tree summary {
+    padding: 6px 10px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: background 0.2s;
+    color: #9ca3af;
+}
+
+.bookmark-move-tree summary:hover {
+    background: #2a2a2a;
+    color: #fff;
+}
+
+.bookmark-move-tree .folder-icon,
+.bookmark-move-tree .file-icon {
+    width: 14px;
+    height: 14px;
+    flex-shrink: 0;
+}
+
+.bookmark-move-tree .card-item {
+    padding: 6px 10px 6px 32px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    color: #7e8590;
+}
+
+.bookmark-move-tree .card-item:hover {
+    background: #5353ff;
+    color: #fff;
+    transform: translateX(2px);
+}
+
+.bookmark-move-tree .card-item.selected {
+    background: #5353ff;
+    color: #fff;
+}
+
+.bookmark-move-tree .section-item {
+    padding: 6px 10px 6px 42px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    color: #7e8590;
+}
+
+.bookmark-move-tree .section-item:hover {
+    background: #4343ee;
+    color: #fff;
+    transform: translateX(2px);
+}
+
+.bookmark-move-tree .section-item.selected {
+    background: #4343ee;
+    color: #fff;
+}
+
+.bookmark-move-tree .item-count {
+    margin-left: auto;
+    font-size: 11px;
+    opacity: 0.6;
+}
+
+.bookmark-move-footer {
+    padding: 20px;
+    border-top: 1px solid #333;
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+}
+
+.bookmark-move-footer button {
+    padding: 8px 20px;
+    border: none;
+    border-radius: 6px;
+    font-family: 'Nunito', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+#bookmarkMoveCancel {
+    background: #333;
+    color: #fff;
+}
+
+#bookmarkMoveCancel:hover {
+    background: #444;
+}
+
+#bookmarkMoveBtn {
+    background: #5353ff;
+    color: #fff;
+}
+
+#bookmarkMoveBtn:hover {
+    background: #4343ee;
+}
+
+#bookmarkMoveBtn:disabled {
+    background: #555;
+    opacity: 0.5;
+    cursor: not-allowed;
+}

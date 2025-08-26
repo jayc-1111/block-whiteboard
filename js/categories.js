@@ -119,7 +119,7 @@ function createCategory(title = 'New Category', x = null, y = null) {
     expandSpaceBtn.textContent = 'Expand Space';
     expandSpaceBtn.style.display = 'none';
     expandSpaceBtn.addEventListener('click', () => {
-        for (let i = 0; i < 4; i++) {
+        for (let i = 0; i < CONSTANTS.INITIAL_CARD_SLOTS; i++) {
             const slot = createCardSlot();
             cardsGrid.appendChild(slot);
         }
@@ -319,7 +319,7 @@ function createCategoryFromData(catData) {
     const category = categories[catIndex];
     const grid = category.element.querySelector('.cards-grid');
     grid.innerHTML = '';
-    for (let i = 0; i < 4; i++) {
+    for (let i = 0; i < CONSTANTS.INITIAL_CARD_SLOTS; i++) {
         const slot = createCardSlot();
         grid.appendChild(slot);
     }

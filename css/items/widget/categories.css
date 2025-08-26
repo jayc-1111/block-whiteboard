@@ -157,12 +157,12 @@
     /* Keep grid visible but limit to 2 rows (4 cards) */
 }
 
-/* Hide cards after the 4th one when collapsed */
-.category.collapsed .cards-grid .card-slot:nth-child(n+5) {
+/* Hide cards after the 2nd one when collapsed */
+.category.collapsed .cards-grid .card-slot:nth-child(n+3) {
     display: none;
 }
 
-.category.collapsed .cards-grid .card:nth-child(n+5) {
+.category.collapsed .cards-grid .card:nth-child(n+3) {
     display: none;
 }
 

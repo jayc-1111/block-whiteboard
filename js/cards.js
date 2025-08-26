@@ -756,142 +756,168 @@ function expandCard(card) {
     });
 }
 
-// Create bookmark card element
-function createBookmarkCard(title, description, url, date, imageData, bookmarkIndex, expandedCard, sectionElement) {
-    console.log('🔍 DEBUG: Creating bookmark card', {
-        title,
-        hasImageData: !!imageData,
-        imageDataPreview: imageData ? imageData.substring(0, 50) + '...' : 'null',
-        dateType: typeof date,
-        date: date
-    });
-    
-    const card = document.createElement('div');
-    card.className = 'bookmark-card';
-    card.dataset.bookmarkIndex = bookmarkIndex;
-    card.dataset.index = bookmarkIndex; // For demo styling compatibility
-    
-    // Match the demo structure exactly with image container
-    const imageContainer = document.createElement('div');
-    imageContainer.className = 'image-container';
-    
-    // Image overlay
-    const imageOverlay = document.createElement('div');
-    imageOverlay.className = 'image-overlay';
-    if (imageData) {
-        imageOverlay.style.backgroundImage = `url('${imageData}')`;
-        // Also set on card for blurred background
-        card.style.setProperty('--bookmark-bg-image', `url('${imageData}')`);
-    }
-    imageContainer.appendChild(imageOverlay);
-    
-    // Delete button in image container
-    const deleteBtn = document.createElement('button');
-    deleteBtn.className = 'delete-button';
-    deleteBtn.setAttribute('aria-label', 'Delete bookmark');
-    deleteBtn.innerHTML = `
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="#ffffff">
-            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
-            <path d="M20 6a1 1 0 0 1 .117 1.993l-.117 .007h-.081l-.919 11a3 3 0 0 1 -2.824 2.995l-.176 .005h-8c-1.598 0 -2.904 -1.249 -2.992 -2.75l-.005 -.167l-.923 -11.083h-.08a1 1 0 0 1 -.117 -1.993l.117 -.007h16zm-9.489 5.14a1 1 0 0 0 -1.218 1.567l1.292 1.293l-1.292 1.293l-.083 .094a1 1 0 0 0 1.497 1.32l1.293 -1.292l1.293 1.292l.094 .083a1 1 0 0 0 1.32 -1.497l-1.292 -1.293l1.292 -1.293l.083 -.094a1 1 0 0 0 -1.497 -1.32l-1.293 1.292l-1.293 -1.292l-.094 -.083z"/>
-            <path d="M14 2a2 2 0 0 1 2 2a1 1 0 0 1 -1.993 .117l-.007 -.117h-4l-.007 .117a1 1 0 0 1 -1.993 -.117a2 2 0 0 1 1.85 -1.995l.15 -.005h4z"/>
-        </svg>
-    `;
-    deleteBtn.onclick = (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        removeBookmark(expandedCard, bookmarkIndex, sectionElement);
-    };
-    imageContainer.appendChild(deleteBtn);
-    
-    // External link button
-    const externalLink = document.createElement('a');
-    externalLink.href = url;
-    externalLink.target = '_blank';
-    externalLink.className = 'external-link-button';
-    externalLink.setAttribute('aria-label', 'Open bookmark');
-    externalLink.innerHTML = `
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
-            <path d="M12 6h-6a2 2 0 0 0 -2 2v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-6"/>
-            <path d="M11 13l9 -9"/>
-            <path d="M15 4h5v5"/>
-        </svg>
-    `;
-    externalLink.onclick = (e) => e.stopPropagation();
-    imageContainer.appendChild(externalLink);
-    
-    card.appendChild(imageContainer);
-    
-    // Up/Down buttons outside image container
-    const upBtn = document.createElement('button');
-    upBtn.className = 'up-button';
-    upBtn.setAttribute('aria-label', 'Move card up');
-    upBtn.innerHTML = `
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M12 19V5M5 12l7-7 7 7"/>
-        </svg>
-    `;
-    upBtn.disabled = bookmarkIndex === 0;
-    upBtn.onclick = () => {
-        reorderBookmark(expandedCard, bookmarkIndex, bookmarkIndex - 1, sectionElement);
-    };
-    card.appendChild(upBtn);
-    
-    const downBtn = document.createElement('button');
-    downBtn.className = 'down-button';
-    downBtn.setAttribute('aria-label', 'Move card down');
-    downBtn.innerHTML = `
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M12 5v14M5 12l7 7 7-7"/>
-        </svg>
-    `;
-    const totalBookmarks = sectionElement?.sectionData?.bookmarks?.length || 1;
-    downBtn.disabled = bookmarkIndex >= totalBookmarks - 1;
-    downBtn.onclick = () => {
-        reorderBookmark(expandedCard, bookmarkIndex, bookmarkIndex + 1, sectionElement);
-    };
-    card.appendChild(downBtn);
-    
-    // Card content section - use bookmark-specific classes to avoid conflicts
-    const cardContent = document.createElement('div');
-    cardContent.className = 'bookmark-content';
-    
-    const cardTitle = document.createElement('h3');
-    cardTitle.className = 'bookmark-card-title';
-    cardTitle.textContent = title;
-    cardTitle.title = title; // Tooltip for long titles
-    
-    const dateAdded = document.createElement('p');
-    dateAdded.className = 'bookmark-date-added';
-    // Format date consistently
-    let displayDate = date;
-    if (typeof date === 'string') {
-        try {
-            const dateObj = new Date(date);
+    // Create bookmark card element
+    function createBookmarkCard(title, description, url, date, imageData, bookmarkIndex, expandedCard, sectionElement) {
+        console.log('🔍 DEBUG: Creating bookmark card', {
+            title,
+            hasImageData: !!imageData,
+            imageDataPreview: imageData ? imageData.substring(0, 50) + '...' : 'null',
+            dateType: typeof date,
+            date: date
+        });
+        
+        const card = document.createElement('div');
+        card.className = 'bookmark-card';
+        card.dataset.bookmarkIndex = bookmarkIndex;
+        card.dataset.index = bookmarkIndex; // For demo styling compatibility
+        
+        // Match the demo structure exactly with image container
+        const imageContainer = document.createElement('div');
+        imageContainer.className = 'image-container';
+        
+        // Image overlay
+        const imageOverlay = document.createElement('div');
+        imageOverlay.className = 'image-overlay';
+        if (imageData) {
+            imageOverlay.style.backgroundImage = `url('${imageData}')`;
+            // Also set on card for blurred background
+            card.style.setProperty('--bookmark-bg-image', `url('${imageData}')`);
+        }
+        imageContainer.appendChild(imageOverlay);
+        
+        // Delete button in image container
+        const deleteBtn = document.createElement('button');
+        deleteBtn.className = 'delete-button';
+        deleteBtn.setAttribute('aria-label', 'Delete bookmark');
+        deleteBtn.innerHTML = `
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="#ffffff">
+                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                <path d="M20 6a1 1 0 0 1 .117 1.993l-.117 .007h-.081l-.919 11a3 3 0 0 1 -2.824 2.995l-.176 .005h-8c-1.598 0 -2.904 -1.249 -2.992 -2.75l-.005 -.167l-.923 -11.083h-.08a1 1 0 0 1 -.117 -1.993l.117 -.007h16zm-9.489 5.14a1 1 0 0 0 -1.218 1.567l1.292 1.293l-1.292 1.293l-.083 .094a1 1 0 0 0 1.497 1.32l1.293 -1.292l1.293 1.292l.094 .083a1 1 0 0 0 1.32 -1.497l-1.292 -1.293l1.292 -1.293l.083 -.094a1 1 0 0 0 -1.497 -1.32l-1.293 1.292l-1.293 -1.292l-.094 -.083z"/>
+                <path d="M14 2a2 2 0 0 1 2 2a1 1 0 0 1 -1.993 .117l-.007 -.117h-4l-.007 .117a1 1 0 0 1 -1.993 -.117a2 2 0 0 1 1.85 -1.995l.15 -.005h4z"/>
+            </svg>
+        `;
+        deleteBtn.onclick = (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            removeBookmark(expandedCard, bookmarkIndex, sectionElement);
+        };
+        imageContainer.appendChild(deleteBtn);
+        
+        // External link button
+        const externalLink = document.createElement('a');
+        externalLink.href = url;
+        externalLink.target = '_blank';
+        externalLink.className = 'external-link-button';
+        externalLink.setAttribute('aria-label', 'Open bookmark');
+        externalLink.innerHTML = `
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                <path d="M12 6h-6a2 2 0 0 0 -2 2v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-6"/>
+                <path d="M11 13l9 -9"/>
+                <path d="M15 4h5v5"/>
+            </svg>
+        `;
+        externalLink.onclick = (e) => e.stopPropagation();
+        imageContainer.appendChild(externalLink);
+        
+        card.appendChild(imageContainer);
+        
+        // Up/Down buttons outside image container
+        const upBtn = document.createElement('button');
+        upBtn.className = 'up-button';
+        upBtn.setAttribute('aria-label', 'Move card up');
+        upBtn.innerHTML = `
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 19V5M5 12l7-7 7 7"/>
+            </svg>
+        `;
+        upBtn.disabled = bookmarkIndex === 0;
+        upBtn.onclick = () => {
+            reorderBookmark(expandedCard, bookmarkIndex, bookmarkIndex - 1, sectionElement);
+        };
+        card.appendChild(upBtn);
+        
+        const downBtn = document.createElement('button');
+        downBtn.className = 'down-button';
+        downBtn.setAttribute('aria-label', 'Move card down');
+        downBtn.innerHTML = `
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 5v14M5 12l7 7 7-7"/>
+            </svg>
+        `;
+        const totalBookmarks = sectionElement?.sectionData?.bookmarks?.length || 1;
+        downBtn.disabled = bookmarkIndex >= totalBookmarks - 1;
+        downBtn.onclick = () => {
+            reorderBookmark(expandedCard, bookmarkIndex, bookmarkIndex + 1, sectionElement);
+        };
+        card.appendChild(downBtn);
+        
+        // Move button
+        const moveBtn = document.createElement('button');
+        moveBtn.className = 'move-button';
+        moveBtn.setAttribute('aria-label', 'Move bookmark');
+        moveBtn.innerHTML = `
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M18 14v5a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8c0-1.1.9-2 2-2h5"/>
+                <polyline points="15 3 21 3 21 9"/>
+                <line x1="10" y1="14" x2="21" y2="3"/>
+            </svg>
+        `;
+        moveBtn.onclick = (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            // Get the bookmark data from the section
+            const sectionData = sectionElement?.sectionData;
+            if (sectionData && sectionData.bookmarks && sectionData.bookmarks[bookmarkIndex]) {
+                const bookmark = sectionData.bookmarks[bookmarkIndex];
+                // Show move modal
+                if (window.showBookmarkMoveModal) {
+                    window.showBookmarkMoveModal(bookmark, expandedCard, sectionData.id);
+                }
+            }
+        };
+        card.appendChild(moveBtn);
+        
+        // Card content section - use bookmark-specific classes to avoid conflicts
+        const cardContent = document.createElement('div');
+        cardContent.className = 'bookmark-content';
+        
+        const cardTitle = document.createElement('h3');
+        cardTitle.className = 'bookmark-card-title';
+        cardTitle.textContent = title;
+        cardTitle.title = title; // Tooltip for long titles
+        
+        const dateAdded = document.createElement('p');
+        dateAdded.className = 'bookmark-date-added';
+        // Format date consistently
+        let displayDate = date;
+        if (typeof date === 'string') {
+            try {
+                const dateObj = new Date(date);
+                const months = ['January', 'February', 'March', 'April', 'May', 'June', 
+                              'July', 'August', 'September', 'October', 'November', 'December'];
+                displayDate = `${months[dateObj.getMonth()]} ${dateObj.getDate()}, ${dateObj.getFullYear()}`;
+            } catch (e) {
+                displayDate = date;
+            }
+        } else if (date && date.toLocaleDateString) {
             const months = ['January', 'February', 'March', 'April', 'May', 'June', 
                           'July', 'August', 'September', 'October', 'November', 'December'];
-            displayDate = `${months[dateObj.getMonth()]} ${dateObj.getDate()}, ${dateObj.getFullYear()}`;
-        } catch (e) {
-            displayDate = date;
+            displayDate = `${months[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`;
         }
-    } else if (date && date.toLocaleDateString) {
-        const months = ['January', 'February', 'March', 'April', 'May', 'June', 
-                      'July', 'August', 'September', 'October', 'November', 'December'];
-        displayDate = `${months[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`;
+        dateAdded.textContent = `Added: ${displayDate}`;
+        
+        cardContent.appendChild(cardTitle);
+        cardContent.appendChild(dateAdded);
+        card.appendChild(cardContent);
+        
+        // Add no-image class if no image data
+        if (!imageData) {
+            card.classList.add('no-image');
+        }
+        
+        return card;
     }
-    dateAdded.textContent = `Added: ${displayDate}`;
-    
-    cardContent.appendChild(cardTitle);
-    cardContent.appendChild(dateAdded);
-    card.appendChild(cardContent);
-    
-    // Add no-image class if no image data
-    if (!imageData) {
-        card.classList.add('no-image');
-    }
-    
-    return card;
-}
 
 // Function to remove a bookmark
 function removeBookmark(expandedCard, bookmarkIndex, sectionElement) {

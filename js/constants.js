@@ -16,8 +16,8 @@ const CONSTANTS = {
     EXPANDED_CARD_Z_INDEX: 20000,
     
     // Category defaults
-    INITIAL_CARD_SLOTS: 4,
-    CARDS_BEFORE_COLLAPSE: 5,
+    INITIAL_CARD_SLOTS: 2,
+    CARDS_BEFORE_COLLAPSE: 3,
     
     // Animation durations (ms)
     TRANSITION_DURATION: 200,

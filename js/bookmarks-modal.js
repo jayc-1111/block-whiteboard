@@ -21,6 +21,10 @@ document.addEventListener('DOMContentLoaded', function() {
             if (key && key.startsWith('zenban_saved_bookmark_')) {
                 try {
                     const bookmark = JSON.parse(localStorage.getItem(key));
+                    // Ensure bookmark has an ID
+                    if (!bookmark.id) {
+                        bookmark.id = `bookmark-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+                    }
                     bookmarks.push(bookmark);
                 } catch (e) {
                     console.error('Error parsing bookmark:', e);
@@ -31,17 +35,69 @@ document.addEventListener('DOMContentLoaded', function() {
         // If no saved bookmarks, use sample data
         if (bookmarks.length === 0) {
             return [
-                { title: "GitHub", url: "https://github.com", timestamp: new Date('2025-08-21').toISOString() },
-                { title: "Stack Overflow", url: "https://stackoverflow.com", timestamp: new Date('2025-08-20').toISOString() },
-                { title: "MDN Web Docs", url: "https://developer.mozilla.org", timestamp: new Date('2025-08-19').toISOString() },
-                { title: "Google", url: "https://google.com", timestamp: new Date('2025-08-18').toISOString() },
-                { title: "YouTube", url: "https://youtube.com", timestamp: new Date('2025-08-17').toISOString() },
-                { title: "Twitter", url: "https://twitter.com", timestamp: new Date('2025-08-16').toISOString() },
-                { title: "Reddit", url: "https://reddit.com", timestamp: new Date('2025-08-15').toISOString() },
-                { title: "LinkedIn", url: "https://linkedin.com", timestamp: new Date('2025-08-14').toISOString() },
-                { title: "Wikipedia", url: "https://wikipedia.org", timestamp: new Date('2025-08-13').toISOString() }
+                { 
+                    id: `bookmark-${Date.now()}-1`,
+                    title: "GitHub", 
+                    url: "https://github.com", 
+                    timestamp: new Date('2025-08-21').toISOString() 
+                },
+                { 
+                    id: `bookmark-${Date.now()}-2`,
+                    title: "Stack Overflow", 
+                    url: "https://stackoverflow.com", 
+                    timestamp: new Date('2025-08-20').toISOString() 
+                },
+                { 
+                    id: `bookmark-${Date.now()}-3`,
+                    title: "MDN Web Docs", 
+                    url: "https://developer.mozilla.org", 
+                    timestamp: new Date('2025-08-19').toISOString() 
+                },
+                { 
+                    id: `bookmark-${Date.now()}-4`,
+                    title: "Google", 
+                    url: "https://google.com", 
+                    timestamp: new Date('2025-08-18').toISOString() 
+                },
+                { 
+                    id: `bookmark-${Date.now()}-5`,
+                    title: "YouTube", 
+                    url: "https://youtube.com", 
+                    timestamp: new Date('2025-08-17').toISOString() 
+                },
+                { 
+                    id: `bookmark-${Date.now()}-6`,
+                    title: "Twitter", 
+                    url: "https://twitter.com", 
+                    timestamp: new Date('2025-08-16').toISOString() 
+                },
+                { 
+                    id: `bookmark-${Date.now()}-7`,
+                    title: "Reddit", 
+                    url: "https://reddit.com", 
+                    timestamp: new Date('2025-08-15').toISOString() 
+                },
+                { 
+                    id: `bookmark-${Date.now()}-8`,
+                    title: "LinkedIn", 
+                    url: "https://linkedin.com", 
+                    timestamp: new Date('2025-08-14').toISOString() 
+                },
+                { 
+                    id: `bookmark-${Date.now()}-9`,
+                    title: "Wikipedia", 
+                    url: "https://wikipedia.org", 
+                    timestamp: new Date('2025-08-13').toISOString() 
+                }
             ];
         }
+        
+        // Ensure all bookmarks have IDs
+        bookmarks.forEach(bookmark => {
+            if (!bookmark.id) {
+                bookmark.id = `bookmark-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+            }
+        });
         
         // Sort by timestamp (newest first)
         return bookmarks.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
@@ -123,6 +179,13 @@ document.addEventListener('DOMContentLoaded', function() {
                         <path d="M12 5v14M5 12l7 7 7-7"/>
                     </svg>
                 </button>
+                <button class="move-button" aria-label="Move bookmark">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M18 14v5a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8c0-1.1.9-2 2-2h5"/>
+                        <polyline points="15 3 21 3 21 9"/>
+                        <line x1="10" y1="14" x2="21" y2="3"/>
+                    </svg>
+                </button>
                 <div class="card-content">
                     <h3 class="card-title" title="${bookmark.title}">${bookmark.title}</h3>
                     <p class="date-added">Added: ${formatDate(bookmark.timestamp)}</p>
@@ -142,6 +205,20 @@ document.addEventListener('DOMContentLoaded', function() {
             
             const downBtn = card.querySelector('.down-button');
             downBtn.addEventListener('click', () => moveCard(index, 1));
+            
+            const moveBtn = card.querySelector('.move-button');
+            moveBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                // Get the bookmark data
+                const bookmark = bookmarks[index];
+                // Show move modal
+                if (window.showBookmarkMoveModal) {
+                    // For bookmarks in the modal, we don't have a source card/section
+                    // so we'll pass null for those parameters
+                    window.showBookmarkMoveModal(bookmark, null, null);
+                }
+            });
             
             bookmarkGrid.appendChild(card);
         });
