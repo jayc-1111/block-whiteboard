@@ -87,59 +87,59 @@ async function saveCurrentBoard() {
                     left: cat.style.left,
                     top: cat.style.top
                 },
-                cards: []
+                files: []
             };
             
-            // Get all card slots in order to preserve position
-            const cardSlots = cat.querySelectorAll('.card-slot');
-            let allCards = [];
+            // Get all file slots in order to preserve position
+            const fileSlots = cat.querySelectorAll('.file-slot');
+            let allFiles = [];
             
-            // Process slots in order to maintain card positions
-            const expandedCard = document.querySelector('.card.expanded');
+            // Process slots in order to maintain file positions
+            const expandedFile = document.querySelector('.file.expanded');
             
-            cardSlots.forEach((slot, slotIndex) => {
-                const cardInSlot = slot.querySelector('.card');
-                if (cardInSlot) {
-                    allCards.push(cardInSlot);
-                } else if (expandedCard && 
-                          expandedCard.dataset.categoryId === cat.id && 
-                          expandedCard.originalSlotIndex === slotIndex) {
-                    // This slot's card is currently expanded
-                    allCards.push(expandedCard);
+            fileSlots.forEach((slot, slotIndex) => {
+                const fileInSlot = slot.querySelector('.file');
+                if (fileInSlot) {
+                    allFiles.push(fileInSlot);
+                } else if (expandedFile && 
+                          expandedFile.dataset.categoryId === cat.id && 
+                          expandedFile.originalSlotIndex === slotIndex) {
+                    // This slot's file is currently expanded
+                    allFiles.push(expandedFile);
                 }
             });
             
-            Debug.board.detail(`Cards found in slots: ${allCards.length}`);
-            Debug.board.detail(`Expanded card found: ${document.querySelector('.card.expanded') ? 'yes' : 'no'}`);
-            allCards.forEach((card, index) => {
-                const cardTitle = card.querySelector('.card-title');
-                Debug.board.detail(`  Card ${index}: "${cardTitle ? cardTitle.textContent : 'NO TITLE'}"`);
+            Debug.board.detail(`Files found in slots: ${allFiles.length}`);
+            Debug.board.detail(`Expanded file found: ${document.querySelector('.file.expanded') ? 'yes' : 'no'}`);
+            allFiles.forEach((file, index) => {
+                const fileTitle = file.querySelector('.file-title');
+                Debug.board.detail(`  File ${index}: "${fileTitle ? fileTitle.textContent : 'NO TITLE'}"`);
             });
             
-            const cardPromises = allCards.map(async (card) => {
-                const cardTitle = card.querySelector('.card-title');
+            const filePromises = allFiles.map(async (file) => {
+                const fileTitle = file.querySelector('.file-title');
                 
-                // Always save the card, even if title is missing or empty
-                const title = getCardTitleText(card) || 'Untitled Card';
+                // Always save the file, even if title is missing or empty
+                const title = getFileTitleText(file) || 'Untitled File';
                 
                 let content = '';
                 
-                // If card has Quill editor instance (expanded), save from it
-                if (card.quillEditor) {
+                // If file has Quill editor instance (expanded), save from it
+                if (file.quillEditor) {
                     try {
                         content = {
-                            content: card.quillEditor.root.innerHTML
+                            content: file.quillEditor.root.innerHTML
                         };
                     } catch (error) {
                         console.error('Error saving Quill content:', error);
                     }
-                } else if (card.initialContent) {
-                    // Use stored content if card wasn't expanded
-                    content = card.initialContent;
+                } else if (file.initialContent) {
+                    // Use stored content if file wasn't expanded
+                    content = file.initialContent;
                 }
                 
-                // Ensure we never lose bookmarks by checking both the card element and AppState
-                let bookmarks = card.bookmarks || [];
+                // Ensure we never lose bookmarks by checking both the file element and AppState
+                let bookmarks = file.bookmarks || [];
                 
                 // Additional safety check - if bookmarks appear empty but we had them before
                 if (bookmarks.length === 0 && window.syncService?.lastKnownGoodState) {
@@ -147,12 +147,12 @@ async function saveCurrentBoard() {
                         const lastGood = JSON.parse(window.syncService.lastKnownGoodState);
                         const lastBoard = lastGood.find(b => b.id === currentBoardId);
                         if (lastBoard?.categories) {
-                            // Try to find this card's bookmarks from last known good state
+                            // Try to find this file's bookmarks from last known good state
                             for (const lastCat of lastBoard.categories) {
-                                const lastCard = lastCat.cards?.find(c => c.title === title);
-                                if (lastCard?.bookmarks?.length > 0) {
-                                    console.warn(`📦 SAVE: Recovering ${lastCard.bookmarks.length} bookmarks for card "${title}" from last known good state`);
-                                    bookmarks = lastCard.bookmarks;
+                                const lastFile = lastCat.files?.find(c => c.title === title);
+                                if (lastFile?.bookmarks?.length > 0) {
+                                    console.warn(`📦 SAVE: Recovering ${lastFile.bookmarks.length} bookmarks for file "${title}" from last known good state`);
+                                    bookmarks = lastFile.bookmarks;
                                     break;
                                 }
                             }
@@ -164,20 +164,20 @@ async function saveCurrentBoard() {
                 
                 // Save sections data if it exists
                 let sections = [];
-                if (card.sections && Array.isArray(card.sections)) {
-                    sections = card.sections.map(section => ({
+                if (file.sections && Array.isArray(file.sections)) {
+                    sections = file.sections.map(section => ({
                         id: section.id,
                         title: section.title,
                         content: section.content,
                         bookmarks: section.bookmarks || []
                     }));
-                    console.log(`💾 SAVE DEBUG: Card "${title}" has ${sections.length} sections to save`);
+                    console.log(`💾 SAVE DEBUG: File "${title}" has ${sections.length} sections to save`);
                 } else {
-                    console.log(`💾 SAVE DEBUG: Card "${title}" has no sections (card.sections: ${typeof card.sections})`);
+                    console.log(`💾 SAVE DEBUG: File "${title}" has no sections (file.sections: ${typeof file.sections})`);
                 }
                 
-                const cardData = {
-                    id: card.dataset.cardId || card.id || null,
+                const fileData = {
+                    id: file.dataset.fileId || file.id || null,
                     title: title,
                     content: content, // Now storing Quill HTML format
                     bookmarks: bookmarks, // Save bookmarks with protection
@@ -185,25 +185,25 @@ async function saveCurrentBoard() {
                 };
                 
                 if (sections.length > 0) {
-                    console.log(`💾 SAVE DEBUG: Saving ${sections.length} sections for card "${title}"`);
+                    console.log(`💾 SAVE DEBUG: Saving ${sections.length} sections for file "${title}"`);
                     sections.forEach((s, i) => console.log(`  Section ${i}: ${s.title} (${s.bookmarks?.length || 0} bookmarks)`));
                 }
                 
-                if (card.bookmarks && card.bookmarks.length > 0) {
-                    console.log(`📦 SAVE: Saving card "${title}" with ${card.bookmarks.length} bookmarks`);
-                    card.bookmarks.forEach((b, i) => console.log(`  🔖 ${i}: ${b.title} - ${b.url}`));
+                if (file.bookmarks && file.bookmarks.length > 0) {
+                    console.log(`📦 SAVE: Saving file "${title}" with ${file.bookmarks.length} bookmarks`);
+                    file.bookmarks.forEach((b, i) => console.log(`  🔖 ${i}: ${b.title} - ${b.url}`));
                 }
                 
-                return cardData;
+                return fileData;
             });
             
-            // Wait for all cards to be processed
-            const cardResults = await Promise.all(cardPromises);
-            categoryData.cards = cardResults.filter(card => card !== null);
+            // Wait for all files to be processed
+            const fileResults = await Promise.all(filePromises);
+            categoryData.files = fileResults.filter(file => file !== null);
             
-            Debug.board.detail(`Cards saved for category "${categoryData.title}": ${categoryData.cards.length}`);
-            categoryData.cards.forEach((card, index) => {
-                Debug.board.detail(`  Saved card ${index}: "${card.title}"`);
+            Debug.board.detail(`Files saved for category "${categoryData.title}": ${categoryData.files.length}`);
+            categoryData.files.forEach((file, index) => {
+                Debug.board.detail(`  Saved file ${index}: "${file.title}"`);
             });
             
             board.categories.push(categoryData);
@@ -345,33 +345,33 @@ async function loadBoard(boardId) {
             const categories = AppState.get('categories');
             const category = categories[catIndex];
             if (category && category.element) {
-                const grid = category.element.querySelector('.cards-grid');
+                const grid = category.element.querySelector('.files-grid');
                 if (grid) {
                     grid.innerHTML = '';
                     
-                    // Create card slots
+                    // Create file slots
                     for (let i = 0; i < 4; i++) {
-                        if (typeof createCardSlot === 'function') {
-                            const slot = createCardSlot();
+                        if (typeof createFileSlot === 'function') {
+                            const slot = createFileSlot();
                             grid.appendChild(slot);
                         }
                     }
                     
-                    // Load cards with bookmarks and sections
-                    if (catData.cards) {
-                        catData.cards.forEach(cardData => {
+                    // Load files with bookmarks and sections
+                    if (catData.files) {
+                        catData.files.forEach(fileData => {
                             // Pass bookmarks as fourth parameter and sections as fifth (if needed)
-                            const card = addCardToCategory(catIndex, cardData.title, cardData.content, cardData.bookmarks);
-                            // Restore card ID if it exists
-                            if (card && cardData.id) {
-                                card.id = cardData.id;
-                                card.dataset.cardId = cardData.id;
+                            const file = addFileToCategory(catIndex, fileData.title, fileData.content, fileData.bookmarks);
+                            // Restore file ID if it exists
+                            if (file && fileData.id) {
+                                file.id = fileData.id;
+                                file.dataset.fileId = fileData.id;
                             }
                             
                             // Restore sections if they exist
-                            if (card && cardData.sections && Array.isArray(cardData.sections)) {
-                                // Store sections data on the card element for later use
-                                card.sections = cardData.sections;
+                            if (file && fileData.sections && Array.isArray(fileData.sections)) {
+                                // Store sections data on the file element for later use
+                                file.sections = fileData.sections;
                             }
                         });
                     }

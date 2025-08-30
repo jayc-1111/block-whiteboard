@@ -44,8 +44,8 @@ function updateDevBoardInfo() {
     if (board) {
         window.setDevInfo?.('boardName', board.name);
         window.setDevInfo?.('categories', board.categories?.length || 0);
-        const cardCount = board.categories?.reduce((sum, cat) => sum + (cat.cards?.length || 0), 0) || 0;
-        window.setDevInfo?.('cards', cardCount);
+        const fileCount = board.categories?.reduce((sum, cat) => sum + (cat.files?.length || 0), 0) || 0;
+        window.setDevInfo?.('files', fileCount);
     }
 }
 

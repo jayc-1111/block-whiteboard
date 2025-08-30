@@ -34,9 +34,9 @@ function setupKeyboardShortcuts() {
         }
         
         if (e.key === 'Escape') {
-            if (expandedCard) {
-                collapseCard(expandedCard);
-                expandedCard = null;
+            if (expandedFile) {
+                collapseFile(expandedFile);
+                expandedFile = null;
             } else {
                 clearSelection();
             }
@@ -108,9 +108,9 @@ function setupClonedCategory(clone) {
         toggleBtn.onclick = () => toggleCategory(clone);
     }
     
-    const addCardBtn = clone.querySelector('.add-card-btn');
-    if (addCardBtn) {
-        addCardBtn.onclick = () => addCardToCategory(categories.length);
+    const addFileBtn = clone.querySelector('.add-file-btn');
+    if (addFileBtn) {
+        addFileBtn.onclick = () => addFileToCategory(categories.length);
     }
     
     const deleteBtn = clone.querySelector('.delete-btn');
@@ -135,11 +135,11 @@ function setupClonedCategory(clone) {
         clone.style.zIndex = highestZIndex;
     });
     
-    clone.querySelectorAll('.card').forEach(card => {
-        card.addEventListener('dragstart', handleDragStart);
-        card.addEventListener('dragend', handleDragEnd);
+    clone.querySelectorAll('.file').forEach(file => {
+        file.addEventListener('dragstart', handleDragStart);
+        file.addEventListener('dragend', handleDragEnd);
         
-        const editorContainer = card.querySelector('.quill-editor');
+        const editorContainer = file.querySelector('.quill-editor');
         if (editorContainer) {
             const quill = new Quill(editorContainer, {
                 theme: 'snow',
@@ -159,21 +159,21 @@ function setupClonedCategory(clone) {
                     ]
                 }
             });
-            card.quillInstance = quill;
+            file.quillInstance = quill;
         }
         
-        const hoverOverlay = card.querySelector('.card-hover-overlay');
+        const hoverOverlay = file.querySelector('.file-hover-overlay');
         if (hoverOverlay) {
             hoverOverlay.onclick = (e) => {
                 e.stopPropagation();
-                expandCard(card);
+                expandFile(file);
             };
         }
     });
     
     categories.push({
         element: clone,
-        cards: []
+        files: []
     });
 }
 
@@ -184,70 +184,10 @@ function setupClonedSuperHeader(clone) {
     });
 }
 
-function updateFileStructure() {
-    const structureTrigger = document.querySelector('.file-structure-trigger');
-    if (!structureTrigger) return;
-    
-    const structureContainer = structureTrigger.parentElement;
-    if (!structureContainer) return;
-    
-    let fileStructure = document.querySelector('.file-structure-dropdown');
-    if (!fileStructure) {
-        fileStructure = document.createElement('div');
-        fileStructure.className = 'file-structure-dropdown';
-        structureContainer.appendChild(fileStructure);
-    }
-    
-    const list = document.createElement('ul');
-    list.className = 'file-structure-list';
-    
-    boards.forEach(board => {
-        const boardLi = document.createElement('li');
-        boardLi.className = 'board-item' + (board.id === currentBoardId ? ' active' : '');
-        boardLi.textContent = board.name;
-        boardLi.onclick = () => loadBoard(board.id);
-        list.appendChild(boardLi);
-        
-        if (board.id === currentBoardId) {
-            document.querySelectorAll('.category').forEach(cat => {
-                const catLi = document.createElement('li');
-                catLi.className = 'category-item';
-                const catTitle = cat.querySelector('.category-title');
-                catLi.textContent = catTitle ? catTitle.textContent : 'Untitled';
-                catLi.onclick = () => {
-                    cat.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    highestZIndex++;
-                    cat.style.zIndex = highestZIndex;
-                };
-                list.appendChild(catLi);
-                
-                cat.querySelectorAll('.card').forEach(card => {
-                    const cardLi = document.createElement('li');
-                    cardLi.className = 'card-item';
-                    cardLi.textContent = card.querySelector('.card-title').textContent;
-                    cardLi.onclick = (e) => {
-                        e.stopPropagation();
-                        expandCard(card);
-                    };
-                    list.appendChild(cardLi);
-                });
-            });
-            
-            document.querySelectorAll('.super-header').forEach(header => {
-                const headerLi = document.createElement('li');
-                headerLi.className = 'header-item';
-                headerLi.textContent = header.textContent;
-                headerLi.onclick = () => {
-                    header.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                };
-                list.appendChild(headerLi);
-            });
-        }
-    });
-    
-    fileStructure.innerHTML = '';
-    fileStructure.appendChild(list);
-}
+/**
+ * Deprecated: updateFileStructure (duplicate from utils.js) has been removed.
+ * Use updateFileTree() in sidebar-menu.js as the only maintained implementation.
+ */
 
 // Note: This function appears to be duplicated in pan.js
 function setupMiddleMousePan() {

@@ -49,16 +49,16 @@
 ## Bookmark Loading After Refresh (Fixed 8/9/2025)
 **Problem**: Bookmarks not displaying after page refresh, even though logs show they're loading from Firebase.
 
-**Root Cause**: Cards are created asynchronously with 150ms delays between each card. If you expand a card too quickly after refresh, the bookmarks might not be attached yet.
+**Root Cause**: Files are created asynchronously with 150ms delays between each file. If you expand a file too quickly after refresh, the bookmarks might not be attached yet.
 
 **Key Code**:
-- `cards.js:103`: Bookmarks stored on card DOM element
-- `sync-service.js:409`: Cards created with staggered 150ms delays  
+- `files.js:103`: Bookmarks stored on file DOM element
+- `sync-service.js:409`: Files created with staggered 150ms delays  
 - `sync-service.js:453`: Bookmarks ARE passed during restore
 
-**Solution**: Wait for UI to fully load before expanding cards. The logs confirm bookmarks are saving/loading correctly:
-- "CARD: Restored card ... with 2 bookmarks" ✓
-- "SAVE: Saving card ... with 2 bookmarks" ✓
+**Solution**: Wait for UI to fully load before expanding files. The logs confirm bookmarks are saving/loading correctly:
+- "FILE: Restored file ... with 2 bookmarks" ✓
+- "SAVE: Saving file ... with 2 bookmarks" ✓
 
 ## Bookmark Editor Module (Aug 2025)
 - Created Quill module for composite bookmark+editor widget
@@ -86,7 +86,7 @@
 - **Location**: `zenban-firefox-extension/element-picker.js` line 11
 
 ### 3. Quill Editor Initialization Errors
-- **Problem**: Quill throwing "emitter is undefined" errors when creating bookmark cards
+- **Problem**: Quill throwing "emitter is undefined" errors when creating bookmark files
 - **Solution**: Added longer timeout for DOM to be ready before Quill initialization
 - **Location**: `js/bookmarks.js` line 367
 
@@ -135,18 +135,18 @@
 - **Root Cause**: Both sync service and guest auth were triggering board loads on auth state change
 - **Key Learning**: Always use single source of truth for initialization - let sync service handle all board loading
 
-### Button Visibility in Expanded Cards (Fixed 8/6/2025)
-- **Issue**: Save/Delete buttons disappeared in expanded card view
-- **Cause**: CSS rule `.card.expanded .expanded-card-buttons { display: none; }` was hiding the buttons
-- **Solution**: Replaced hiding rule with proper button styling in cards.css
-- **Location**: css/items/widget/cards.css (lines 456-499)
+### Button Visibility in Expanded Files (Fixed 8/6/2025)
+- **Issue**: Save/Delete buttons disappeared in expanded file view
+- **Cause**: CSS rule `.file.expanded .expanded-file-buttons { display: none; }` was hiding the buttons
+- **Solution**: Replaced hiding rule with proper button styling in files.css
+- **Location**: css/items/widget/files.css (lines 456-499)
 
 ### Plain Text Paste Implementation (8/6/2025)
-- **Feature**: Strip formatting when pasting into card titles and Quill editor
+- **Feature**: Strip formatting when pasting into file titles and Quill editor
 - **Implementation**:
-  - Card titles: Added paste event listener to extract plain text only
+  - File titles: Added paste event listener to extract plain text only
   - Quill editor: Configured clipboard module with `matchVisual: false`
-- **Location**: js/cards.js (lines 50-54 and 615-617)
+- **Location**: js/files.js (lines 50-54 and 615-617)
 
 ### Dark Mode Toggle for Quill Editor (8/6/2025)
 - **Feature**: Added dark mode toggle button with moon icon to Quill toolbar
@@ -154,15 +154,15 @@
   - Custom toolbar button 'dark-mode' with handler function
   - Moon icon SVG added via setTimeout after initialization
   - Toggles dark-mode class on editor, toolbar, and container
-  - Persists dark mode state on card.darkModeEnabled property
-  - Restores dark mode when card is re-expanded
-- **Styling**: Dark gray backgrounds (#2d2d2d toolbar, #1e1e1e editor, #1a1a1a card background) with white text
+  - Persists dark mode state on file.darkModeEnabled property
+  - Restores dark mode when file is re-expanded
+- **Styling**: Dark gray backgrounds (#2d2d2d toolbar, #1e1e1e editor, #1a1a1a file background) with white text
 - **Location**: 
-  - js/cards.js (lines 639-661 for handler, 665-703 for icon and restore, 234-350 for expand apply)
+  - js/files.js (lines 639-661 for handler, 665-703 for icon and restore, 234-350 for expand apply)
   - css/scripts/quill-overrides.css (lines 3-114 for dark mode styles)
 
 ### 55. Replaced Butter.js with GSAP ScrollSmoother (8/27/2025)
-- **Problem**: Butter.js wasn't smoothing expanded cards, switched to GSAP ScrollSmoother
+- **Problem**: Butter.js wasn't smoothing expanded files, switched to GSAP ScrollSmoother
 - **Solution**: Implemented GSAP ScrollSmoother for smooth scrolling
 - **Changes**:
   - Removed butter.js files and references
@@ -170,26 +170,26 @@
   - Created ScrollSmoother structure (#smooth-wrapper, #smooth-content)
   - Added init/cleanup functions
 - **Files**:
-  - `js/expanded-card-scroll-smoother.js` - ScrollSmoother module
-  - `css/scripts/expanded-card-scroll-smoother.css` - Styles
-  - `js/cards.js` - Updated expandCard/collapseCard
+  - `js/expanded-file-scroll-smoother.js` - ScrollSmoother module
+  - `css/scripts/expanded-file-scroll-smoother.css` - Styles
+  - `js/files.js` - Updated expandFile/collapseFile
   - `index.html` - GSAP CDN scripts
 - **Test**: Check console for "✅ GSAP ScrollSmoother initialized"
 
 ### 58. Removed All Smooth Scrolling Except Lenis (8/27/2025)
-- **Decision**: Removed all smooth scrolling attempts for expanded cards
+- **Decision**: Removed all smooth scrolling attempts for expanded files
 - **Files Removed**:
   - mrD-SmoothScroller 
-  - expanded-card-scroll-smoother
-  - expanded-card-smooth-scroll
-  - expanded-card-momentum-scroll
+  - expanded-file-scroll-smoother
+  - expanded-file-smooth-scroll
+  - expanded-file-momentum-scroll
 - **Kept**: Lenis smooth scroll for main whiteboard
-- **Result**: Expanded cards use native browser scrolling
+- **Result**: Expanded files use native browser scrolling
 
 ## Known Issues to Watch
 - Quill initialization timing can still be finicky with dynamic content
 - Element screenshot quality depends on html2canvas limitations (no cross-origin images)
-- Bookmark sidebar needs testing with multiple cards/categories
+- Bookmark sidebar needs testing with multiple files/categories
 
 ## Development Notes
 - Always check console for detailed debug logs (debug.js provides comprehensive logging)
@@ -222,7 +222,7 @@
   - `css/items/widget/bookmark-sidebar.css` - Sidebar styles
   - `css/items/widget/bookmarks.css` - Old complex styles
   - `css/items/widget/bookmarks-fix.css` - Patch file for broken styles
-  - `css/items/widget/bookmark-card-widget.css` - Fancy card styles (consolidated)
+  - `css/items/widget/bookmark-file-widget.css` - Fancy file styles (consolidated)
 - **Final Structure**:
   - `js/bookmarks.js` - Main bookmark manager using localStorage
   - `css/items/widget/bookmark-widget.css` - All bookmark styling
@@ -248,63 +248,63 @@
   - Added debug logging to track data flow
 - **Files Modified**:
   - `bookmark-destination-selector.js` - Lines 663-691 (timestamp fix & property check)
-  - `cards.js` - Lines 720-800 (debug logging & date display fix)
+  - `files.js` - Lines 720-800 (debug logging & date display fix)
 - **Testing**: Look for 🔍 DEBUG logs in console when adding bookmarks
 
 ## Recent Issues Fixed (8/29/2025)
 
 ### Settings Dropdown Hover Fix - Complete (8/29/2025)
 - **Problem**: Settings dropdown not displaying on hover despite previous positioning fix
-- **Root Cause**: Missing `position: absolute` in `.settings-menu` rule in dropdowns.css
-- **Solution**: Added `position: absolute` to enable proper positioning from hamburger.css
+- **Root Cause**: Missing `position: absolute` in `.settings-menu` rule in settings-modal.css
+- **Solution**: Added `position: absolute` to enable proper positioning from sidebar.css
 - **Technical Details**: 
-  - hamburger.css provides `left: 100%; bottom: 0;` positioning
-  - dropdowns.css needed `position: absolute` for these rules to take effect
+  - sidebar.css provides `left: 100%; bottom: 0;` positioning
+  - settings-modal.css needed `position: absolute` for these rules to take effect
   - Without position property, the left/bottom values were ignored
 - **Result**: Settings dropdown now appears properly on hover to the right of menu item
-- **Location**: `css/items/sidebar/dropdowns.css` - added position absolute to .settings-menu
+- **Location**: `css/items/sidebar/settings-modal.css` - added position absolute to .settings-menu
 
 ## Recent Issues Fixed (8/8/2025)
 
-### 52. Fixed Bookmark Persistence and Card Order Issues (8/9/2025)
+### 52. Fixed Bookmark Persistence and File Order Issues (8/9/2025)
 - **Problem 1**: Bookmarks disappearing after refresh
-- **Root Cause**: Bookmarks saved but cards recreated without restoring bookmark property
-- **Problem 2**: Cards switching positions after refresh
-- **Root Cause**: Expanded cards saved out of slot order
+- **Root Cause**: Bookmarks saved but files recreated without restoring bookmark property
+- **Problem 2**: Files switching positions after refresh
+- **Root Cause**: Expanded files saved out of slot order
 - **Solutions**:
-  - Added bookmark restoration logging in addCardToCategory
-  - Fixed card save order by processing slots sequentially
-  - Track originalSlotIndex when expanding cards
-  - Save expanded cards in their original slot position
+  - Added bookmark restoration logging in addFileToCategory
+  - Fixed file save order by processing slots sequentially
+  - Track originalSlotIndex when expanding files
+  - Save expanded files in their original slot position
   - Added detailed bookmark logging throughout save/load cycle
 - **Files Modified**:
-  - `js/cards.js` - Added bookmark restoration logging and slot tracking
+  - `js/files.js` - Added bookmark restoration logging and slot tracking
   - `js/boards.js` - Fixed save order to preserve slot positions
-- **Key Fix**: Process card slots in order rather than DOM order when saving
+- **Key Fix**: Process file slots in order rather than DOM order when saving
 
 ### 51. Added Save Notifications for Bookmark Additions (8/9/2025)
-- **Problem**: No "Saved to Firebase" notification when adding bookmarks to cards
+- **Problem**: No "Saved to Firebase" notification when adding bookmarks to files
 - **Root Cause**: Bookmark save code wasn't triggering the notification system
 - **Solution**: Added `showSaveNotification` calls when bookmarks are saved
 - **Changes**:
-  - Added notification in `addBookmarkToCard` function for regular cards
-  - Added notification in expanded card modal handler
+  - Added notification in `addBookmarkToFile` function for regular files
+  - Added notification in expanded file modal handler
   - Shows "Saving..." then "Saved" after 1 second
 - **File**: `js/bookmark-destination-selector.js`
 - **Result**: Users now see clear feedback when bookmarks are saved to Firebase
 
-### 50. Fixed Card Collapse When Adding Bookmark to Expanded Card (8/9/2025)
-- **Problem**: Adding a bookmark to an expanded card caused the card to collapse/exit
-- **Root Cause**: Modal clicks were bubbling through to the overlay beneath, triggering card collapse
+### 50. Fixed File Collapse When Adding Bookmark to Expanded File (8/9/2025)
+- **Problem**: Adding a bookmark to an expanded file caused the file to collapse/exit
+- **Root Cause**: Modal clicks were bubbling through to the overlay beneath, triggering file collapse
 - **Solution**: Added event.stopPropagation() to all modal click handlers
 - **Changes**:
-  - Added stopPropagation to "Add to Open Card" button handler
-  - Added stopPropagation to "Choose Another Card" button handler
+  - Added stopPropagation to "Add to Open File" button handler
+  - Added stopPropagation to "Choose Another File" button handler
   - Added stopPropagation to modal overlay click handler
   - Added onclick handler to modal content to prevent bubbling
   - Increased modal z-index to 10000001 (above overlay)
 - **File**: `js/bookmark-destination-selector.js`
-- **Result**: Card now stays expanded when adding bookmarks
+- **Result**: File now stays expanded when adding bookmarks
 
 ### 49. Fixed Extension Blocking After Modal Cancel (8/9/2025)
 - **Problem**: After canceling bookmark import modal, extension failed to capture new bookmarks
@@ -313,20 +313,20 @@
 - **Files**: `js/bookmark-destination-selector.js`
 - **Changes**: 
   - Clean up `zenban_bookmark_*` keys from localStorage on modal close
-  - Added X close button to expanded card choice modal
-  - Added click-outside-to-close for expanded card modal
+  - Added X close button to expanded file choice modal
+  - Added click-outside-to-close for expanded file modal
   - All cancel methods now clean up localStorage
 
-### 48. Fixed "Save Failed" on Card Exit (8/9/2025)
-- **Problem**: "Save Failed" appeared when exiting expanded cards with bookmarks
-- **Root Cause**: Multiple concurrent saves triggered when collapsing card, causing race condition
+### 48. Fixed "Save Failed" on File Exit (8/9/2025)
+- **Problem**: "Save Failed" appeared when exiting expanded files with bookmarks
+- **Root Cause**: Multiple concurrent saves triggered when collapsing file, causing race condition
 - **Solution**: Added `isSaveInProgress` flag to prevent concurrent saves
 - **Changes**: Modified `manualSaveWhiteboard()` to skip if save already in progress
 - **Also**: Better error handling to treat queued saves as success, not failure
 - **File**: `js/boards.js`
 
-### 47. Bookmark Save Not Triggering on Expanded Cards (8/9/2025)
-- **Problem**: Adding bookmarks to expanded cards didn't trigger save events
+### 47. Bookmark Save Not Triggering on Expanded Files (8/9/2025)
+- **Problem**: Adding bookmarks to expanded files didn't trigger save events
 - **Root Cause**: `saveAfterAction` was being awaited but it's not an async function
 - **Solution**: Removed `await` from `window.syncService.saveAfterAction()` calls
 - **Files Modified**: `js/bookmark-destination-selector.js`
@@ -334,15 +334,15 @@
 - **Added**: Debug logging to track save flow
 
 ### 46. Bookmark Persistence Fix (8/9/2025)
-- **Problem**: Bookmarks disappearing after page refresh and cards swapping positions
-- **Root Cause**: When loading cards from saved data in `loadBoard()`, bookmarks weren't being passed to `addCardToCategory()`
-- **Solution**: Updated `boards.js` to pass bookmarks as fourth parameter when loading cards
+- **Problem**: Bookmarks disappearing after page refresh and files swapping positions
+- **Root Cause**: When loading files from saved data in `loadBoard()`, bookmarks weren't being passed to `addFileToCategory()`
+- **Solution**: Updated `boards.js` to pass bookmarks as fourth parameter when loading files
 - **Code Change**: 
   ```javascript
   // Before:
-  addCardToCategory(catIndex, cardData.title, cardData.content);
+  addFileToCategory(catIndex, fileData.title, fileData.content);
   // After:
-  addCardToCategory(catIndex, cardData.title, cardData.content, cardData.bookmarks);
+  addFileToCategory(catIndex, fileData.title, fileData.content, fileData.bookmarks);
   ```
 - **Location**: `js/boards.js` line 303 in loadBoard function
 - **Key Learning**: Always check that all saved data is being passed through when restoring state
@@ -384,23 +384,23 @@
 
 ## Recent Issues Fixed (8/5/2025)
 
-### 9. Context Menu on Expanded Cards
-- **Problem**: Custom right-click context menu was appearing over expanded cards, blocking native browser context menu
-- **Solution**: Modified context menu logic to allow default browser menu on expanded cards
+### 9. Context Menu on Expanded Files
+- **Problem**: Custom right-click context menu was appearing over expanded files, blocking native browser context menu
+- **Solution**: Modified context menu logic to allow default browser menu on expanded files
 - **Changes**:
   - Updated `js/context-menu.js` setupContextMenu function
-  - Added check for `card.classList.contains('expanded')` to skip custom menu
-  - Moved `e.preventDefault()` after expanded card checks
-  - Now returns early to allow default browser context menu on expanded cards
-  - Also prevents whiteboard context menu when an expanded card exists
+  - Added check for `file.classList.contains('expanded')` to skip custom menu
+  - Moved `e.preventDefault()` after expanded file checks
+  - Now returns early to allow default browser context menu on expanded files
+  - Also prevents whiteboard context menu when an expanded file exists
 - **Key Learning**: Don't universally prevent default - check conditions first to allow native behavior when appropriate
 
-### 10. Quill Editor Padding on Expanded Cards
-- **Problem**: Main Quill editor had too much horizontal padding (15px) on expanded cards
+### 10. Quill Editor Padding on Expanded Files
+- **Problem**: Main Quill editor had too much horizontal padding (15px) on expanded files
 - **Solution**: Reduced left and right padding to 5px for better space utilization
 - **Changes**:
   - Updated `css/scripts/quill-overrides.css`
-  - Changed `.card.expanded .ql-editor` padding from `12px 15px` to `12px 5px`
+  - Changed `.file.expanded .ql-editor` padding from `12px 15px` to `12px 5px`
   - Kept vertical padding at 12px for readability
 - **Location**: Line 111 in quill-overrides.css
 
@@ -419,7 +419,7 @@
 - **Additional fix in `js/bookmarks.js`**: Removed emoji icons from action buttons (❤️ → "Like", 💬 → "Note", 👁️ → "Visit") to prevent oversized icon rendering
 
 ### 12. Complete Removal of Old Bookmark System (8/5/2025)
-- **Problem**: Old bookmark system with card-bookmarks and bookmark-widget was still present in codebase
+- **Problem**: Old bookmark system with file-bookmarks and bookmark-widget was still present in codebase
 - **Solution**: Removed all old bookmark-related code
 - **Files Removed**:
   - `js/bookmarks.js` → `js/_old_bookmarks.js.bak`
@@ -430,7 +430,7 @@
   - Removed bookmark sidebar div
   - Removed test bookmark button from toolbar
 - **Result**: Cleaned up codebase, removed unused bookmark system that was causing confusion
-- **Additional cleanup in `js/cards.js`**: Removed hidden `card-bookmarks` div creation in `addCardToCategory` function
+- **Additional cleanup in `js/files.js`**: Removed hidden `file-bookmarks` div creation in `addFileToCategory` function
 
 ### 13. Applied Compact Bookmark Widget Styles to Bookmark Editor (8/5/2025)
 - **Problem**: Bookmark widgets inside bookmark-editor-widget still had large text and oversized elements
@@ -446,52 +446,52 @@
 - **Result**: Consistent compact bookmark widget appearance throughout the application
 - **Additional fix in `js/quill-modules/bookmark-editor-module.js`**: Removed emoji icons from action buttons (❤️ → "Like", 💬 → "Note", 👁️ → "Visit")
 
-### 16. Expanded Card Redesign with Editor.js Integration (8/5/2025)
-- **Problem**: Need to replace Quill editor with Editor.js and redesign expanded card layout
+### 16. Expanded File Redesign with Editor.js Integration (8/5/2025)
+- **Problem**: Need to replace Quill editor with Editor.js and redesign expanded file layout
 - **Solution**: Implemented unified white page design with flex grid layout
 - **Changes**:
-  - **In `css/items/widget/cards.css`**:
-    - Created unified white background expanded card
+  - **In `css/items/widget/files.css`**:
+    - Created unified white background expanded file
     - Added header section with title and buttons in same div
     - Split main content into editor section (left) and bookmarks section (right)
     - Editor section uses flex: 1, bookmarks section fixed at 350px
-    - Added bookmark card styling with shadow effects
-  - **In `js/cards.js`**:
+    - Added bookmark file styling with shadow effects
+  - **In `js/files.js`**:
     - Integrated Editor.js initialization in `initializeEditorJS` function
-    - Created `createBookmarkCard` function for bookmark display
-    - Updated `expandCard` to create new layout structure
-    - Save button saves Editor.js content to card's initialContent
+    - Created `createBookmarkFile` function for bookmark display
+    - Updated `expandFile` to create new layout structure
+    - Save button saves Editor.js content to file's initialContent
 - **Layout Structure**:
   - Header: Title (left) + Save/Delete buttons (right)
   - Main: Editor section (flex: 1) + Bookmarks section (350px)
-  - Bookmark cards show title, description, URL, and date
+  - Bookmark files show title, description, URL, and date
 - **Result**: Clean, unified white page design with Editor.js ready for content editing
 
-### 17. Expanded Card Positioning Update (8/5/2025)
-- **Problem**: Needed better visibility and size constraints for expanded cards
-- **Solution**: Repositioned expanded card to touch bottom of browser window
-- **Changes in `css/items/widget/cards.css`**:
-  - Positioned card at bottom with `bottom: 0` instead of centered
+### 17. Expanded File Positioning Update (8/5/2025)
+- **Problem**: Needed better visibility and size constraints for expanded files
+- **Solution**: Repositioned expanded file to touch bottom of browser window
+- **Changes in `css/items/widget/files.css`**:
+  - Positioned file at bottom with `bottom: 0` instead of centered
   - Height set to 2/3 of viewport: `calc(100vh * 2/3)`
   - Min-width: 1100px, max-width: 1400px
   - Min-height: 600px
   - Changed animation from fadeIn to slideUp
   - Border radius only on top corners (8px 8px 0 0)
   - Overlay only covers top 1/3 of screen
-- **Result**: More prominent expanded card that maximizes content visibility
+- **Result**: More prominent expanded file that maximizes content visibility
 
-### 18. Fixed Card Duplication on Expand/Collapse (8/5/2025)
-- **Problem**: Expanding and collapsing cards duplicated page elements each time
-- **Root Cause**: `collapseCard` function wasn't properly restoring original card structure
+### 18. Fixed File Duplication on Expand/Collapse (8/5/2025)
+- **Problem**: Expanding and collapsing files duplicated page elements each time
+- **Root Cause**: `collapseFile` function wasn't properly restoring original file structure
 - **Issues Found**:
-  - Looking for wrong wrapper class ('content-wrapper' instead of 'expanded-card-content')
-  - Card title wasn't being moved back from header to original position
+  - Looking for wrong wrapper class ('content-wrapper' instead of 'expanded-file-content')
+  - File title wasn't being moved back from header to original position
   - Expanded wrapper wasn't being fully removed
-- **Solution**: Updated `collapseCard` function in `js/cards.js`
-  - Find correct wrapper with `.expanded-card-content` class
-  - Move title back to card before card-content element
+- **Solution**: Updated `collapseFile` function in `js/files.js`
+  - Find correct wrapper with `.expanded-file-content` class
+  - Move title back to file before file-content element
   - Remove entire expanded wrapper after restoring title
-- **Result**: Card structure properly restored on collapse, preventing duplication
+- **Result**: File structure properly restored on collapse, preventing duplication
 
 ### 19. Replaced Editor.js with Lexical Editor (8/5/2025)
 - **Problem**: Editor.js text wasn't wrapping properly, needed more flexible editor
@@ -501,12 +501,12 @@
     - Removed all Editor.js plugin scripts
     - Added Lexical modules via ESM imports
     - Made Lexical available globally via window object
-  - **In `js/cards.js`**:
+  - **In `js/files.js`**:
     - Replaced `initializeEditorJS` function with Lexical implementation
     - Updated save functionality to use Lexical's `editorState.toJSON()`
     - Updated collapse cleanup to destroy Lexical instance
     - Added history plugin for undo/redo support
-  - **In `css/items/widget/cards.css`**:
+  - **In `css/items/widget/files.css`**:
     - Removed all Editor.js specific styles (ce-* classes)
     - Added Lexical editor styles with proper typography
     - Added text formatting classes (bold, italic, etc.)
@@ -521,12 +521,12 @@
     - Used `https://esm.run/lexical@0.12.4` for main library
     - Added plain-text and history plugins via ESM imports
     - Made modules available globally on window object
-  - **In `js/cards.js`**:
+  - **In `js/files.js`**:
     - Added retry limit (50 attempts) to prevent infinite loops
     - Used proper Lexical API: `createEditor`, `setRootElement`
     - Registered plain text and history plugins
     - Used `editor.update()` for content manipulation
-  - **In `css/items/widget/cards.css`**:
+  - **In `css/items/widget/files.css`**:
     - Styled `.lexical-editor` with proper text wrapping
 - **Key learnings**: 
   - Use ESM modules for Lexical in vanilla JS
@@ -544,8 +544,8 @@
     - Checks for `window.LexicalRichText` module
     - Uses rich text plugin for formatting support
   - **Moved**: `lexical-main` source repo to `lexical-main.bak`
-- **Note**: Editor automatically initializes when cards are expanded
-- **Location**: Editor appears in the left section of expanded card flex grid
+- **Note**: Editor automatically initializes when files are expanded
+- **Location**: Editor appears in the left section of expanded file flex grid
 
 ### 22. Complete TipTap Editor Implementation with All Extensions (8/6/2025)
 - **Problem**: Need a full-featured rich text editor with all extensions for vanilla JavaScript
@@ -573,9 +573,9 @@
 - **Key Technical Details**:
   - Uses ESM imports from esm.sh CDN
   - Fallback to contenteditable if initialization fails
-  - Auto-saves content to card.initialContent on update
+  - Auto-saves content to file.initialContent on update
   - Proper cleanup with destroy method
-  - Works with existing card expand/collapse system
+  - Works with existing file expand/collapse system
 - **Testing**: Use test-tiptap.html to verify all features work correctly
 
 ### 23. TipTap Inline Initialization Fix (8/6/2025)
@@ -583,7 +583,7 @@
 - **Solution**: Created inline initialization approach that follows TipTap's recommended pattern
 - **Changes**:
   - Created `js/tiptap-inline-init.js` - Simpler inline initialization
-  - Updated `cards.js` to use `window.initializeTipTapInline`
+  - Updated `files.js` to use `window.initializeTipTapInline`
   - Script dynamically creates ES module script tags for each editor instance
   - Stores editor references in `window.tiptapEditors` object by container ID
 - **Key Learning**: ES modules need to be loaded inline or with proper async handling
@@ -599,11 +599,11 @@
   - All Editor.js references
   - All Lexical references
   - Test files for other editors
-- **Restored**: Quill initialization in cards.js with standard toolbar
+- **Restored**: Quill initialization in files.js with standard toolbar
 - **Lesson**: Sometimes the first choice was the right choice
 
 ### 14. Fixed Missing Quill Scrollbars (8/5/2025)
-- **Problem**: Quill editor scrollbars disappeared in both main expanded cards and bookmark editor widgets
+- **Problem**: Quill editor scrollbars disappeared in both main expanded files and bookmark editor widgets
 - **Solution**: Added proper overflow settings and custom scrollbar styling
 - **Changes**:
   - **In `bookmark-editor-widget.css`**:
@@ -611,20 +611,20 @@
     - Changed `.ql-container` to use `flex: 1` and explicit `overflow-y: auto`
     - Added `max-height: calc(300px - 42px)` to ensure proper constraint
   - **In `quill-overrides.css`**:
-    - Added `overflow-y: auto; overflow-x: hidden` to `.card.expanded .ql-container`
+    - Added `overflow-y: auto; overflow-x: hidden` to `.file.expanded .ql-container`
     - Added custom scrollbar styling for consistency (thin, styled scrollbars)
 - **Result**: Scrollbars now appear properly when content exceeds the container height in both contexts
 - **Additional fixes**: 
   - Changed scrollbar target from `.ql-container` to `.ql-editor` as that's the actual scrolling element
-  - Set `overflow: visible` on `.card.expanded` and `.content-wrapper` to prevent parent scrolling
+  - Set `overflow: visible` on `.file.expanded` and `.content-wrapper` to prevent parent scrolling
   - Added global override for Quill's default overflow handling
-  - Set explicit `max-height: 500px` on expanded card editor to ensure scrolling triggers
+  - Set explicit `max-height: 500px` on expanded file editor to ensure scrolling triggers
 - **Final solution**:
   - Set `.ql-container` to `overflow: visible` to let children handle scrolling
   - Set `.ql-editor` with `min-height` and `max-height` to create scrollable area
   - Used `overflow-y: auto` for scrollbar to appear only when needed
   - Added global webkit scrollbar styles for all `.ql-editor` elements
-- **Ultimate fix**: Used fixed `height: 400px` for expanded card editor and `height: 150px` for nested editor to guarantee scrolling behavior
+- **Ultimate fix**: Used fixed `height: 400px` for expanded file editor and `height: 150px` for nested editor to guarantee scrolling behavior
 
 ### 15. Switched Bookmark Widget to Bubble Theme (8/5/2025)
 - **Problem**: Snow theme with toolbar took up too much space in bookmark widget
@@ -679,8 +679,8 @@
   - `/fonts/` - Font files directory
   - `/css/base/custom-fonts.css` - Font declarations and application
 
-### 28. File Tree Viewer in Hamburger Menu (8/7/2025)
-- **Feature**: File tree dropdown appears on hover over "Your Files" in hamburger menu
+### 28. File Tree Viewer in sidebar Menu (8/7/2025)
+- **Feature**: File tree dropdown appears on hover over "Your Files" in sidebar menu
 - **Implementation**:
   - Hierarchical folder/file tree structure
   - Expandable/collapsible folders with arrow indicators
@@ -696,12 +696,12 @@
   - `js/file-tree.js` - File tree implementation with mock data
 - **Location**:
   - `js/file-tree.js` - Main file tree functionality
-  - `js/hamburger-menu.js` - Integration with hamburger menu
-  - `css/items/toolbar/hamburger.css` - Tree styling
+  - `js/sidebar-menu.js` - Integration with sidebar menu
+  - `css/items/toolbar/sidebar.css` - Tree styling
   - `index.html` - Script inclusion
 
 ### 29. Fixed File Tree Duplication Issue (8/7/2025)
-- **Problem**: File tree dropdown was showing duplicate categories and cards
+- **Problem**: File tree dropdown was showing duplicate categories and files
 - **Root Cause**: 
   - `|| true` condition always refreshed tree on every hover
   - mouseenter event fired multiple times as mouse moved within element
@@ -712,7 +712,7 @@
   - Added mouseleave handler to reset initialization flag after 1 second
   - Split populateFileTree into two functions with DOM safety checks
   - Added console logging to help debug any remaining issues
-- **Location**: `js/hamburger-menu.js` - populateFileTree function and event handlers
+- **Location**: `js/sidebar-menu.js` - populateFileTree function and event handlers
 - **Key Learning**: Always debounce hover events and use proper initialization flags
 
 ### 30. Fixed CSS MIME Type Mismatch Error (8/7/2025)
@@ -722,18 +722,18 @@
 - **Location**: index.html line 44 - corrected CSS link href
 - **Key Learning**: MIME type mismatch usually means file doesn't exist at specified path
 
-### 31. Fixed File Tree Not Showing Cards (8/7/2025)
-- **Problem**: File tree dropdown showed categories but no cards underneath them
+### 31. Fixed File Tree Not Showing Files (8/7/2025)
+- **Problem**: File tree dropdown showed categories but no files underneath them
 - **Root Cause**: 
-  - Cards are stored as DOM elements in `category.cards` array
-  - File tree code was trying to access `card.title` on DOM elements
-  - Should have been accessing `cardElement.querySelector('.card-title').textContent`
+  - Files are stored as DOM elements in `category.files` array
+  - File tree code was trying to access `file.title` on DOM elements
+  - Should have been accessing `fileElement.querySelector('.file-title').textContent`
 - **Solution**: 
   - Updated populateFileTreeContent to extract titles from DOM elements
   - Changed `category.title` to `category.element.querySelector('.category-title').textContent`
-  - Changed `card.title` to `cardElement.querySelector('.card-title').textContent`
+  - Changed `file.title` to `fileElement.querySelector('.file-title').textContent`
   - Added null-safe fallbacks for untitled items
-- **Location**: `js/hamburger-menu.js` - populateFileTreeContent function
+- **Location**: `js/sidebar-menu.js` - populateFileTreeContent function
 - **Key Learning**: Always understand the actual data structure being used - DOM elements vs data objects
 
 ### 32. Enhanced File Tree Debugging (8/7/2025)
@@ -743,61 +743,61 @@
   - Added logging for boards, currentBoardId, and board structure
   - Added fallback to check both `currentBoard.categories` and `AppState.get('categories')`
   - Enhanced category title extraction with detailed logging
-  - Enhanced card title extraction with null-safety checks
+  - Enhanced file title extraction with null-safety checks
   - Added warnings when DOM elements or queries fail
 - **Purpose**: Determine whether categories are stored in board or AppState
-- **Location**: `js/hamburger-menu.js` - populateFileTreeContent function
+- **Location**: `js/sidebar-menu.js` - populateFileTreeContent function
 - **Next Step**: Test and see console output to identify the actual data structure issue
 
 ### 33. Fixed Dual Data Structure Issue in File Tree (8/7/2025)
-- **Problem**: File tree showing "Unknown Category" and "Card element is not a valid DOM element"
+- **Problem**: File tree showing "Unknown Category" and "File element is not a valid DOM element"
 - **Root Cause**: Two different data structures being used:
-  - **Live Categories**: `{ element: <DOM>, cards: [<DOM elements>] }` (created in UI)
-  - **Saved Categories**: `{ title: "New Category", cards: [{ title: "New Card" }] }` (from Firebase)
+  - **Live Categories**: `{ element: <DOM>, files: [<DOM elements>] }` (created in UI)
+  - **Saved Categories**: `{ title: "New Category", files: [{ title: "New File" }] }` (from Firebase)
 - **Solution**: Modified file tree to detect and handle both data structures:
   - For categories: Check `category.element` first, then fallback to `category.title`
-  - For cards: Check `cardElement.querySelector` first, then fallback to `cardElement.title`
+  - For files: Check `fileElement.querySelector` first, then fallback to `fileElement.title`
   - Added appropriate logging for each structure type
-- **Files Changed**: `js/hamburger-menu.js` - populateFileTreeContent function
+- **Files Changed**: `js/sidebar-menu.js` - populateFileTreeContent function
 - **Result**: File tree now works with both live and saved data
 - **Key Learning**: Always account for different data representations in the same system
 
-### 34. Debugging Card Save/Load Disconnect (8/7/2025)
-- **Problem**: Categories show correctly but cards still not appearing in file tree
-- **Investigation**: Console shows `cards: []` in saved data despite cards being created
-- **Root Cause**: Potential disconnect between card DOM placement and save process
+### 34. Debugging File Save/Load Disconnect (8/7/2025)
+- **Problem**: Categories show correctly but files still not appearing in file tree
+- **Investigation**: Console shows `files: []` in saved data despite files being created
+- **Root Cause**: Potential disconnect between file DOM placement and save process
 - **Debugging Added**:
-  - **Card Creation**: Logs when cards are added, where placed, DOM verification
-  - **Board Save**: Logs cards found in DOM, titles, and final saved count
-  - **DOM Structure**: Verifies card hierarchy (category -> cards-grid -> card-slot -> card)
+  - **File Creation**: Logs when files are added, where placed, DOM verification
+  - **Board Save**: Logs files found in DOM, titles, and final saved count
+  - **DOM Structure**: Verifies file hierarchy (category -> files-grid -> file-slot -> file)
 - **Expected DOM Structure**:
   ```
   .category
-  └── .cards-grid
-      └── .card-slot
-          └── .card (this is what save looks for)
+  └── .files-grid
+      └── .file-slot
+          └── .file (this is what save looks for)
   ```
 - **Location**: 
-  - `js/cards.js` - addCardToCategory function (card creation debugging)
+  - `js/files.js` - addFileToCategory function (file creation debugging)
   - `js/boards.js` - saveCurrentBoard function (save process debugging)
-- **Next**: Test card creation and check console for DOM placement vs save detection
+- **Next**: Test file creation and check console for DOM placement vs save detection
 
-### 35. Fixed Card Save/Display Timing Issue (8/7/2025)
-- **Problem**: Cards being created and saved successfully but not appearing in file tree
+### 35. Fixed File Save/Display Timing Issue (8/7/2025)
+- **Problem**: Files being created and saved successfully but not appearing in file tree
 - **Root Cause**: File tree reading from stale Firebase data instead of live AppState data
 - **Evidence from Debug Logs**:
-  - ✅ **Card Creation**: Cards added to DOM correctly ("Total cards now in category DOM: 4")
-  - ✅ **Card Saving**: Cards detected and saved ("Cards saved for category: 3")
-  - ❌ **File Tree**: Still showed `cards: []` because reading from old Firebase data
+  - ✅ **File Creation**: Files added to DOM correctly ("Total files now in category DOM: 4")
+  - ✅ **File Saving**: Files detected and saved ("Files saved for category: 3")
+  - ❌ **File Tree**: Still showed `files: []` because reading from old Firebase data
 - **Solution**: Changed file tree priority to read from live AppState first:
   - **Priority 1**: `AppState.get('categories')` (live data with DOM elements)
   - **Priority 2**: `currentBoard.categories` (saved Firebase data)
 - **Technical Issue**: 
-  - **AppState**: Contains live categories with DOM elements and current cards
+  - **AppState**: Contains live categories with DOM elements and current files
   - **currentBoard**: Contains stale Firebase data from last load
   - File tree was using currentBoard instead of live AppState
-- **Location**: `js/hamburger-menu.js` - populateFileTreeContent function
-- **Result**: File tree should now show current cards immediately after creation
+- **Location**: `js/sidebar-menu.js` - populateFileTreeContent function
+- **Result**: File tree should now show current files immediately after creation
 
 ### 36. Fixed File Tree Dropdown Hover Gap Issue (8/7/2025)
 - **Problem**: Gap between "Your Files" menu item and dropdown caused dropdown to disappear when moving mouse to it
@@ -835,34 +835,34 @@
   document.addEventListener('mouseenter', handler, true);
   ```
 - **Location**: 
-  - `js/hamburger-menu.js` - Enhanced hover handling with timing
+  - `js/sidebar-menu.js` - Enhanced hover handling with timing
   - `css/items/widget/file-tree-dropdown.css` - Positioning and show class
 - **Result**: Reliable hover experience - dropdown stays visible during mouse movement
 
 ### 38. Fixed Dropdown Container Blue Hover Issue (8/7/2025)
 - **Problem**: Dropdown container was getting blue hover background instead of just individual items
-- **Root Cause**: Conflicting CSS styles between `hamburger.css` and `file-tree-dropdown.css`
-- **Issue Found**: hamburger.css had older styles that were overriding the newer dropdown styles:
+- **Root Cause**: Conflicting CSS styles between `sidebar.css` and `file-tree-dropdown.css`
+- **Issue Found**: sidebar.css had older styles that were overriding the newer dropdown styles:
   ```css
   #yourFilesItem .file-structure-list li:hover {
       background-color: #5353ff; /* This was affecting everything */
   }
   ```
-- **Solution**: Removed conflicting styles from hamburger.css
+- **Solution**: Removed conflicting styles from sidebar.css
 - **Changes Made**:
-  - **Removed** all dropdown styling from `hamburger.css`
+  - **Removed** all dropdown styling from `sidebar.css`
   - **Kept** only `#yourFilesItem { position: relative; }` for positioning
   - **Cleaned** up old hover styles that were affecting container
-- **Result**: Now only individual categories and cards get blue hover, not the container
+- **Result**: Now only individual categories and files get blue hover, not the container
 - **Location**: 
-  - `css/items/toolbar/hamburger.css` - Removed conflicting styles
+  - `css/items/toolbar/sidebar.css` - Removed conflicting styles
   - `css/items/widget/file-tree-dropdown.css` - Now has full control
 - **Key Learning**: Always check for conflicting CSS when styles don't behave as expected
 
 ### 39. Fixed Dropdown Not Appearing After CSS Cleanup (8/7/2025)
 - **Problem**: After removing conflicting styles, dropdown stopped appearing on hover
 - **Root Cause**: Removed too much CSS - lost opacity/visibility transitions needed for dropdown to show
-- **Missing Styles**: When cleaning hamburger.css, accidentally removed essential visibility styles:
+- **Missing Styles**: When cleaning sidebar.css, accidentally removed essential visibility styles:
   ```css
   opacity: 0; visibility: hidden; /* Initial hidden state */
   opacity: 1; visibility: visible; /* Show state */
@@ -902,9 +902,9 @@
   - **Simpler**: No JavaScript timing issues
   - **Reliable**: Pure CSS hover states
   - **Fast**: Instant show/hide, no animations
-  - **Clean**: Only individual categories/cards get blue hover
+  - **Clean**: Only individual categories/files get blue hover
 - **Location**: 
-  - `js/hamburger-menu.js` - Removed complex hover handling
+  - `js/sidebar-menu.js` - Removed complex hover handling
   - `css/items/widget/file-tree-dropdown.css` - Back to simple CSS
 - **Result**: Simple, reliable dropdown that just works with no gaps
 
@@ -920,7 +920,7 @@
   - Fixed manifest.json - removed unsupported "tabCapture" permission
   - Added debug logging to background.js to track message flow
   - Updated URL detection to support any localhost port
-  - Verified functions are available in cards.js
+  - Verified functions are available in files.js
 - **Root Cause Found**: Duplicate message listeners in content-script.js
   - Two `browser.runtime.onMessage.addListener` blocks were conflicting
   - Bottom listener was overriding the top one
@@ -936,13 +936,13 @@
   4. Content script sends 'sendToBlockWhiteboard' to background
   5. Background finds Block Whiteboard tab
   6. Injects concurrent-block.js then calls processBookmarkOnce()
-  7. processBookmarkOnce() calls handleBookmarkData() in cards.js
+  7. processBookmarkOnce() calls handleBookmarkData() in files.js
   8. Modal appears for bookmark destination selection
 - **Files Modified**:
   - `zenban-firefox-extension/content-script.js` - Fixed duplicate listeners
   - `zenban-firefox-extension/background.js` - Added comprehensive debugging
-  - `js/cards.js` - Already has handleBookmarkData function
-  - `js/bookmark-destination-selector.js` - Shows modal for card selection
+  - `js/files.js` - Already has handleBookmarkData function
+  - `js/bookmark-destination-selector.js` - Shows modal for file selection
 - **Testing Instructions**:
   1. Reload extension in Firefox (about:debugging)
   2. Open browser console (F12) on both extension background page and app page
@@ -950,7 +950,7 @@
   4. Look for 🎯 EXTENSION logs when clicking extension button
   5. Use test-extension-integration.html to verify functions work
 - **Debugging Markers**:
-  - 🔬 marks app-side logs (cards.js)
+  - 🔬 marks app-side logs (files.js)
   - 🎯 marks extension injection logs (background.js)
   - 🌉 marks extension bridge logs (extension-bridge.js)
   - Console logs show full flow from click to modal
@@ -1014,31 +1014,31 @@
   - Changed message handling to use synchronous responses
   - Added proper error handling to prevent crashes
   
-- **Problem 2**: Modal couldn't create new cards when board was empty
-- **Solution**: Added "Create New Card" button in bookmark destination modal
+- **Problem 2**: Modal couldn't create new files when board was empty
+- **Solution**: Added "Create New File" button in bookmark destination modal
 - **How it works**:
-  - Shows blue "Create New Card" button at top of tree
+  - Shows blue "Create New File" button at top of tree
   - If no categories exist, creates "Bookmarks" category
-  - Creates new card and adds bookmark immediately
-  - Optionally expands card to show the new bookmark
+  - Creates new file and adds bookmark immediately
+  - Optionally expands file to show the new bookmark
   
 - **Problem 3**: Second bookmark failed to show modal
 - **Root Causes**:
   - Notification error `window.simpleNotifications.showNotification is not a function` breaking execution
   - Modal state not properly resetting after first use
-  - Cards disappearing from DOM when expanded (moved to document.body)
+  - Files disappearing from DOM when expanded (moved to document.body)
 - **Fixes Applied**:
   - Fixed notification error with try/catch and proper function name
   - Enhanced modal close function to properly reset state
-  - Added category ID tracking to cards (`card.dataset.categoryId`)
-  - Modified board save to include expanded cards
-  - Return card from `addCardToCategory` for proper reference
+  - Added category ID tracking to files (`file.dataset.categoryId`)
+  - Modified board save to include expanded files
+  - Return file from `addFileToCategory` for proper reference
   
 - **Board Save Fix**:
-  - When cards are expanded, they move to `document.body`
-  - Now checks for expanded cards and includes them in save
-  - Tracks category ID to know where card belongs
-  - Bookmarks now saved with card data
+  - When files are expanded, they move to `document.body`
+  - Now checks for expanded files and includes them in save
+  - Tracks category ID to know where file belongs
+  - Bookmarks now saved with file data
   
 - **Extension Reset**:
   - Added proper error handling in `captureAndSend`
@@ -1047,8 +1047,8 @@
   
 - **Files Updated**:
   - `bookmark-destination-selector.js` - Fixed notification error, improved modal reset
-  - `boards.js` - Fixed save to include expanded cards
-  - `cards.js` - Added category tracking, card IDs, return statement
+  - `boards.js` - Fixed save to include expanded files
+  - `files.js` - Added category tracking, file IDs, return statement
   - `content-script.js` - Improved error handling
   - `extension-bridge.js` - Added success logging
   - `background.js` - Added error boundaries to prevent crashes
@@ -1087,52 +1087,52 @@
   1. Modal bookmark functions only updated DOM, not AppState
   2. Firebase serialization was preserving bookmarks but needed explicit initialization
 - **Solution Implemented**:
-  - Added unique IDs to cards (`card.dataset.cardId`) for tracking between DOM and AppState
-  - Modified `expandCard` to find card's location in AppState and restore bookmarks if missing
+  - Added unique IDs to files (`file.dataset.fileId`) for tracking between DOM and AppState
+  - Modified `expandFile` to find file's location in AppState and restore bookmarks if missing
   - Made bookmark operations (add, reorder) update AppState immediately
-  - Store card IDs in saved board data and restore them when loading
-  - Track card location (`appStateLocation`) when expanding for direct AppState updates
+  - Store file IDs in saved board data and restore them when loading
+  - Track file location (`appStateLocation`) when expanding for direct AppState updates
   - Fixed bookmark modal functions to update AppState when adding bookmarks
   - Added explicit bookmark array initialization in Firebase serialization
 - **How it works now**:
-  - When card expands, it finds itself in AppState by ID or title
-  - If `card.bookmarks` is missing, restores from AppState
+  - When file expands, it finds itself in AppState by ID or title
+  - If `file.bookmarks` is missing, restores from AppState
   - All bookmark changes update both DOM and AppState
   - Modal bookmark additions now properly update AppState
   - Bookmarks persist through refresh because they're in AppState and Firebase
 
 ### 59. Sections Not Saving with Lenis Scrolling (12/18/2024)
-- **Problem**: Card sections added via "Add Section" button not saving to Firebase when Lenis is reinitialized
+- **Problem**: File sections added via "Add Section" button not saving to Firebase when Lenis is reinitialized
 - **Root Causes**:
-  1. Sections stored only on card DOM element (`card.sections`), not properly passed to Firebase
+  1. Sections stored only on file DOM element (`file.sections`), not properly passed to Firebase
   2. `reinitializeModalLenis()` potentially losing section data when destroying/recreating Lenis
-  3. `addCardToCategory()` function not accepting sections parameter when loading from Firebase
-  4. Firebase sync service not passing sections when restoring cards
+  3. `addFileToCategory()` function not accepting sections parameter when loading from Firebase
+  4. Firebase sync service not passing sections when restoring files
 - **Debugging Added**:
   - Added comprehensive logging throughout section creation, save, and load flow
   - Track section IDs and bookmarks at each stage
   - Log when sections are backed up/restored during Lenis reinitialization
 - **Solution Implemented**:
-  1. **Fixed `addCardToCategory` signature**: Now accepts sections as 5th parameter
-  2. **Fixed Firebase loading**: `sync-service.js` now passes sections when creating cards from Firebase  
+  1. **Fixed `addFileToCategory` signature**: Now accepts sections as 5th parameter
+  2. **Fixed Firebase loading**: `sync-service.js` now passes sections when creating files from Firebase  
   3. **Protected sections during Lenis reinit**: Added backup/restore of sections in `reinitializeModalLenis()`
   4. **Added debug logging**: Track sections throughout save/load cycle
 - **Files Modified**:
-  - `js/cards.js`: 
-    - Updated `addCardToCategory` to accept and store sections from Firebase
+  - `js/files.js`: 
+    - Updated `addFileToCategory` to accept and store sections from Firebase
     - Enhanced `reinitializeModalLenis` to backup/restore sections
     - Added debug logging for section tracking
   - `js/boards.js`: Added debug logging for section saves
-  - `firebase/sync-service.js`: Updated to pass sections when loading cards
+  - `firebase/sync-service.js`: Updated to pass sections when loading files
 - **How it works now**:
-  - Sections are stored on card element: `card.sections = sections || []`
+  - Sections are stored on file element: `file.sections = sections || []`
   - When saving, sections are included in board data
   - When loading from Firebase, sections are passed through and restored
   - Lenis reinitialization backs up sections before destroy and restores after
   - All section operations update AppState for persistence
 - **Testing**:
-  - Create card with sections and bookmarks
+  - Create file with sections and bookmarks
   - Save to Firebase (check console for "SAVE DEBUG" logs)
   - Refresh page
   - Check console for "LOAD DEBUG" logs showing sections restored
-  - Expand card - sections should appear with bookmarks intact
+  - Expand file - sections should appear with bookmarks intact

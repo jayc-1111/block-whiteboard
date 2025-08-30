@@ -35,7 +35,7 @@
 **Solution:** Added `setupSettingsHandlers()` call in the DOMContentLoaded event listener.
 
 **Files Modified:**
-- `js/hamburger-menu.js` - Called setupSettingsHandlers() on DOM ready
+- `js/sidebar-menu.js` - Called setupSettingsHandlers() on DOM ready
 
 **Result:** Themes are now clickable and switch properly.
 
@@ -48,9 +48,9 @@
 - toolbar.css - had wrong backgrounds, gaps, hover states
 - whiteboard-switcher.css - had wrong backgrounds, gaps  
 - file-tree-dropdown.css - completely different styling
-- hamburger.css - had wrong gaps, hover states
+- sidebar.css - had wrong gaps, hover states
 
-**Solution:** Standardized ALL dropdowns to match hamburger menu:
+**Solution:** Standardized ALL dropdowns to match sidebar menu:
 - Container: background: #131313, border-radius: 12px, padding: 8px, gap: 4px, border: 1px solid rgba(255,255,255,0.05)
 - Items: padding: 10px 12px, border-radius: 8px, gap: 12px
 - Font: Nunito, 0.80rem, font-weight: 500, color: #ddd
@@ -61,7 +61,7 @@
 - `css/items/toolbar/dropdowns.css`
 - `css/items/toolbar/toolbar.css` 
 - `css/items/toolbar/whiteboard-switcher.css`
-- `css/items/toolbar/hamburger.css`
+- `css/items/toolbar/sidebar.css`
 - `css/items/widget/file-tree-dropdown.css`
 
 **Result:** All dropdowns now have identical, consistent styling across entire codebase.
@@ -69,9 +69,9 @@
 ---
 
 ### 2025-08-17: Dropdown Styling Consistency (FIXED)
-**Problem:** Dropdowns had inconsistent styling - different padding, gaps, border-radius from hamburger menu.
+**Problem:** Dropdowns had inconsistent styling - different padding, gaps, border-radius from sidebar menu.
 
-**Solution:** Standardized all dropdowns to match hamburger menu:
+**Solution:** Standardized all dropdowns to match sidebar menu:
 - Container: border-radius: 12px, padding: 8px, gap: 4px, border: 1px solid rgba(255,255,255,0.05)
 - Items: padding: 10px 12px, border-radius: 8px, gap: 12px
 - Font: Nunito, 0.80rem, font-weight: 500
@@ -81,7 +81,7 @@
 **Files Modified:**
 - `css/items/toolbar/dropdowns.css` - Updated all dropdown styles
 
-**Result:** All dropdowns now have consistent hamburger menu styling.
+**Result:** All dropdowns now have consistent sidebar menu styling.
 
 ---
 
@@ -103,43 +103,43 @@
 - `css/items/toolbar/dropdowns.css` - Added bridges, fixed positioning
 - `css/items/toolbar/toolbar.css` - Fixed positioning
 - `css/items/toolbar/whiteboard-switcher.css` - Added bridge, fixed positioning
-- `css/items/toolbar/hamburger.css` - Added bridge
+- `css/items/toolbar/sidebar.css` - Added bridge
 - `css/themes/light.css` - Excluded dropdowns from transitions
 
 **Result:** Dropdowns now reliably stay visible when hovering across all themes.
 
 ---
 
-### 2025-08-17: Hamburger Menu Size & Toolbar Position Adjustment (FIXED)
-**Change:** Resized hamburger menu and adjusted toolbar position for better spacing.
+### 2025-08-17: sidebar Menu Size & Toolbar Position Adjustment (FIXED)
+**Change:** Resized sidebar menu and adjusted toolbar position for better spacing.
 
 **Updates:**
-- Hamburger button: Changed from 48x48px to 53x53px
+- sidebar button: Changed from 48x48px to 53x53px
 - Toolbar position: Moved from left: 80px to left: 95px
-- This provides 22px spacing between hamburger (ends at 73px) and toolbar (starts at 95px)
+- This provides 22px spacing between sidebar (ends at 73px) and toolbar (starts at 95px)
 
 **Files Modified:**
-- `css/items/toolbar/hamburger.css` - Updated button dimensions
+- `css/items/toolbar/sidebar.css` - Updated button dimensions
 - `css/items/toolbar/toolbar.css` - Adjusted left position
 
-**Result:** Hamburger menu and toolbar no longer collide, with proper visual spacing.
+**Result:** sidebar menu and toolbar no longer collide, with proper visual spacing.
 
 ---
 
-### 2025-08-17: Light Theme Toolbar & Hamburger Menu Styling (FIXED)
-**Problem:** Light theme toolbar and hamburger menu had inconsistent styling compared to categories and cards.
+### 2025-08-17: Light Theme Toolbar & sidebar Menu Styling (FIXED)
+**Problem:** Light theme toolbar and sidebar menu had inconsistent styling compared to categories and files.
 
 **Solution:** Updated light theme to use consistent white background styling:
-- Toolbar & hamburger menu: #FFFFFF background with 2px solid #ffffff border
-- All text: #5c5c5c color (matching categories/cards)
+- Toolbar & sidebar menu: #FFFFFF background with 2px solid #ffffff border
+- All text: #5c5c5c color (matching categories/files)
 - Hover states: #E8EBF0 background
 - Removed box shadows for clean, minimal look
 - Board selector & auth button updated to match
 
 **Files Modified:**
-- `css/themes/light.css` - Added comprehensive toolbar and hamburger menu styles
+- `css/themes/light.css` - Added comprehensive toolbar and sidebar menu styles
 
-**Result:** Toolbar and hamburger menu now have the same clean white styling as categories and cards.
+**Result:** Toolbar and sidebar menu now have the same clean white styling as categories and files.
 
 ---
 
@@ -169,16 +169,16 @@
 **Change:** Created comprehensive light theme using specified colors.
 
 **Color Scheme:**
-- Primary Background (#F5F7FB): Canvas and cards
+- Primary Background (#F5F7FB): Canvas and files
 - Secondary Background (#FFF): Categories, toolbars, modals
 - Text colors: #1A202C (primary), #4A5568 (secondary), #718096 (tertiary)
 - Border: #E2E8F0
 
 **Implementation:** Complete light theme covering all UI elements including:
 - Canvas and grid with subtle dot pattern
-- Categories and cards with proper contrast
+- Categories and files with proper contrast
 - Toolbar and buttons
-- Expanded cards and sections
+- Expanded files and sections
 - Bookmarks and editor
 - Modals and dialogs
 - Context menus and dropdowns
@@ -190,18 +190,18 @@
 
 ---
 
-### 2025-08-16: Card Title Container Flex Layout Fix (FIXED)
-**Problem:** After expanding and collapsing cards, the icon and title would display side-by-side instead of maintaining the column layout (icon above, title below).
+### 2025-08-16: File Title Container Flex Layout Fix (FIXED)
+**Problem:** After expanding and collapsing files, the icon and title would display side-by-side instead of maintaining the column layout (icon above, title below).
 
-**Root Cause:** The `collapseCard` function was restoring the title directly to the card element instead of back into the `.card-title-container`, breaking the flex column structure.
+**Root Cause:** The `collapseFile` function was restoring the title directly to the file element instead of back into the `.file-title-container`, breaking the flex column structure.
 
-**Solution:** Modified `collapseCard` to:
-1. Check if `.card-title-container` exists
+**Solution:** Modified `collapseFile` to:
+1. Check if `.file-title-container` exists
 2. If missing, recreate it with the file icon SVG
 3. Restore the title into the container (maintaining flex column layout)
 
 **Files Modified:**
-- `js/cards.js` - Updated `collapseCard` function to properly restore title container structure
+- `js/files.js` - Updated `collapseFile` function to properly restore title container structure
 
 ---
 
@@ -218,16 +218,16 @@
 
 ---
 
-### 2025-08-16: Card Title and Icon Centering (FIXED)
-**Problem:** File SVG icons and card titles needed better centering within cards.
+### 2025-08-16: File Title and Icon Centering (FIXED)
+**Problem:** File SVG icons and file titles needed better centering within files.
 
 **Solution:**
-1. Changed `.card-title` height from `100%` to `min-height: auto` to prevent stretching
-2. Added `display: block` and auto margins to `.card-title-icon` for proper centering
+1. Changed `.file-title` height from `100%` to `min-height: auto` to prevent stretching
+2. Added `display: block` and auto margins to `.file-title-icon` for proper centering
 
 **Files Modified:**
-- `css/items/widget/cards.css` - Adjusted card-title height
-- `css/items/widget/card-title-icon.css` - Added centering for SVG icon
+- `css/items/widget/files.css` - Adjusted file-title height
+- `css/items/widget/file-title-icon.css` - Added centering for SVG icon
 
 ---
 
@@ -256,7 +256,7 @@
 **Change:** Removed all CSS variables and replaced them with direct values in their respective files.
 
 **Variables replaced:**
-- `#131313` for category background (categories.css, cards.css)
+- `#131313` for category background (categories.css, files.css)
 - `12px` for border-radius (categories.css)
 - `0px` for padding (categories.css)
 - `#191919` for canvas background (canvas.css)
@@ -265,7 +265,7 @@
 
 **Files Modified:**
 - `css/items/widget/categories.css` - Replaced category variables
-- `css/items/widget/cards.css` - Replaced background variable
+- `css/items/widget/files.css` - Replaced background variable
 - `css/canvas/canvas.css` - Replaced canvas/grid variables
 - `css/base/classes.css` - Replaced toolbar button and grid variables
 - `css/base/variables.css` - Cleared all variables
@@ -274,16 +274,16 @@
 
 ---
 
-### 2025-08-16: Card Edge-to-Edge Padding Fix (FIXED)
-**Problem:** Cards had unwanted padding/spacing within categories, preventing them from filling edge-to-edge.
+### 2025-08-16: File Edge-to-Edge Padding Fix (FIXED)
+**Problem:** Files had unwanted padding/spacing within categories, preventing them from filling edge-to-edge.
 
 **Root Cause:** Two CSS properties were creating spacing:
 1. `--category-base-padding: 18px` in `variables.css` - Added 18px padding around entire category container
-2. `gap: 5px` in `.cards-grid` class in `categories.css` - Added 5px gap between cards
+2. `gap: 5px` in `.files-grid` class in `categories.css` - Added 5px gap between files
 
 **Solution:** 
 1. Changed `--category-base-padding` from `18px` to `0px` in `css/base/variables.css`
-2. Changed `.cards-grid` gap from `5px` to `0` in `css/items/widget/categories.css`  
+2. Changed `.files-grid` gap from `5px` to `0` in `css/items/widget/categories.css`  
 3. Added `padding: 0 18px` and `margin-top: 18px` to `.category-header` to maintain header spacing
 4. Added `padding: 8px 18px 18px 18px` to `.category-bottom` to maintain bottom spacing
 
@@ -291,15 +291,15 @@
 - `css/base/variables.css` - Set category padding to 0
 - `css/items/widget/categories.css` - Removed grid gap, adjusted header/bottom padding
 
-**Result:** Cards now fill completely edge-to-edge within categories and touch each other without gaps.
+**Result:** Files now fill completely edge-to-edge within categories and touch each other without gaps.
 
 ---
 
 ### 2025-08-15: Section Selection for Firefox Extension Bookmarks (ADDED)
-**Feature:** When adding bookmarks from Firefox extension to expanded cards with multiple sections, users can now choose which section to add the bookmark to.
+**Feature:** When adding bookmarks from Firefox extension to expanded files with multiple sections, users can now choose which section to add the bookmark to.
 
 **Implementation:**
-- Modified `bookmark-destination-selector.js` to show section list when expanded card has multiple sections
+- Modified `bookmark-destination-selector.js` to show section list when expanded file has multiple sections
 - First section is selected by default
 - Shows section title and bookmark count for each section
 - Selected section highlighted in light purple (#e8e8ff)
@@ -307,12 +307,12 @@
 
 **Files Modified:** 
 - `js/bookmark-destination-selector.js` - Added section selection UI and logic
-- `js/cards.js` - Updated comment noting modal override
+- `js/files.js` - Updated comment noting modal override
 
 ---
 
 ### 2025-08-15: Section Bookmarks Data Loss Issue (FIXED)
-**Problem:** Bookmarks disappear after expanding/collapsing cards multiple times (3rd expansion shows 0 bookmarks instead of actual count)
+**Problem:** Bookmarks disappear after expanding/collapsing files multiple times (3rd expansion shows 0 bookmarks instead of actual count)
 
 **Root Cause:** In `createSection()` function, when saving sections to AppState, the code was always saving an empty bookmarks array `[]` instead of preserving the actual bookmarks from `sectionData.bookmarks`.
 
@@ -321,13 +321,13 @@
 - Second expansion: Restores section with correct bookmarks ✓  
 - Third expansion: Restores section with 0 bookmarks, adds sample bookmark ✗
 
-**Solution:** Fixed 4 locations in cards.js where sections were saved to AppState:
+**Solution:** Fixed 4 locations in files.js where sections were saved to AppState:
 - Line 1465: Changed `bookmarks: []` to `bookmarks: sectionData.bookmarks || []`
 - Line 1475: Changed `bookmarks: []` to `bookmarks: sectionData.bookmarks || []`  
 - Line 1547: Changed `bookmarks: []` to `bookmarks: sectionData.bookmarks || []`
 - Line 1746: Changed `bookmarks: []` to `bookmarks: section.sectionData.bookmarks || []`
 
-**Files Modified:** `js/cards.js`
+**Files Modified:** `js/files.js`
 
 ---
 
@@ -342,7 +342,7 @@
 
 ## Known Issues to Watch
 
-1. **Multiple collapseCard calls** - Function being called 5+ times in quick succession during save operations
+1. **Multiple collapseFile calls** - Function being called 5+ times in quick succession during save operations
 2. **Firebase sync timing** - Sections array might be out of sync between local AppState and Firebase
 3. **Board sections initialization** - Sometimes `board.sections` is undefined and needs to be initialized as empty array
 
@@ -371,9 +371,9 @@
 4. Always preserve existing data when updating AppState
 
 ### For Bookmark Issues
-1. Check `📚 CARD:` logs when cards are restored
+1. Check `📚 FILE:` logs when files are restored
 2. Verify `📦 SAVE:` logs show correct bookmark counts
-3. Check if bookmarks are in `sectionData.bookmarks` not just `card.bookmarks`
+3. Check if bookmarks are in `sectionData.bookmarks` not just `file.bookmarks`
 4. Ensure deep copies are used when updating nested arrays
 
 ---
@@ -381,8 +381,8 @@
 ## Testing Checklist
 
 After making changes to section/bookmark handling:
-1. Create a card with bookmarks
-2. Expand the card
+1. Create a file with bookmarks
+2. Expand the file
 3. Save and collapse
 4. Expand again - verify bookmarks still there
 5. Collapse and expand a third time - verify bookmarks persist
@@ -393,7 +393,7 @@ After making changes to section/bookmark handling:
 
 ## Important File Locations
 
-- `js/cards.js` - Main card and section management
+- `js/files.js` - Main file and section management
 - `js/boards.js` - Board saving/loading logic
 - `js/sync-service.js` - Firebase sync operations
 - `js/bookmark-destination-selector.js` - Bookmark modal logic
@@ -421,12 +421,12 @@ After making changes to section/bookmark handling:
 **Solution:**
 - Changed gap from 20px to 15px for cleaner math (15px * 2 gaps / 3 items = 10px per item)
 - Used `flex: 0 0 calc(33.333% - 10px)` to prevent growing/shrinking
-- Added `max-width` to ensure cards never exceed their calculated width
+- Added `max-width` to ensure files never exceed their calculated width
 - Added `box-sizing: border-box` to include padding/borders in width calculations
 
 **Implementation Details:**
-- **Expanded Card**: Width remains at 1150px for spacious layout
-- **Bookmark Cards**: Now use `flex: 0 0 calc(33.333% - 10px)` for reliable 3 per row
+- **Expanded File**: Width remains at 1150px for spacious layout
+- **Bookmark Files**: Now use `flex: 0 0 calc(33.333% - 10px)` for reliable 3 per row
 - **Gap**: Reduced to 15px for even distribution
 - **Box Sizing**: border-box ensures consistent sizing
 - **Responsive**: Properly calculated for 2 per row (50% - 7.5px) and 1 per row (100%)
@@ -439,42 +439,42 @@ After making changes to section/bookmark handling:
 ---
 
 ### 2025-08-20: Bookmark Descriptions Hidden (SIMPLIFIED)
-**Change:** Removed bookmark descriptions from display to create cleaner, more compact bookmark cards.
+**Change:** Removed bookmark descriptions from display to create cleaner, more compact bookmark files.
 
 **Implementation:**
 - Set `.bookmark-description` to `display: none` to hide descriptions
-- Reduced minimum card height from 240px to 200px since descriptions are no longer shown
-- Cards now only display: image/placeholder, title, date, and controls
+- Reduced minimum file height from 240px to 200px since descriptions are no longer shown
+- Files now only display: image/placeholder, title, date, and controls
 
 **Files Modified:**
 - `css/items/widget/sections.css` - Added display: none to bookmark descriptions, reduced min-height
 
-**Result:** Bookmark cards are now cleaner and more compact, focusing on the essential information (title and visual). This provides a less cluttered interface and allows more bookmarks to be visible at once.
+**Result:** Bookmark files are now cleaner and more compact, focusing on the essential information (title and visual). This provides a less cluttered interface and allows more bookmarks to be visible at once.
 
 ---
 
 ## Remember
 
 - **Always test the third expansion** - This is where bugs often appear
-- **Check nested data** - Bookmarks inside sections inside cards inside categories
+- **Check nested data** - Bookmarks inside sections inside files inside categories
 - **Use proper debugging** - Console logs with emojis help track flow
 - **Save incrementally** - Don't wait for perfect solution, save working progress
 
 ---
 
-### 2025-08-20: Bookmark Card Component Created (ADDED)
-**Feature:** Created a bookmark card with full image background and text overlay.
+### 2025-08-20: Bookmark File Component Created (ADDED)
+**Feature:** Created a bookmark file with full image background and text overlay.
 
 **Implementation:**
-- Created `bookmark-card.html` and `bookmark-card.css` files
+- Created `bookmark-file.html` and `bookmark-file.css` files
 - Full background image (philip-martin-5aGUyCW_PJw-unsplash.jpg)
-- Card dimensions: 350x450px with 15px border radius
+- File dimensions: 350x450px with 15px border radius
 - Bottom overlay with title and description
 - Overlay has 5px margin on left, right, and bottom
 - Overlay uses white background with backdrop blur
 
 **Files Created:**
-- `CSS PLAYFIELD/bookmark-card.html` - HTML structure
-- `CSS PLAYFIELD/bookmark-card.css` - Styling
+- `CSS PLAYFIELD/bookmark-file.html` - HTML structure
+- `CSS PLAYFIELD/bookmark-file.css` - Styling
 
-**Result:** Clean bookmark card with image background and text overlay at bottom.
+**Result:** Clean bookmark file with image background and text overlay at bottom.

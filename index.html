@@ -30,14 +30,14 @@
     
     <!-- Widgets CSS -->
     <link rel="stylesheet" href="css/items/widget/categories.css">
-    <link rel="stylesheet" href="css/items/widget/cards.css">
-    <link rel="stylesheet" href="css/items/widget/card-title-icon.css">
+    <link rel="stylesheet" href="css/items/widget/files.css">
+    <link rel="stylesheet" href="css/items/widget/file-title-icon.css">
     <link rel="stylesheet" href="css/items/widget/canvas-headers.css">
     <link rel="stylesheet" href="css/items/widget/bookmark-editor-widget.css">
     <link rel="stylesheet" href="css/items/widget/bookmark-destination-modal.css">
     <link rel="stylesheet" href="css/items/widget/bookmark-move-modal.css">
     <link rel="stylesheet" href="css/items/widget/bookmarks-modal.css">
-    <link rel="stylesheet" href="css/items/sidebar/file-tree-dropdown.css">
+    <link rel="stylesheet" href="css/items/sidebar/file-tree.css">
     <link rel="stylesheet" href="css/items/widget/sections.css">
 
     
@@ -46,9 +46,11 @@
     <link rel="stylesheet" href="css/canvas/rightclick.css">
     
     <!-- Toolbar CSS -->
-    <link rel="stylesheet" href="css/items/sidebar/hamburger.css">
+    <link rel="stylesheet" href="css/items/sidebar/sidebar.css">
+    <link rel="stylesheet" href="css/items/sidebar/search.css">
+    <link rel="stylesheet" href="css/items/sidebar/settings.css">
     <link rel="stylesheet" href="css/items/toolbar/toolbar.css">
-    <link rel="stylesheet" href="css/items/sidebar/dropdowns.css">
+    <link rel="stylesheet" href="css/items/sidebar/settings-modal.css">
     <link rel="stylesheet" href="css/items/toolbar/auth-button.css">
     
     <!-- Dialogues CSS -->
@@ -100,21 +102,24 @@
     <link rel="stylesheet" href="css/items/widget/canvas-drawing.css">
 </head>
 <body>
-    <!-- Hamburger Menu -->
-    <div id="hamburgerMenu">
-        <button class="hamburger-btn">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" class="icon icon-tabler icons-tabler-filled icon-tabler-layout-sidebar-left-expand">
-                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
-                <path d="M18 3a3 3 0 0 1 2.995 2.824l.005 .176v12a3 3 0 0 1 -2.824 2.995l-.176 .005h-12a3 3 0 0 1 -2.995 -2.824l-.005 -.176v-12a3 3 0 0 1 2.824 -2.995l.176 -.005h12zm0 2h-9v14h9a1 1 0 0 0 .993 -.883l.007 -.117v-12a1 1 0 0 0 -.883 -.993l-.117 -.007zm-4.387 4.21l.094 .083l2 2a1 1 0 0 1 .083 1.32l-.083 .094l-2 2a1 1 0 0 1 -1.497 -1.32l.083 -.094l1.292 -1.293l-1.292 -1.293a1 1 0 0 1 -.083 -1.32l.083 -.094a1 1 0 0 1 1.32 -.083z" />
-            </svg>
-        </button>
-        <div class="hamburger-content">
+    <!-- sidebar Menu -->
+    <button class="sidebar-btn">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" class="icon icon-tabler icons-tabler-filled icon-tabler-layout-sidebar-left-expand">
+            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+            <path d="M18 3a3 3 0 0 1 2.995 2.824l.005 .176v12a3 3 0 0 1 -2.824 2.995l-.176 .005h-12a3 3 0 0 1 -2.995 -2.824l-.005 -.176v-12a3 3 0 0 1 2.824 -2.995l.176 -.005h12zm0 2h-9v14h9a1 1 0 0 0 .993 -.883l.007 -.117v-12a1 1 0 0 0 -.883 -.993l-.117 -.007zm-4.387 4.21l.094 .083l2 2a1 1 0 0 1 .083 1.32l-.083 .094l-2 2a1 1 0 0 1 -1.497 -1.32l.083 -.094l1.292 -1.293l-1.292 -1.293a1 1 0 0 1 -.083 -1.32l.083 -.094a1 1 0 0 1 1.32 -.083z" />
+        </svg>
+    </button>
+    <div id="sidebarMenu">
+        <div class="sidebar-content">
             <div class="sidebar-content">
                 <!-- Files Section -->
                 <div class="file-tree-section">
-                    <h3>Files</h3>
                     <div class="search-bar">
-                        <i class="search-icon">🔍</i>
+                        <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                            <path d="M10 10m-7 0a7 7 0 1 0 14 0a7 7 0 1 0 -14 0"/>
+                            <path d="M21 21l-6 -6"/>
+                        </svg>
                         <input type="text" class="search-input" placeholder="Search files...">
                     </div>
                     <div class="file-structure-dropdown">
@@ -136,8 +141,8 @@
                 </div>
 
     <!-- Settings Section at Bottom -->
-    <div class="hamburger-items" style="margin-top: auto; padding-top: 10px; border-top: 1px solid #2a2a2a;">
-        <div class="hamburger-item" id="settingsItem">
+    <div class="sidebar-items" style="margin-top: auto; padding-top: 10px; border-top: 1px solid #2a2a2a;">
+        <div class="sidebar-item" id="settingsItem">
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-settings-check">
                 <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
                 <path d="M11.445 20.913a1.665 1.665 0 0 1 -1.12 -1.23a1.724 1.724 0 0 0 -2.573 -1.066c-1.543 .94 -3.31 -.826 -2.37 -2.37a1.724 1.724 0 0 0 -1.065 -2.572c-1.756 -.426 -1.756 -2.924 0 -3.35a1.724 1.724 0 0 0 1.066 -2.573c-.94 -1.543 .826 -3.31 2.37 -2.37c1 .608 2.296 .07 2.572 -1.065c.426 -1.756 2.924 -1.756 3.35 0a1.724 1.724 0 0 0 2.573 1.066c1.543 -.94 3.31 .826 2.37 2.37a1.724 1.724 0 0 0 1.065 2.572c1.31 .318 1.643 1.79 .997 2.694" />
@@ -156,7 +161,7 @@
     <div id="bookmarkDestinationModal" class="bookmark-destination-modal">
         <div class="bookmark-destination-content">
             <div class="bookmark-destination-header">
-                <h3>Select Card for Bookmark</h3>
+                <h3>Select File for Bookmark</h3>
             </div>
             <div class="bookmark-preview">
                 <div class="bookmark-preview-title">Loading...</div>
@@ -427,7 +432,7 @@
                 </div>
                 <div class="step">
                     <span class="step-number">3</span>
-                    <span>Click the <strong>+</strong> button in categories to add cards</span>
+                    <span>Click the <strong>+</strong> button in categories to add files</span>
                 </div>
             </div>
             <button class="btn-primary" onclick="closeOnboardingModal()">Get Started</button>
@@ -493,7 +498,7 @@
     <script src="js/utils.js"></script>
     <script src="js/dialogs.js"></script>
     <script src="js/grid-utils.js"></script>
-    <script src="js/cards.js"></script>
+    <script src="js/files.js"></script>
     <script src="js/categories.js"></script>
     <script src="js/drag-smoothing.js"></script>
     <script src="js/drag-drop.js"></script>
@@ -509,7 +514,7 @@
     <script src="js/bookmark-move-modal.js"></script>
     <script src="js/file-tree.js"></script>
     <script src="js/extension-bridge.js"></script>
-    <script src="js/hamburger-menu.js"></script>
+    <script src="js/sidebar-menu.js"></script>
     <script src="js/payment-modal-handler.js"></script>
     <script src="js/simple-notifications.js"></script>
     

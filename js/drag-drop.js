@@ -136,7 +136,7 @@ function stopSuperHeaderDrag() {
 }
 
 function handleDragStart(e) {
-    AppState.set('draggedCard', e.target);
+    AppState.set('draggedFile', e.target);
     e.target.classList.add('dragging');
     e.stopPropagation();
     
@@ -148,20 +148,20 @@ function handleDragStart(e) {
 
 function handleDragEnd(e) {
     e.target.classList.remove('dragging');
-    AppState.set('draggedCard', null);
+    AppState.set('draggedFile', null);
     
-    // Save after card drag completes
+    // Save after file drag completes
     if (window.syncService) {
         window.syncService.isDragging = false;
-        window.syncService.saveAfterAction('card drag');
+        window.syncService.saveAfterAction('file drag');
     }
 }
 
 function handleDragOver(e) {
     e.preventDefault();
-    const draggedCard = AppState.get('draggedCard');
+    const draggedFile = AppState.get('draggedFile');
     if (!e.currentTarget.hasChildNodes() || 
-        (e.currentTarget.firstChild && e.currentTarget.firstChild !== draggedCard)) {
+        (e.currentTarget.firstChild && e.currentTarget.firstChild !== draggedFile)) {
         e.currentTarget.classList.add('drag-over');
     }
 }
@@ -175,33 +175,33 @@ function handleDrop(e) {
     const slot = e.currentTarget;
     slot.classList.remove('drag-over');
     
-    const draggedCard = AppState.get('draggedCard');
-    if (!draggedCard) return;
+    const draggedFile = AppState.get('draggedFile');
+    if (!draggedFile) return;
 
     // Get the source and destination categories
-    const sourceCategory = draggedCard.closest('.category');
+    const sourceCategory = draggedFile.closest('.category');
     const destCategory = slot.closest('.category');
     
-    // Swap cards if slot is occupied
-    if (slot.hasChildNodes() && slot.firstChild !== draggedCard) {
-        const existingCard = slot.firstChild;
-        const draggedSlot = draggedCard.parentNode;
-        draggedSlot.appendChild(existingCard);
+    // Swap files if slot is occupied
+    if (slot.hasChildNodes() && slot.firstChild !== draggedFile) {
+        const existingFile = slot.firstChild;
+        const draggedSlot = draggedFile.parentNode;
+        draggedSlot.appendChild(existingFile);
         
-        // Update the swapped card's category reference
-        if (sourceCategory && existingCard) {
-            existingCard.dataset.categoryId = sourceCategory.id;
+        // Update the swapped file's category reference
+        if (sourceCategory && existingFile) {
+            existingFile.dataset.categoryId = sourceCategory.id;
         }
     }
 
-    // Move card to new slot
+    // Move file to new slot
     if (!slot.hasChildNodes()) {
-        slot.appendChild(draggedCard);
+        slot.appendChild(draggedFile);
     }
     
-    // Update the dragged card's category reference
-    if (destCategory && draggedCard) {
-        draggedCard.dataset.categoryId = destCategory.id;
+    // Update the dragged file's category reference
+    if (destCategory && draggedFile) {
+        draggedFile.dataset.categoryId = destCategory.id;
     }
     
     // Update AppState categories arrays
@@ -213,15 +213,15 @@ function handleDrop(e) {
         const destCat = categories.find(c => c.element.id === destCategory.id);
         
         if (sourceCat && destCat) {
-            // Remove card from source category's cards array
-            const cardIndex = sourceCat.cards.indexOf(draggedCard);
-            if (cardIndex > -1) {
-                sourceCat.cards.splice(cardIndex, 1);
+            // Remove file from source category's files array
+            const fileIndex = sourceCat.files.indexOf(draggedFile);
+            if (fileIndex > -1) {
+                sourceCat.files.splice(fileIndex, 1);
             }
             
-            // Add card to destination category's cards array if not already there
-            if (!destCat.cards.includes(draggedCard)) {
-                destCat.cards.push(draggedCard);
+            // Add file to destination category's files array if not already there
+            if (!destCat.files.includes(draggedFile)) {
+                destCat.files.push(draggedFile);
             }
             
             // Update AppState

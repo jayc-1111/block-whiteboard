@@ -10,62 +10,62 @@
 }
 
 /* Default (light mode) styles to match dark canvas theme */
-.card.expanded .ql-toolbar {
-    background: #ffffff !important;  /* Match card background */
+.file.expanded .ql-toolbar {
+    background: #ffffff !important;  /* Match file background */
     border-color: #ffffff !important;
 }
 
-.card.expanded .ql-toolbar button {
+.file.expanded .ql-toolbar button {
     color: #2D2D2D !important;
     box-shadow: none;
     padding: 1px;
 }
 
-.card.expanded .ql-toolbar button:hover {
+.file.expanded .ql-toolbar button:hover {
     color: #000000 !important;
 }
 
-.card.expanded .ql-toolbar button.ql-active,
-.card.expanded .ql-toolbar .ql-picker-label.ql-active,
-.card.expanded .ql-toolbar .ql-picker-item.ql-selected {
+.file.expanded .ql-toolbar button.ql-active,
+.file.expanded .ql-toolbar .ql-picker-label.ql-active,
+.file.expanded .ql-toolbar .ql-picker-item.ql-selected {
     color: #5353ff !important;  /* Use theme blue */
 }
 
-.card.expanded .ql-toolbar .ql-stroke {
+.file.expanded .ql-toolbar .ql-stroke {
     stroke: #2D2D2D !important;
 }
 
-.card.expanded .ql-toolbar .ql-fill {
+.file.expanded .ql-toolbar .ql-fill {
     fill: #2D2D2D !important;
 }
 
-.card.expanded .ql-toolbar .ql-picker {
+.file.expanded .ql-toolbar .ql-picker {
     color: #2D2D2D !important;
 }
 
-.card.expanded .ql-editor {
+.file.expanded .ql-editor {
     background: #ffffff !important;  /* Match category background */
     color: #2D2D2D !important;  /* Dark text color */
     caret-color: #2D2D2D;
 }
 
-.card.expanded .ql-container {
+.file.expanded .ql-container {
     background: #ffffff !important;
     border-color: #ffffff !important;
 }
 
 /* Section editor styles */
-.card-section .ql-toolbar {
+.file-section .ql-toolbar {
     background: #191919 !important;
     border-color: #2a2a2a !important;
 }
 
-.card-section .ql-editor {
+.file-section .ql-editor {
     background: #131313 !important;
     color: #f0f0f0 !important;
 }
 
-.card-section .ql-container {
+.file-section .ql-container {
     background: #131313 !important;
     border-color: #2a2a2a !important;
 }
@@ -132,24 +132,24 @@
     background: #1e1e1e !important;
 }
 
-/* Expanded card dark mode styles */
-.card.expanded.dark-mode {
+/* Expanded file dark mode styles */
+.file.expanded.dark-mode {
     background: #1a1a1a !important;
 }
 
-.expanded-card-content.dark-mode {
+.expanded-file-content.dark-mode {
     background: #1a1a1a !important;
 }
 
-.expanded-card-header.dark-mode {
+.expanded-file-header.dark-mode {
     background: #1a1a1a !important;
 }
 
-.expanded-card-main.dark-mode {
+.expanded-file-main.dark-mode {
     background: #1a1a1a !important;
 }
 
-.expanded-card-header.dark-mode .card-title {
+.expanded-file-header.dark-mode .file-title {
     color: #e0e0e0 !important;
 }
 
@@ -162,8 +162,8 @@
     background: #1a1a1a !important;
 }
 
-/* Dark mode for bookmark cards */
-.dark-mode .bookmark-card {
+/* Dark mode for bookmark files */
+.dark-mode .bookmark-file {
     background: #2d2d2d !important;
     border-radius: 20px !important;
     color: #e0e0e0 !important;
@@ -209,8 +209,8 @@
     border-radius: 8px;
 }
 
-/* Expanded card specific styling */
-.card.expanded .ql-editor {
+/* Expanded file specific styling */
+.file.expanded .ql-editor {
     min-height: 400px;
     padding: 5px 10px 10px 10px;
     font-size: 16px;

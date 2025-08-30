@@ -235,12 +235,14 @@ document.addEventListener('DOMContentLoaded', () => {
     // All elements are visible in both modes - no initialization needed
     
     // Set up file structure updates
-    const fileContainer = document.querySelector('.file-structure-container');
-    if (fileContainer) {
-        fileContainer.addEventListener('mouseenter', () => {
-            updateFileStructure();
-        });
-    }
+    // Remove buggy hover-refresh of file structure (caused flashing/rebuild loops)
+    // File tree is now updated only when menu opens via updateFileTree()
+    // const fileContainer = document.querySelector('.file-structure-container');
+    // if (fileContainer) {
+    //     fileContainer.addEventListener('mouseenter', () => {
+    //         updateFileStructure();
+    //     });
+    // }
     
     // Update board dropdown on hover
     const whiteboardSwitcher = document.getElementById('whiteboardSwitcher');
@@ -257,15 +259,15 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
     
-    // Handle window click to close expanded cards
+    // Handle window click to close expanded files
     document.addEventListener('click', (e) => {
-        const expandedCard = AppState.get('expandedCard');
-        if (expandedCard && !e.target.closest('.card.expanded') && 
-            !e.target.closest('.card-hover-overlay') &&
+        const expandedFile = AppState.get('expandedFile');
+        if (expandedFile && !e.target.closest('.file.expanded') && 
+            !e.target.closest('.file-hover-overlay') &&
             !e.target.closest('.dialog-overlay') &&
             !e.target.closest('.confirm-dialog')) {
-            collapseCard(expandedCard);
-            AppState.set('expandedCard', null);
+            collapseFile(expandedFile);
+            AppState.set('expandedFile', null);
         }
     });
     

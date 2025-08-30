@@ -33,7 +33,7 @@
 .custom-font-headers {
     .category-title,
     .canvas-header,
-    .card-title {
+    .file-title {
         font-family: 'Claire Sans', 'Inter', sans-serif !important;
     }
 }

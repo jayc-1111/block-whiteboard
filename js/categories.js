@@ -62,14 +62,14 @@ function createCategory(title = 'New Folder', x = null, y = null) {
     toggleBtn.style.display = 'inline-block';
     toggleBtn.addEventListener('click', () => toggleCategory(category));
 
-    const addCardBtn = document.createElement('button');
-    addCardBtn.className = 'add-card-btn';
-    addCardBtn.innerHTML = `<svg class="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+    const addFileBtn = document.createElement('button');
+    addFileBtn.className = 'add-file-btn';
+    addFileBtn.innerHTML = `<svg class="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
         <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14m-7 7V5"/>
     </svg>`;
-    addCardBtn.style.display = 'inline-block';
+    addFileBtn.style.display = 'inline-block';
     const categoryIndex = categories.length;
-    addCardBtn.addEventListener('click', () => addCardToCategory(categoryIndex));
+    addFileBtn.addEventListener('click', () => addFileToCategory(categoryIndex));
 
     const deleteBtn = document.createElement('button');
     deleteBtn.className = 'delete-btn';
@@ -100,18 +100,18 @@ function createCategory(title = 'New Folder', x = null, y = null) {
     const headerButtons = document.createElement('div');
     headerButtons.className = 'header-buttons';
     // Toggle button removed from header - it's in the bottom section
-    headerButtons.appendChild(addCardBtn);
+    headerButtons.appendChild(addFileBtn);
     headerButtons.appendChild(deleteBtn);
     
     categoryHeader.appendChild(categoryTitle);
     categoryHeader.appendChild(headerButtons);
 
-    const cardsGrid = document.createElement('div');
-    cardsGrid.className = 'cards-grid';
+    const filesGrid = document.createElement('div');
+    filesGrid.className = 'files-grid';
     
-    for (let i = 0; i < CONSTANTS.INITIAL_CARD_SLOTS; i++) {
-        const slot = createCardSlot();
-        cardsGrid.appendChild(slot);
+    for (let i = 0; i < CONSTANTS.INITIAL_FILE_SLOTS; i++) {
+        const slot = createFileSlot();
+        filesGrid.appendChild(slot);
     }
 
     const expandSpaceBtn = document.createElement('button');
@@ -119,9 +119,9 @@ function createCategory(title = 'New Folder', x = null, y = null) {
     expandSpaceBtn.textContent = 'Expand Space';
     expandSpaceBtn.style.display = 'none';
     expandSpaceBtn.addEventListener('click', () => {
-        for (let i = 0; i < CONSTANTS.INITIAL_CARD_SLOTS; i++) {
-            const slot = createCardSlot();
-            cardsGrid.appendChild(slot);
+        for (let i = 0; i < CONSTANTS.INITIAL_FILE_SLOTS; i++) {
+            const slot = createFileSlot();
+            filesGrid.appendChild(slot);
         }
     });
 
@@ -131,7 +131,7 @@ function createCategory(title = 'New Folder', x = null, y = null) {
     bottomSection.appendChild(toggleBtn);
 
     category.appendChild(categoryHeader);
-    category.appendChild(cardsGrid);
+    category.appendChild(filesGrid);
     category.appendChild(bottomSection);
     // Note: expandSpaceBtn is kept but hidden - may be used in future
 
@@ -146,7 +146,7 @@ function createCategory(title = 'New Folder', x = null, y = null) {
 
     const updatedCategories = [...categories, {
         element: category,
-        cards: []
+        files: []
     }];
     AppState.set('categories', updatedCategories);
     
@@ -206,7 +206,7 @@ function toggleCategory(category) {
 function startCategoryDrag(e) {
     const category = e.target.closest('.category');
     if (!category || e.target.classList.contains('delete-btn') || 
-        e.target.classList.contains('add-card-btn') || 
+        e.target.classList.contains('add-file-btn') || 
         e.target.classList.contains('toggle-btn') ||
         e.target.classList.contains('category-title')) {
         return;
@@ -317,16 +317,16 @@ function createCategoryFromData(catData) {
     
     const categories = AppState.get('categories');
     const category = categories[catIndex];
-    const grid = category.element.querySelector('.cards-grid');
+    const grid = category.element.querySelector('.files-grid');
     grid.innerHTML = '';
-    for (let i = 0; i < CONSTANTS.INITIAL_CARD_SLOTS; i++) {
-        const slot = createCardSlot();
+    for (let i = 0; i < CONSTANTS.INITIAL_FILE_SLOTS; i++) {
+        const slot = createFileSlot();
         grid.appendChild(slot);
     }
     
-    if (catData.cards) {
-        catData.cards.forEach(cardData => {
-            addCardToCategory(catIndex, cardData.title, cardData.content);
+    if (catData.files) {
+        catData.files.forEach(fileData => {
+            addFileToCategory(catIndex, fileData.title, fileData.content);
         });
     }
 }

@@ -317,9 +317,9 @@
                 'handleBookmarkData',
                 'showBookmarkDestination',
                 'testExtensionBridge',
-                'addCardToCategory',
+                'addFileToCategory',
                 'addCategory',
-                'expandCard',
+                'expandFile',
                 'AppState',
                 'syncService'
             ];
@@ -355,19 +355,19 @@
                 const categories = canvas.querySelectorAll('.category');
                 html += `Categories: ${categories.length}\n`;
                 
-                let totalCards = 0;
+                let totalFiles = 0;
                 categories.forEach((cat, idx) => {
-                    const cards = cat.querySelectorAll('.card');
+                    const files = cat.querySelectorAll('.file');
                     const title = cat.querySelector('.category-title')?.textContent || 'Untitled';
-                    totalCards += cards.length;
-                    html += `  [${idx + 1}] ${title}: ${cards.length} cards\n`;
+                    totalFiles += files.length;
+                    html += `  [${idx + 1}] ${title}: ${files.length} files\n`;
                 });
                 
-                html += `\nTotal Cards: ${totalCards}\n`;
+                html += `\nTotal Files: ${totalFiles}\n`;
                 
-                const expandedCard = document.querySelector('.card.expanded');
-                if (expandedCard) {
-                    html += '\n⚡ Card is currently expanded!';
+                const expandedFile = document.querySelector('.file.expanded');
+                if (expandedFile) {
+                    html += '\n⚡ File is currently expanded!';
                 }
             } else {
                 html += '❌ Canvas not found!';

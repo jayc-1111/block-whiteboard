@@ -1,21 +1,21 @@
-// Helper function to get card title text
-function getCardTitleText(card) {
-    const cardTitle = card.querySelector('.card-title');
-    if (!cardTitle) return '';
+// Helper function to get file title text
+function getFileTitleText(file) {
+    const fileTitle = file.querySelector('.file-title');
+    if (!fileTitle) return '';
     
     // If we have a titleTextElement (our span), use its textContent
-    if (cardTitle.titleTextElement) {
-        return cardTitle.titleTextElement.textContent;
+    if (fileTitle.titleTextElement) {
+        return fileTitle.titleTextElement.textContent;
     }
     
-    // Fallback to the card title's text content
-    return cardTitle.textContent;
+    // Fallback to the file title's text content
+    return fileTitle.textContent;
 }
 
-// Helper function to get the next section number for a card
-function getNewSectionNumber(card) {
+// Helper function to get the next section number for a file
+function getNewSectionNumber(file) {
     // Count existing sections with titles starting with "New Section"
-    const existingSections = card.querySelectorAll('.section-title');
+    const existingSections = file.querySelectorAll('.section-title');
     let maxNumber = 0;
     
     existingSections.forEach(section => {
@@ -39,10 +39,10 @@ function getNewSectionNumber(card) {
     return maxNumber + 1;
 }
 
-// Card management
-function createCardSlot() {
+// File management
+function createFileSlot() {
     const slot = document.createElement('div');
-    slot.className = 'card-slot';
+    slot.className = 'file-slot';
     
     slot.addEventListener('dragover', handleDragOver);
     slot.addEventListener('drop', handleDrop);
@@ -51,16 +51,16 @@ function createCardSlot() {
     return slot;
 }
 
-function addCard() {
+function addFile() {
     const categories = AppState.get('categories');
     if (categories.length === 0) {
         createCategory();
     }
-    addCardToCategory(0);
+    addFileToCategory(0);
 }
 
-function addCardToCategory(categoryOrIndex, title = 'New Card', content = null, bookmarks = null, sections = null) {
-    console.log('🔨 ADD CARD DEBUG:', {
+function addFileToCategory(categoryOrIndex, title = 'New File', content = null, bookmarks = null, sections = null) {
+    console.log('🔨 ADD FILE DEBUG:', {
         title: title,
         hasContent: !!content,
         hasBookmarks: !!bookmarks,
@@ -91,35 +91,35 @@ function addCardToCategory(categoryOrIndex, title = 'New Card', content = null, 
         return null;
     }
 
-    const card = document.createElement('div');
-    card.className = 'card';
-    card.draggable = true;
+    const file = document.createElement('div');
+    file.className = 'file';
+    file.draggable = true;
     
-    // Generate unique ID for the card
-    const cardId = `card-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-    card.id = cardId;
-    card.dataset.cardId = cardId;
+    // Generate unique ID for the file
+    const fileId = `file-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    file.id = fileId;
+    file.dataset.fileId = fileId;
 
     // Create container for SVG and title
     const titleContainer = document.createElement('div');
-    titleContainer.className = 'card-title-container';
+    titleContainer.className = 'file-title-container';
     
     // Create file icon SVG
     const fileIcon = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-    fileIcon.className = 'card-title-icon';
+    fileIcon.className = 'file-title-icon';
     fileIcon.setAttribute('width', '16');
     fileIcon.setAttribute('height', '16');
     fileIcon.setAttribute('viewBox', '0 0 24 24');
     fileIcon.setAttribute('fill', 'currentColor');
     fileIcon.innerHTML = '<path fill-rule="evenodd" d="M9 2.221V7H4.221a2 2 0 0 1 .365-.5L8.5 2.586A2 2 0 0 1 9 2.22ZM11 2v5a2 2 0 0 1-2 2H4v11a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2h-7Z" clip-rule="evenodd"/>';
     
-    const cardTitle = document.createElement('div');
-    cardTitle.className = 'card-title';
-    cardTitle.contentEditable = true;
-    cardTitle.autocomplete = 'off';
-    cardTitle.autocorrect = 'off';
-    cardTitle.autocapitalize = 'off';
-    cardTitle.spellcheck = false;
+    const fileTitle = document.createElement('div');
+    fileTitle.className = 'file-title';
+    fileTitle.contentEditable = true;
+    fileTitle.autocomplete = 'off';
+    fileTitle.autocorrect = 'off';
+    fileTitle.autocapitalize = 'off';
+    fileTitle.spellcheck = false;
     
     // Create text span
     const titleText = document.createElement('span');
@@ -128,13 +128,13 @@ function addCardToCategory(categoryOrIndex, title = 'New Card', content = null, 
     
     // Add icon and text to container
     titleContainer.appendChild(fileIcon);
-    cardTitle.appendChild(titleText);
-    titleContainer.appendChild(cardTitle);
+    fileTitle.appendChild(titleText);
+    titleContainer.appendChild(fileTitle);
     
     // Store reference to text element for later use
-    cardTitle.titleTextElement = titleText;
+    fileTitle.titleTextElement = titleText;
 
-    cardTitle.addEventListener('focus', function(e) {
+    fileTitle.addEventListener('focus', function(e) {
         e.stopPropagation();
         if (this.titleTextElement && this.titleTextElement.textContent === this.titleTextElement.dataset.placeholder) {
             this.titleTextElement.textContent = '';
@@ -144,7 +144,7 @@ function addCardToCategory(categoryOrIndex, title = 'New Card', content = null, 
     });
     
     // Handle paste to strip formatting
-    cardTitle.addEventListener('paste', function(e) {
+    fileTitle.addEventListener('paste', function(e) {
         e.preventDefault();
         const text = (e.clipboardData || window.clipboardData).getData('text/plain');
         if (this.titleTextElement) {
@@ -153,37 +153,37 @@ function addCardToCategory(categoryOrIndex, title = 'New Card', content = null, 
             document.execCommand('insertText', false, text);
         }
     });
-    cardTitle.addEventListener('blur', function() {
+    fileTitle.addEventListener('blur', function() {
         if (this.titleTextElement && this.titleTextElement.textContent.trim() === '') {
             this.titleTextElement.textContent = this.titleTextElement.dataset.placeholder;
         } else if (this.textContent.trim() === '') {
             this.textContent = this.dataset.placeholder;
         }
-        // Save after editing card title
+        // Save after editing file title
         if (window.syncService) {
-            window.syncService.saveAfterAction('card title edited');
+            window.syncService.saveAfterAction('file title edited');
         }
     });
 
-    const cardContent = document.createElement('div');
-    cardContent.className = 'card-content';
-    cardContent.style.display = 'none'; // Ensure it's hidden by default
+    const fileContent = document.createElement('div');
+    fileContent.className = 'file-content';
+    fileContent.style.display = 'none'; // Ensure it's hidden by default
 
     // Create container for Editor.js (will be initialized when expanded)
     const editorContainer = document.createElement('div');
     editorContainer.className = 'editor-container';
     editorContainer.id = `editor-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
     
-    cardContent.appendChild(editorContainer);
+    fileContent.appendChild(editorContainer);
     
-    // Store initial content on the card for later use
-    card.initialContent = content;
-    card.bookmarks = bookmarks || []; // Store bookmarks on card
-    card.sections = sections || []; // Store sections on card (from Firebase)
+    // Store initial content on the file for later use
+    file.initialContent = content;
+    file.bookmarks = bookmarks || []; // Store bookmarks on file
+    file.sections = sections || []; // Store sections on file (from Firebase)
     
     // Debug section restoration
     if (sections && sections.length > 0) {
-        console.log(`📦 CARD: Restored card "${title}" with ${sections.length} sections:`);
+        console.log(`📦 FILE: Restored file "${title}" with ${sections.length} sections:`);
         sections.forEach((s, i) => {
             console.log(`  📄 Section ${i}: ${s.title} (ID: ${s.id})`);
             if (s.bookmarks && s.bookmarks.length > 0) {
@@ -194,24 +194,24 @@ function addCardToCategory(categoryOrIndex, title = 'New Card', content = null, 
     
     // Debug bookmark restoration
     if (bookmarks && bookmarks.length > 0) {
-        console.log(`📚 CARD: Restored card "${title}" with ${bookmarks.length} bookmarks:`);
+        console.log(`📚 FILE: Restored file "${title}" with ${bookmarks.length} bookmarks:`);
         bookmarks.forEach((b, i) => console.log(`  📌 Bookmark ${i}: ${b.title}`));
     }
     
-    // Store category reference for when card is expanded
+    // Store category reference for when file is expanded
     if (category.element.id) {
-        card.dataset.categoryId = category.element.id;
+        file.dataset.categoryId = category.element.id;
     } else {
         // Generate ID if category doesn't have one
         category.element.id = `category-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-        card.dataset.categoryId = category.element.id;
+        file.dataset.categoryId = category.element.id;
     }
 
-    card.appendChild(titleContainer);
-    card.appendChild(cardContent);
+    file.appendChild(titleContainer);
+    file.appendChild(fileContent);
 
     const hoverOverlay = document.createElement('div');
-    hoverOverlay.className = 'card-hover-overlay';
+    hoverOverlay.className = 'file-hover-overlay';
     hoverOverlay.innerHTML = `
         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
@@ -220,105 +220,105 @@ function addCardToCategory(categoryOrIndex, title = 'New Card', content = null, 
     `;
     hoverOverlay.onclick = (e) => {
         e.stopPropagation();
-        expandCard(card);
+        expandFile(file);
     };
-    card.appendChild(hoverOverlay);
+    file.appendChild(hoverOverlay);
 
     // Store reference to editor container
-    card.editorContainer = editorContainer;
+    file.editorContainer = editorContainer;
 
-    cardTitle.addEventListener('mousedown', (e) => {
-        if (e.target === cardTitle) e.stopPropagation();
+    fileTitle.addEventListener('mousedown', (e) => {
+        if (e.target === fileTitle) e.stopPropagation();
     });
     
     editorContainer.addEventListener('mousedown', (e) => {
         e.stopPropagation();
     });
 
-    card.addEventListener('dragstart', handleDragStart);
-    card.addEventListener('dragend', handleDragEnd);
+    file.addEventListener('dragstart', handleDragStart);
+    file.addEventListener('dragend', handleDragEnd);
 
-    const grid = category.element.querySelector('.cards-grid');
+    const grid = category.element.querySelector('.files-grid');
     if (!grid) {
-        console.error('Cards grid not found in category');
+        console.error('Files grid not found in category');
         return;
     }
-    const slots = grid.querySelectorAll('.card-slot');
+    const slots = grid.querySelectorAll('.file-slot');
     
-    console.log(`Adding card "${title}" to category "${category.element.querySelector('.category-title')?.textContent}"`);
-    console.log(`Cards grid found:`, grid);
+    console.log(`Adding file "${title}" to category "${category.element.querySelector('.category-title')?.textContent}"`);
+    console.log(`Files grid found:`, grid);
     console.log(`Available slots:`, slots.length);
     
-    let cardPlaced = false;
+    let filePlaced = false;
     for (let slot of slots) {
         if (!slot.hasChildNodes()) {
-            slot.appendChild(card);
-            cardPlaced = true;
-            console.log('Card placed in existing slot');
+            slot.appendChild(file);
+            filePlaced = true;
+            console.log('File placed in existing slot');
             break;
         }
     }
 
-    if (!cardPlaced) {
-        const newSlot = createCardSlot();
+    if (!filePlaced) {
+        const newSlot = createFileSlot();
         grid.appendChild(newSlot);
-        newSlot.appendChild(card);
-        console.log('Card placed in new slot');
+        newSlot.appendChild(file);
+        console.log('File placed in new slot');
     }
     
-    // Verify card placement
-    const cardsInCategory = category.element.querySelectorAll('.card');
-    console.log(`Total cards now in category DOM: ${cardsInCategory.length}`);
-    cardsInCategory.forEach((c, i) => {
-        const cTitle = c.querySelector('.card-title')?.textContent;
-        console.log(`  Card ${i}: "${cTitle}"`);
+    // Verify file placement
+    const filesInCategory = category.element.querySelectorAll('.file');
+    console.log(`Total files now in category DOM: ${filesInCategory.length}`);
+    filesInCategory.forEach((c, i) => {
+        const cTitle = c.querySelector('.file-title')?.textContent;
+        console.log(`  File ${i}: "${cTitle}"`);
     });
 
-    // Track the card in the category with its ID
-    category.cards.push(card);
+    // Track the file in the category with its ID
+    category.files.push(file);
     
-    // Store card reference in AppState for bookmark persistence
+    // Store file reference in AppState for bookmark persistence
     const boards = AppState.get('boards');
     const currentBoardId = AppState.get('currentBoardId');
     const board = boards.find(b => b.id === currentBoardId);
     if (board && board.categories) {
         const categoryIndex = AppState.get('categories').indexOf(category);
         if (categoryIndex !== -1 && board.categories[categoryIndex]) {
-            const cardIndex = board.categories[categoryIndex].cards.length - 1;
-            if (cardIndex >= 0 && board.categories[categoryIndex].cards[cardIndex]) {
-                board.categories[categoryIndex].cards[cardIndex].id = cardId;
-    if (!board.categories[categoryIndex].cards[cardIndex].bookmarks) {
-        board.categories[categoryIndex].cards[cardIndex].bookmarks = [];
+            const fileIndex = board.categories[categoryIndex].files.length - 1;
+            if (fileIndex >= 0 && board.categories[categoryIndex].files[fileIndex]) {
+                board.categories[categoryIndex].files[fileIndex].id = fileId;
+    if (!board.categories[categoryIndex].files[fileIndex].bookmarks) {
+        board.categories[categoryIndex].files[fileIndex].bookmarks = [];
     }
             }
         }
     }
     
-    // Save after adding card
+    // Save after adding file
     if (window.syncService) {
-        window.syncService.saveAfterAction('card added');
+        window.syncService.saveAfterAction('file added');
     }
     
-    // Show toggle button and collapse when 5+ cards
+    // Show toggle button and collapse when 5+ files
     const toggleBtn = category.element.querySelector('.toggle-btn');
-    if (category.cards.length >= CONSTANTS.CARDS_BEFORE_COLLAPSE) {
+    if (category.files.length >= CONSTANTS.FILES_BEFORE_COLLAPSE) {
         toggleBtn.style.display = 'inline-block';
         
-        // Auto-collapse on 5th card
-        if (category.cards.length === CONSTANTS.CARDS_BEFORE_COLLAPSE) {
+        // Auto-collapse on 5th file
+        if (category.files.length === CONSTANTS.FILES_BEFORE_COLLAPSE) {
             toggleCategory(category.element);
         }
     }
     
-    // Return the created card
-    return card;
+    // Return the created file
+    return file;
 }
 
-function deleteCard(card) {
-    if (!card) return;
+function deleteFile(file) {
+    if (!file) return;
     
-    const slot = card.parentElement;
-    const categoryElement = card.closest('.category');
+    const slot = file.parentElement;
+    const categoryElement = file.closest('.category');
     
     if (categoryElement) {
         const categories = AppState.get('categories');
@@ -326,26 +326,26 @@ function deleteCard(card) {
         const category = categories[categoryIndex];
         
         if (category) {
-            // Remove card from category's cards array
-            const cardIndex = category.cards.indexOf(card);
-            if (cardIndex > -1) {
-                category.cards.splice(cardIndex, 1);
+            // Remove file from category's files array
+            const fileIndex = category.files.indexOf(file);
+            if (fileIndex > -1) {
+                category.files.splice(fileIndex, 1);
             }
             
             // Check if toggle button should be hidden
             const toggleBtn = categoryElement.querySelector('.toggle-btn');
-            if (category.cards.length < CONSTANTS.CARDS_BEFORE_COLLAPSE) {
+            if (category.files.length < CONSTANTS.FILES_BEFORE_COLLAPSE) {
                 toggleBtn.style.display = 'none';
             }
             
-            // Save after deleting card
+            // Save after deleting file
             if (window.syncService) {
-                window.syncService.saveAfterAction('card deleted');
+                window.syncService.saveAfterAction('file deleted');
             }
         }
     }
     
-    card.remove();
+    file.remove();
     
     const category = slot?.closest('.category');
     if (category) {
@@ -353,131 +353,138 @@ function deleteCard(card) {
     }
 }
 
-function expandCard(card) {
-    if (!card) {
-        console.error('❌ EXPAND: No card provided to expandCard');
+function expandFile(file) {
+    if (!file) {
+        console.error('❌ EXPAND: No file provided to expandFile');
         return;
     }
     
-    console.log('💚 EXPAND: expandCard called');
-    console.log('💚 EXPAND: Card element:', card);
-    console.log('💚 EXPAND: Card parent:', card.parentElement);
-    console.log('💚 EXPAND: Card classes:', card.className);
-    console.log('💚 EXPAND: Card has required elements:', {
-        title: !!card.querySelector('.card-title'),
-        content: !!card.querySelector('.card-content'),
-        editorContainer: !!(card.querySelector('.editor-container') || card.editorContainer)
+    // When expanding a file, ensure sidebar opens as well
+    const sidebarMenu = document.getElementById('sidebarMenu');
+    if (sidebarMenu && !sidebarMenu.classList.contains('open')) {
+        sidebarMenu.classList.add('open');
+        document.body.classList.add('sidebar-open');
+    }
+    
+    console.log('💚 EXPAND: expandFile called');
+    console.log('💚 EXPAND: File element:', file);
+    console.log('💚 EXPAND: File parent:', file.parentElement);
+    console.log('💚 EXPAND: File classes:', file.className);
+    console.log('💚 EXPAND: File has required elements:', {
+        title: !!file.querySelector('.file-title'),
+        content: !!file.querySelector('.file-content'),
+        editorContainer: !!(file.querySelector('.editor-container') || file.editorContainer)
     });
     
-    // Ensure card is in DOM
-    if (!card.parentElement) {
-        console.error('❌ EXPAND: Card has no parent element, cannot expand');
+    // Ensure file is in DOM
+    if (!file.parentElement) {
+        console.error('❌ EXPAND: File has no parent element, cannot expand');
         return;
     }
-    console.log('💚 EXPAND: Card is in DOM, proceeding...');
+    console.log('💚 EXPAND: File is in DOM, proceeding...');
     
-    // Find card's location in AppState
+    // Find file's location in AppState
     const boards = AppState.get('boards');
     const currentBoardId = AppState.get('currentBoardId');
     const board = boards.find(b => b.id === currentBoardId);
-    let cardLocation = null;
+    let fileLocation = null;
     
     if (board && board.categories) {
-        // Find this card in the board structure
-        const cardTitle = card.querySelector('.card-title')?.textContent;
-        const cardId = card.dataset.cardId || card.id;
+        // Find this file in the board structure
+        const fileTitle = file.querySelector('.file-title')?.textContent;
+        const fileId = file.dataset.fileId || file.id;
         
-        console.log('🔍 DEBUG: Looking for card in AppState', { cardId, cardTitle });
+        console.log('🔍 DEBUG: Looking for file in AppState', { fileId, fileTitle });
         
         for (let catIndex = 0; catIndex < board.categories.length; catIndex++) {
             const category = board.categories[catIndex];
-            if (category.cards) {
-                for (let cardIndex = 0; cardIndex < category.cards.length; cardIndex++) {
-                    const savedCard = category.cards[cardIndex];
+            if (category.files) {
+                for (let fileIndex = 0; fileIndex < category.files.length; fileIndex++) {
+                    const savedFile = category.files[fileIndex];
                     // Match by ID first, then by title as fallback
-                    if ((savedCard.id && savedCard.id === cardId) || savedCard.title === cardTitle) {
-                        cardLocation = { categoryIndex: catIndex, cardIndex: cardIndex };
-                        console.log('🔍 DEBUG: Found card in AppState', { cardLocation });
+                    if ((savedFile.id && savedFile.id === fileId) || savedFile.title === fileTitle) {
+                        fileLocation = { categoryIndex: catIndex, fileIndex: fileIndex };
+                        console.log('🔍 DEBUG: Found file in AppState', { fileLocation });
                         
                         // Restore bookmarks from AppState if missing on DOM
-                        if (!card.bookmarks && savedCard.bookmarks) {
-                            card.bookmarks = savedCard.bookmarks;
-                            console.log(`💚 EXPAND: Restored ${savedCard.bookmarks.length} bookmarks from AppState`);
+                        if (!file.bookmarks && savedFile.bookmarks) {
+                            file.bookmarks = savedFile.bookmarks;
+                            console.log(`💚 EXPAND: Restored ${savedFile.bookmarks.length} bookmarks from AppState`);
                         }
                         // Restore sections from AppState if available
-                        if (savedCard.sections) {
-                            card.sections = savedCard.sections;
-                            console.log(`💚 EXPAND: Restored ${savedCard.sections.length} sections from AppState`, {
-                                sectionIds: savedCard.sections.map(s => s.id)
+                        if (savedFile.sections) {
+                            file.sections = savedFile.sections;
+                            console.log(`💚 EXPAND: Restored ${savedFile.sections.length} sections from AppState`, {
+                                sectionIds: savedFile.sections.map(s => s.id)
                             });
                         }
                         break;
                     }
                 }
-                if (cardLocation) break;
+                if (fileLocation) break;
             }
         }
     }
     
     // Store location for later updates
-    card.appStateLocation = cardLocation;
-    console.log('💚 EXPAND: Card location in AppState:', cardLocation);
+    file.appStateLocation = fileLocation;
+    console.log('💚 EXPAND: File location in AppState:', fileLocation);
     
     // Remove any existing overlays first to prevent stacking
-    const existingOverlays = document.querySelectorAll('.expanded-card-overlay');
+    const existingOverlays = document.querySelectorAll('.expanded-file-overlay');
     existingOverlays.forEach(overlay => overlay.remove());
     
-    const expandedCard = AppState.get('expandedCard');
-    if (expandedCard && expandedCard !== card) {
-        collapseCard(expandedCard);
-        AppState.set('expandedCard', null);
+    const expandedFile = AppState.get('expandedFile');
+    if (expandedFile && expandedFile !== file) {
+        collapseFile(expandedFile);
+        AppState.set('expandedFile', null);
     }
     
     // Create overlay with 75% transparency
     const overlay = document.createElement('div');
-    overlay.className = 'expanded-card-overlay';
+    overlay.className = 'expanded-file-overlay';
     overlay.onclick = () => {
         // Save before closing
         if (window.syncService) {
             window.syncService.manualSave();
         }
-        collapseCard(card);
-        AppState.set('expandedCard', null);
+        collapseFile(file);
+        AppState.set('expandedFile', null);
     };
     document.body.appendChild(overlay);
-    card.overlayElement = overlay;
+    file.overlayElement = overlay;
     
-    // Store original position BEFORE moving card
-    card.originalParent = card.parentElement;
-    card.originalNextSibling = card.nextSibling;
-    card.originalSlotIndex = Array.from(card.originalParent.parentElement.children).indexOf(card.originalParent);
-    console.log(`💚 EXPAND: Card original slot index: ${card.originalSlotIndex}`);
+    // Store original position BEFORE moving file
+    file.originalParent = file.parentElement;
+    file.originalNextSibling = file.nextSibling;
+    file.originalSlotIndex = Array.from(file.originalParent.parentElement.children).indexOf(file.originalParent);
+    console.log(`💚 EXPAND: File original slot index: ${file.originalSlotIndex}`);
     
-    // Ensure card has all required child elements
-    if (!card.querySelector('.card-title')) {
-        console.error('Card missing title element');
+    // Ensure file has all required child elements
+    if (!file.querySelector('.file-title')) {
+        console.error('File missing title element');
         return;
     }
-    if (!card.querySelector('.card-content')) {
-        console.error('Card missing content element');
+    if (!file.querySelector('.file-content')) {
+        console.error('File missing content element');
         return;
     }
-    if (!card.editorContainer && !card.querySelector('.editor-container')) {
-        console.error('Card missing editor container');
+    if (!file.editorContainer && !file.querySelector('.editor-container')) {
+        console.error('File missing editor container');
         return;
     }
     
     // Clear ALL inline styles that might interfere
     console.log('💚 EXPAND: Clearing inline styles');
-    card.style.cssText = '';
+    file.style.cssText = '';
     
     // Move to body BEFORE adding expanded class to ensure CSS applies correctly
-    console.log('💚 EXPAND: Moving card to document.body');
-    document.body.appendChild(card);
-    console.log('💚 EXPAND: Card moved, new parent:', card.parentElement);
+    console.log('💚 EXPAND: Moving file to document.body');
+    document.body.appendChild(file);
+    console.log('💚 EXPAND: File moved, new parent:', file.parentElement);
     
     // Force browser to recalculate styles before adding expanded class
-    card.offsetHeight; // Force reflow
+    file.offsetHeight; // Force reflow
     console.log('💚 EXPAND: Forced reflow complete');
     
     // Use requestAnimationFrame to ensure DOM is ready before applying styles and building content
@@ -485,18 +492,18 @@ function expandCard(card) {
     requestAnimationFrame(() => {
         console.log('💚 EXPAND: Inside requestAnimationFrame callback');
         console.log('💚 EXPAND: Adding expanded class');
-        card.classList.add('expanded');
-        if (card.darkModeEnabled) card.classList.add('dark-mode');
-        card.draggable = false;
-        AppState.set('expandedCard', card);
-        console.log('💚 EXPAND: Card classes after expansion:', card.className);
+        file.classList.add('expanded');
+        if (file.darkModeEnabled) file.classList.add('dark-mode');
+        file.draggable = false;
+        AppState.set('expandedFile', file);
+        console.log('💚 EXPAND: File classes after expansion:', file.className);
         
         console.log('💚 EXPAND: Initializing Editor.js...');
         // Initialize Editor.js in expanded mode
-        initializeEditorJS(card);
+        initializeEditorJS(file);
         
         // Remove any existing expanded content first
-        const existingWrapper = card.querySelector('.expanded-card-content');
+        const existingWrapper = file.querySelector('.expanded-file-content');
         if (existingWrapper) {
             console.log('💚 EXPAND: Removing existing wrapper');
             existingWrapper.remove();
@@ -504,21 +511,21 @@ function expandCard(card) {
         
         console.log('💚 EXPAND: Creating new wrapper');
         const wrapper = document.createElement('div');
-        wrapper.className = 'expanded-card-content';
-        if (card.darkModeEnabled) wrapper.classList.add('dark-mode');
+        wrapper.className = 'expanded-file-content';
+        if (file.darkModeEnabled) wrapper.classList.add('dark-mode');
         
         console.log('💚 EXPAND: Building button row...');
         
-        // Restore sections from card data when expanding
-        if (card.sections && card.sections.length > 0) {
-            console.log('💚 EXPAND: Restoring sections from card data', {
-                sectionsCount: card.sections.length,
-                sectionIds: card.sections.map(s => s.id)
+        // Restore sections from file data when expanding
+        if (file.sections && file.sections.length > 0) {
+            console.log('💚 EXPAND: Restoring sections from file data', {
+                sectionsCount: file.sections.length,
+                sectionIds: file.sections.map(s => s.id)
             });
         }
     // Create button row at top
     const buttonRow = document.createElement('div');
-    buttonRow.className = 'expanded-card-buttons';
+    buttonRow.className = 'expanded-file-buttons';
     
     // Create button container
     const buttonContainer = document.createElement('div');
@@ -526,7 +533,7 @@ function expandCard(card) {
     
     // Save button
     const saveBtn = document.createElement('button');
-    saveBtn.className = 'save-card-btn';
+    saveBtn.className = 'save-file-btn';
     saveBtn.textContent = 'Save';
     saveBtn.onclick = async (e) => {
         e.stopPropagation();
@@ -538,10 +545,10 @@ function expandCard(card) {
             Saving...
         `;
         
-        // Save Quill content to card's initialContent
-        if (card.quillEditor) {
-            card.initialContent = {
-                content: card.quillEditor.root.innerHTML
+        // Save Quill content to file's initialContent
+        if (file.quillEditor) {
+            file.initialContent = {
+                content: file.quillEditor.root.innerHTML
             };
         }
         
@@ -571,50 +578,50 @@ function expandCard(card) {
     
     darkModeBtn.onclick = (e) => {
         e.stopPropagation();
-        const containers = card.querySelectorAll('.editor-container');
-        const toolbars = card.querySelectorAll('.ql-toolbar');
-        const editors = card.querySelectorAll('.ql-editor');
-        const expandedContent = card.querySelector('.expanded-card-content');
-        const expandedHeader = card.querySelector('.expanded-card-header');
-        const expandedMain = card.querySelector('.expanded-card-main');
+        const containers = file.querySelectorAll('.editor-container');
+        const toolbars = file.querySelectorAll('.ql-toolbar');
+        const editors = file.querySelectorAll('.ql-editor');
+        const expandedContent = file.querySelector('.expanded-file-content');
+        const expandedHeader = file.querySelector('.expanded-file-header');
+        const expandedMain = file.querySelector('.expanded-file-main');
         
-        if (card.darkModeEnabled) {
+        if (file.darkModeEnabled) {
             // Disable dark mode
             containers.forEach(c => c.classList.remove('dark-mode'));
             toolbars.forEach(t => t.classList.remove('dark-mode'));
             editors.forEach(e => e.classList.remove('dark-mode'));
-            card.classList.remove('dark-mode');
+            file.classList.remove('dark-mode');
             if (expandedContent) expandedContent.classList.remove('dark-mode');
             if (expandedHeader) expandedHeader.classList.remove('dark-mode');
             if (expandedMain) expandedMain.classList.remove('dark-mode');
-            card.darkModeEnabled = false;
+            file.darkModeEnabled = false;
             darkModeBtn.classList.remove('active');
         } else {
             // Enable dark mode
             containers.forEach(c => c.classList.add('dark-mode'));
             toolbars.forEach(t => t.classList.add('dark-mode'));
             editors.forEach(e => e.classList.add('dark-mode'));
-            card.classList.add('dark-mode');
+            file.classList.add('dark-mode');
             if (expandedContent) expandedContent.classList.add('dark-mode');
             if (expandedHeader) expandedHeader.classList.add('dark-mode');
             if (expandedMain) expandedMain.classList.add('dark-mode');
-            card.darkModeEnabled = true;
+            file.darkModeEnabled = true;
             darkModeBtn.classList.add('active');
         }
     };
     
     // Delete button
     const deleteBtn = document.createElement('button');
-    deleteBtn.className = 'delete-card-btn';
+    deleteBtn.className = 'delete-file-btn';
     deleteBtn.textContent = 'Delete';
     deleteBtn.onclick = (e) => {
         e.stopPropagation();
         showConfirmDialog(
-            'Remove Card',
-            `Are you sure you want to remove "${getCardTitleText(card)}"?`,
+            'Remove File',
+            `Are you sure you want to remove "${getFileTitleText(file)}"?`,
             () => {
-                collapseCard(card);
-                deleteCard(card);
+                collapseFile(file);
+                deleteFile(file);
             }
         );
     };
@@ -626,18 +633,18 @@ function expandCard(card) {
     
     // Create header section with title
     const header = document.createElement('div');
-    header.className = 'expanded-card-header';
-    if (card.darkModeEnabled) header.classList.add('dark-mode');
+    header.className = 'expanded-file-header';
+    if (file.darkModeEnabled) header.classList.add('dark-mode');
     
     // Move title to header
-    const cardTitle = card.querySelector('.card-title');
-    if (cardTitle) {
+    const fileTitle = file.querySelector('.file-title');
+    if (fileTitle) {
         // Ensure autocorrect is disabled on expanded title as well
-        cardTitle.autocomplete = 'off';
-        cardTitle.autocorrect = 'off';
-        cardTitle.autocapitalize = 'off';
-        cardTitle.spellcheck = false;
-        header.appendChild(cardTitle);
+        fileTitle.autocomplete = 'off';
+        fileTitle.autocorrect = 'off';
+        fileTitle.autocapitalize = 'off';
+        fileTitle.spellcheck = false;
+        header.appendChild(fileTitle);
     }
     
     // Add empty spacer div (25% width)
@@ -647,16 +654,16 @@ function expandCard(card) {
     
     // Create main content area with flex layout
     const mainContent = document.createElement('div');
-    mainContent.className = 'expanded-card-main';
+    mainContent.className = 'expanded-file-main';
     mainContent.setAttribute('data-lenis-prevent', '');
-    if (card.darkModeEnabled) mainContent.classList.add('dark-mode');
+    if (file.darkModeEnabled) mainContent.classList.add('dark-mode');
     
     console.log('🔍 DEBUG: Checking for existing sections in DOM', { 
-        existingSectionsCount: card.querySelectorAll('.card-section').length 
+        existingSectionsCount: file.querySelectorAll('.file-section').length 
     });
     
     // Check if sections already exist in the DOM to prevent duplicates
-    const existingSections = card.querySelectorAll('.card-section');
+    const existingSections = file.querySelectorAll('.file-section');
     if (existingSections.length > 0) {
         console.log('🔍 DEBUG: Found existing sections in DOM, moving them to main content');
         // Sections already exist in DOM, move them to main content
@@ -664,18 +671,18 @@ function expandCard(card) {
             mainContent.appendChild(section);
         });
     } else {
-        console.log('🔍 DEBUG: No existing sections in DOM, creating from card data', {
-            cardSectionsCount: card.sections ? card.sections.length : 0
+        console.log('🔍 DEBUG: No existing sections in DOM, creating from file data', {
+            fileSectionsCount: file.sections ? file.sections.length : 0
         });
-        // Create sections from card data, but first check if sections already exist in DOM
+        // Create sections from file data, but first check if sections already exist in DOM
         // to prevent duplication from Firebase sync
-        if (card.sections && card.sections.length > 0) {
+        if (file.sections && file.sections.length > 0) {
             console.log('🔍 DEBUG: Creating sections from saved data', {
-                savedSectionsCount: card.sections.length,
-                sectionIds: card.sections.map(s => s.id)
+                savedSectionsCount: file.sections.length,
+                sectionIds: file.sections.map(s => s.id)
             });
         // Create sections from saved data
-        card.sections.forEach((sectionData, index) => {
+        file.sections.forEach((sectionData, index) => {
             console.log('🔍 DEBUG: Processing saved section data', { 
                 index, 
                 sectionId: sectionData.id,
@@ -684,20 +691,20 @@ function expandCard(card) {
             });
             
             // Check if a section with this ID already exists in DOM
-            const existingSection = Array.from(mainContent.querySelectorAll('.card-section')).find(section => {
+            const existingSection = Array.from(mainContent.querySelectorAll('.file-section')).find(section => {
                 return section.sectionData && section.sectionData.id === sectionData.id;
             });
             
             if (!existingSection) {
-                // Check if this section already exists in the card's sections array with an element
-                const sectionInCardArray = card.sections.find(s => s.id === sectionData.id && s.element);
-                if (sectionInCardArray) {
-                    console.log('🔍 DEBUG: Section already exists in card array with element, adding to DOM', { sectionId: sectionData.id });
-                    mainContent.appendChild(sectionInCardArray.element);
+                // Check if this section already exists in the file's sections array with an element
+                const sectionInFileArray = file.sections.find(s => s.id === sectionData.id && s.element);
+                if (sectionInFileArray) {
+                    console.log('🔍 DEBUG: Section already exists in file array with element, adding to DOM', { sectionId: sectionData.id });
+                    mainContent.appendChild(sectionInFileArray.element);
                 } else {
                     console.log('🔍 DEBUG: Creating new section from saved data', { sectionId: sectionData.id });
                     // Pass the existing section ID to createSection to prevent duplication
-                    const section = createSection(card, sectionData.bookmarks, sectionData.id);
+                    const section = createSection(file, sectionData.bookmarks, sectionData.id);
                     // Update section title
                     const sectionTitle = section.querySelector('.section-title');
                     if (sectionTitle) {
@@ -724,14 +731,14 @@ function expandCard(card) {
         });
         } else {
             console.log('🔍 DEBUG: Creating first section with editor and bookmarks', {
-                bookmarksCount: card.bookmarks?.length || 0
+                bookmarksCount: file.bookmarks?.length || 0
             });
             // Check if first section already exists
-            const firstSectionExists = mainContent.querySelector('.card-section') || 
-                                     (card.sections && card.sections.length > 0 && card.sections[0].element);
+            const firstSectionExists = mainContent.querySelector('.file-section') || 
+                                     (file.sections && file.sections.length > 0 && file.sections[0].element);
             if (!firstSectionExists) {
                 // Create first section with editor and bookmarks
-                const firstSection = createSection(card, card.bookmarks);
+                const firstSection = createSection(file, file.bookmarks);
                 mainContent.appendChild(firstSection);
             } else {
                 console.log('🔍 DEBUG: First section already exists, skipping creation');
@@ -751,22 +758,22 @@ function expandCard(card) {
     // Add click handler to create new section
     addSectionBtn.onclick = () => {
         console.log('🔍 DEBUG: Add section button clicked');
-        const newSection = createSection(card, []);
+        const newSection = createSection(file, []);
         mainContent.insertBefore(newSection, addSectionContainer);
         console.log('🔍 DEBUG: New section added to DOM', { 
             sectionId: newSection.sectionData?.id,
-            sectionsInCard: card.sections?.length
+            sectionsInFile: file.sections?.length
         });
         
         // Save to Firebase before reinitializing Lenis
         if (window.syncService) {
             window.syncService.saveAfterAction('section added').then(() => {
                 // Reinitialize modal Lenis to account for new content after save
-                reinitializeModalLenis(card);
+                reinitializeModalLenis(file);
             });
         } else {
             // Reinitialize modal Lenis to account for new content
-            reinitializeModalLenis(card);
+            reinitializeModalLenis(file);
         }
     };
     
@@ -779,12 +786,12 @@ function expandCard(card) {
     // Move header inside main content so it scrolls with the page
     mainContent.insertBefore(header, mainContent.firstChild);
     wrapper.appendChild(mainContent);
-    console.log('💚 EXPAND: Appending wrapper to card');
-    card.appendChild(wrapper);
+    console.log('💚 EXPAND: Appending wrapper to file');
+    file.appendChild(wrapper);
 
     // Initialize Lenis smooth scroll specifically for this modal
-    const modalWrapper = card.querySelector('.expanded-card-main');
-    const modalContent = card.querySelector('.expanded-card-content');
+    const modalWrapper = file.querySelector('.expanded-file-main');
+    const modalContent = file.querySelector('.expanded-file-content');
     if (modalWrapper && modalContent) {
         // Ensure the wrapper has the correct CSS properties for scrolling
         modalWrapper.style.overflow = 'auto';
@@ -809,27 +816,27 @@ function expandCard(card) {
             requestAnimationFrame(rafModal);
         }
         requestAnimationFrame(rafModal);
-        card.modalLenis = modalLenis;
+        file.modalLenis = modalLenis;
         
         // Add classes to indicate smooth scrolling is active
         modalWrapper.classList.add('lenis', 'lenis-smooth');
     }
 
-    console.log('💚 EXPAND: ✅ Card expansion complete!');
-    console.log('💚 EXPAND: Final card structure:', {
-        hasWrapper: !!card.querySelector('.expanded-card-content'),
-        hasButtons: !!card.querySelector('.expanded-card-buttons'),
-        hasHeader: !!card.querySelector('.expanded-card-header'),
-        hasMain: !!card.querySelector('.expanded-card-main'),
-        cardClasses: card.className,
-        cardParent: card.parentElement?.tagName
+    console.log('💚 EXPAND: ✅ File expansion complete!');
+    console.log('💚 EXPAND: Final file structure:', {
+        hasWrapper: !!file.querySelector('.expanded-file-content'),
+        hasButtons: !!file.querySelector('.expanded-file-buttons'),
+        hasHeader: !!file.querySelector('.expanded-file-header'),
+        hasMain: !!file.querySelector('.expanded-file-main'),
+        fileClasses: file.className,
+        fileParent: file.parentElement?.tagName
     });
     });
 }
 
-    // Create bookmark card element
-    function createBookmarkCard(title, description, url, date, imageData, bookmarkIndex, expandedCard, sectionElement) {
-        console.log('🔍 DEBUG: Creating bookmark card', {
+    // Create bookmark file element
+    function createBookmarkFile(title, description, url, date, imageData, bookmarkIndex, expandedFile, sectionElement) {
+        console.log('🔍 DEBUG: Creating bookmark file', {
             title,
             hasImageData: !!imageData,
             imageDataPreview: imageData ? imageData.substring(0, 50) + '...' : 'null',
@@ -837,10 +844,10 @@ function expandCard(card) {
             date: date
         });
         
-        const card = document.createElement('div');
-        card.className = 'bookmark-card';
-        card.dataset.bookmarkIndex = bookmarkIndex;
-        card.dataset.index = bookmarkIndex; // For demo styling compatibility
+        const file = document.createElement('div');
+        file.className = 'bookmark-file';
+        file.dataset.bookmarkIndex = bookmarkIndex;
+        file.dataset.index = bookmarkIndex; // For demo styling compatibility
         
         // Match the demo structure exactly with image container
         const imageContainer = document.createElement('div');
@@ -851,8 +858,8 @@ function expandCard(card) {
         imageOverlay.className = 'image-overlay';
         if (imageData) {
             imageOverlay.style.backgroundImage = `url('${imageData}')`;
-            // Also set on card for blurred background
-            card.style.setProperty('--bookmark-bg-image', `url('${imageData}')`);
+            // Also set on file for blurred background
+            file.style.setProperty('--bookmark-bg-image', `url('${imageData}')`);
         }
         imageContainer.appendChild(imageOverlay);
         
@@ -870,7 +877,7 @@ function expandCard(card) {
         deleteBtn.onclick = (e) => {
             e.preventDefault();
             e.stopPropagation();
-            removeBookmark(expandedCard, bookmarkIndex, sectionElement);
+            removeBookmark(expandedFile, bookmarkIndex, sectionElement);
         };
         imageContainer.appendChild(deleteBtn);
         
@@ -891,12 +898,12 @@ function expandCard(card) {
         externalLink.onclick = (e) => e.stopPropagation();
         imageContainer.appendChild(externalLink);
         
-        card.appendChild(imageContainer);
+        file.appendChild(imageContainer);
         
         // Up/Down buttons outside image container
         const upBtn = document.createElement('button');
         upBtn.className = 'up-button';
-        upBtn.setAttribute('aria-label', 'Move card up');
+        upBtn.setAttribute('aria-label', 'Move file up');
         upBtn.innerHTML = `
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M12 19V5M5 12l7-7 7 7"/>
@@ -904,13 +911,13 @@ function expandCard(card) {
         `;
         upBtn.disabled = bookmarkIndex === 0;
         upBtn.onclick = () => {
-            reorderBookmark(expandedCard, bookmarkIndex, bookmarkIndex - 1, sectionElement);
+            reorderBookmark(expandedFile, bookmarkIndex, bookmarkIndex - 1, sectionElement);
         };
-        card.appendChild(upBtn);
+        file.appendChild(upBtn);
         
         const downBtn = document.createElement('button');
         downBtn.className = 'down-button';
-        downBtn.setAttribute('aria-label', 'Move card down');
+        downBtn.setAttribute('aria-label', 'Move file down');
         downBtn.innerHTML = `
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M12 5v14M5 12l7 7 7-7"/>
@@ -919,9 +926,9 @@ function expandCard(card) {
         const totalBookmarks = sectionElement?.sectionData?.bookmarks?.length || 1;
         downBtn.disabled = bookmarkIndex >= totalBookmarks - 1;
         downBtn.onclick = () => {
-            reorderBookmark(expandedCard, bookmarkIndex, bookmarkIndex + 1, sectionElement);
+            reorderBookmark(expandedFile, bookmarkIndex, bookmarkIndex + 1, sectionElement);
         };
-        card.appendChild(downBtn);
+        file.appendChild(downBtn);
         
         // Move button
         const moveBtn = document.createElement('button');
@@ -943,20 +950,20 @@ function expandCard(card) {
                 const bookmark = sectionData.bookmarks[bookmarkIndex];
                 // Show move modal
                 if (window.showBookmarkMoveModal) {
-                    window.showBookmarkMoveModal(bookmark, expandedCard, sectionData.id);
+                    window.showBookmarkMoveModal(bookmark, expandedFile, sectionData.id);
                 }
             }
         };
-        card.appendChild(moveBtn);
+        file.appendChild(moveBtn);
         
-        // Card content section - use bookmark-specific classes to avoid conflicts
-        const cardContent = document.createElement('div');
-        cardContent.className = 'bookmark-content';
+        // File content section - use bookmark-specific classes to avoid conflicts
+        const fileContent = document.createElement('div');
+        fileContent.className = 'bookmark-content';
         
-        const cardTitle = document.createElement('h3');
-        cardTitle.className = 'bookmark-card-title';
-        cardTitle.textContent = title;
-        cardTitle.title = title; // Tooltip for long titles
+        const fileTitle = document.createElement('h3');
+        fileTitle.className = 'bookmark-file-title';
+        fileTitle.textContent = title;
+        fileTitle.title = title; // Tooltip for long titles
         
         const dateAdded = document.createElement('p');
         dateAdded.className = 'bookmark-date-added';
@@ -978,25 +985,25 @@ function expandCard(card) {
         }
         dateAdded.textContent = `Added: ${displayDate}`;
         
-        cardContent.appendChild(cardTitle);
-        cardContent.appendChild(dateAdded);
-        card.appendChild(cardContent);
+        fileContent.appendChild(fileTitle);
+        fileContent.appendChild(dateAdded);
+        file.appendChild(fileContent);
         
         // Add no-image class if no image data
         if (!imageData) {
-            card.classList.add('no-image');
+            file.classList.add('no-image');
         }
         
-        return card;
+        return file;
     }
 
 // Function to remove a bookmark
-function removeBookmark(expandedCard, bookmarkIndex, sectionElement) {
+function removeBookmark(expandedFile, bookmarkIndex, sectionElement) {
     // Find the section that contains this bookmark
     if (!sectionElement) {
-        const bookmarkCard = document.querySelector(`[data-bookmark-index="${bookmarkIndex}"]`);
-        if (bookmarkCard) {
-            sectionElement = bookmarkCard.closest('.card-section');
+        const bookmarkFile = document.querySelector(`[data-bookmark-index="${bookmarkIndex}"]`);
+        if (bookmarkFile) {
+            sectionElement = bookmarkFile.closest('.file-section');
         }
     }
     
@@ -1022,22 +1029,22 @@ function removeBookmark(expandedCard, bookmarkIndex, sectionElement) {
             bookmarks.splice(bookmarkIndex, 1);
             
             // Update AppState immediately
-            if (expandedCard.appStateLocation) {
+            if (expandedFile.appStateLocation) {
                 const boards = AppState.get('boards');
                 const currentBoardId = AppState.get('currentBoardId');
                 const board = boards.find(b => b.id === currentBoardId);
                 
                 if (board && board.categories) {
-                    const { categoryIndex, cardIndex } = expandedCard.appStateLocation;
-                    if (board.categories[categoryIndex] && board.categories[categoryIndex].cards[cardIndex]) {
+                    const { categoryIndex, fileIndex } = expandedFile.appStateLocation;
+                    if (board.categories[categoryIndex] && board.categories[categoryIndex].files[fileIndex]) {
                         // Find and update the specific section
-                        if (!board.categories[categoryIndex].cards[cardIndex].sections) {
-                            board.categories[categoryIndex].cards[cardIndex].sections = [];
+                        if (!board.categories[categoryIndex].files[fileIndex].sections) {
+                            board.categories[categoryIndex].files[fileIndex].sections = [];
                         }
                         
-                        const sectionIndex = board.categories[categoryIndex].cards[cardIndex].sections.findIndex(s => s.id === sectionData.id);
+                        const sectionIndex = board.categories[categoryIndex].files[fileIndex].sections.findIndex(s => s.id === sectionData.id);
                         if (sectionIndex !== -1) {
-                            board.categories[categoryIndex].cards[cardIndex].sections[sectionIndex].bookmarks = [...bookmarks];
+                            board.categories[categoryIndex].files[fileIndex].sections[sectionIndex].bookmarks = [...bookmarks];
                         }
                         
                         AppState.set('boards', boards);
@@ -1059,44 +1066,44 @@ function removeBookmark(expandedCard, bookmarkIndex, sectionElement) {
                 // Create a copy of bookmarks array to prevent concurrent modification
                 const bookmarksCopy = [...bookmarks];
                 
-                // Re-create all bookmark cards with updated indices
+                // Re-create all bookmark files with updated indices
                 if (bookmarksCopy.length > 0) {
                     bookmarksCopy.forEach((bookmark, index) => {
-                        const bookmarkCard = createBookmarkCard(
+                        const bookmarkFile = createBookmarkFile(
                             bookmark.title,
                             bookmark.description || bookmark.url,
                             bookmark.url,
                             bookmark.timestamp || new Date(),
                             bookmark.screenshot || bookmark.image,
                             index,
-                            expandedCard,
+                            expandedFile,
                             sectionElement
                         );
-                        bookmarksContainer.appendChild(bookmarkCard);
+                        bookmarksContainer.appendChild(bookmarkFile);
                     });
                 } else {
                     // Show placeholder when no bookmarks remain
-                    const bookmarkCard = createBookmarkCard('Example Bookmark', 'This is a sample bookmark description that shows how bookmarks will appear.', 'https://example.com', new Date(), null, 0, expandedCard, sectionElement);
-                    bookmarksContainer.appendChild(bookmarkCard);
+                    const bookmarkFile = createBookmarkFile('Example Bookmark', 'This is a sample bookmark description that shows how bookmarks will appear.', 'https://example.com', new Date(), null, 0, expandedFile, sectionElement);
+                    bookmarksContainer.appendChild(bookmarkFile);
                 }
                 
                 // Save the updated bookmarks before reinitializing Lenis
                 if (window.syncService) {
-                    const expandedBeforeSync = AppState.get('expandedCard');
-                    console.log('🔧 SYNC DEBUG: Before sync - expandedCard:', expandedBeforeSync);
+                    const expandedBeforeSync = AppState.get('expandedFile');
+                    console.log('🔧 SYNC DEBUG: Before sync - expandedFile:', expandedBeforeSync);
                     window.syncService.saveAfterAction('bookmark removed').then(() => {
-                        console.log('🔧 SYNC DEBUG: Sync complete - restoring expandedCard:', expandedBeforeSync);
-                        AppState.set('expandedCard', expandedBeforeSync);
+                        console.log('🔧 SYNC DEBUG: Sync complete - restoring expandedFile:', expandedBeforeSync);
+                        AppState.set('expandedFile', expandedBeforeSync);
                         // Reinitialize modal Lenis to account for new content after save
-                        reinitializeModalLenis(expandedCard);
+                        reinitializeModalLenis(expandedFile);
                     }).catch(err => {
                         console.error('🔧 SYNC DEBUG: Sync failed:', err);
                         // Still reinitialize Lenis even if save fails
-                        reinitializeModalLenis(expandedCard);
+                        reinitializeModalLenis(expandedFile);
                     });
                 } else {
                     // Reinitialize modal Lenis to account for new content
-                    reinitializeModalLenis(expandedCard);
+                    reinitializeModalLenis(expandedFile);
                 }
             }
             
@@ -1109,13 +1116,13 @@ function removeBookmark(expandedCard, bookmarkIndex, sectionElement) {
 }
 
 // Function to reorder bookmarks
-function reorderBookmark(expandedCard, fromIndex, toIndex, sectionElement) {
+function reorderBookmark(expandedFile, fromIndex, toIndex, sectionElement) {
     // Find the section that contains this bookmark
     if (!sectionElement) {
-        // Try to find section from the bookmark card that was clicked
-        const bookmarkCard = document.querySelector(`[data-bookmark-index="${fromIndex}"]`);
-        if (bookmarkCard) {
-            sectionElement = bookmarkCard.closest('.card-section');
+        // Try to find section from the bookmark file that was clicked
+        const bookmarkFile = document.querySelector(`[data-bookmark-index="${fromIndex}"]`);
+        if (bookmarkFile) {
+            sectionElement = bookmarkFile.closest('.file-section');
         }
     }
     
@@ -1129,12 +1136,12 @@ function reorderBookmark(expandedCard, fromIndex, toIndex, sectionElement) {
     
     if (!bookmarks || toIndex < 0 || toIndex >= bookmarks.length) return;
 
-    const wasExpanded = expandedCard.classList.contains('expanded');
-    let cardContentToRestore = null;
+    const wasExpanded = expandedFile.classList.contains('expanded');
+    let fileContentToRestore = null;
 
-    if (wasExpanded && expandedCard.quillEditor) {
-        cardContentToRestore = {
-            content: expandedCard.quillEditor.root.innerHTML
+    if (wasExpanded && expandedFile.quillEditor) {
+        fileContentToRestore = {
+            content: expandedFile.quillEditor.root.innerHTML
         };
         console.log('🔖 BOOKMARK: Storing Quill content before reorder.');
     }
@@ -1144,22 +1151,22 @@ function reorderBookmark(expandedCard, fromIndex, toIndex, sectionElement) {
     bookmarks.splice(toIndex, 0, movedBookmark);
     
     // Update AppState immediately
-    if (expandedCard.appStateLocation) {
+    if (expandedFile.appStateLocation) {
         const boards = AppState.get('boards');
         const currentBoardId = AppState.get('currentBoardId');
         const board = boards.find(b => b.id === currentBoardId);
         
         if (board && board.categories) {
-            const { categoryIndex, cardIndex } = expandedCard.appStateLocation;
-            if (board.categories[categoryIndex] && board.categories[categoryIndex].cards[cardIndex]) {
+            const { categoryIndex, fileIndex } = expandedFile.appStateLocation;
+            if (board.categories[categoryIndex] && board.categories[categoryIndex].files[fileIndex]) {
                 // Find and update the specific section
-                if (!board.categories[categoryIndex].cards[cardIndex].sections) {
-                    board.categories[categoryIndex].cards[cardIndex].sections = [];
+                if (!board.categories[categoryIndex].files[fileIndex].sections) {
+                    board.categories[categoryIndex].files[fileIndex].sections = [];
                 }
                 
-                const sectionIndex = board.categories[categoryIndex].cards[cardIndex].sections.findIndex(s => s.id === sectionData.id);
+                const sectionIndex = board.categories[categoryIndex].files[fileIndex].sections.findIndex(s => s.id === sectionData.id);
                 if (sectionIndex !== -1) {
-                    board.categories[categoryIndex].cards[cardIndex].sections[sectionIndex].bookmarks = [...bookmarks];
+                    board.categories[categoryIndex].files[fileIndex].sections[sectionIndex].bookmarks = [...bookmarks];
                 }
                 
                 AppState.set('boards', boards);
@@ -1173,19 +1180,19 @@ function reorderBookmark(expandedCard, fromIndex, toIndex, sectionElement) {
     if (bookmarksContainer) {
         bookmarksContainer.innerHTML = '';
         
-        // Re-create all bookmark cards with updated indices
+        // Re-create all bookmark files with updated indices
         bookmarks.forEach((bookmark, index) => {
-            const bookmarkCard = createBookmarkCard(
+            const bookmarkFile = createBookmarkFile(
                 bookmark.title,
                 bookmark.description || bookmark.url,
                 bookmark.url,
                 bookmark.timestamp || new Date(),
                 bookmark.screenshot || bookmark.image,
                 index,
-                expandedCard,
+                expandedFile,
                 sectionElement  // Pass section element
             );
-            bookmarksContainer.appendChild(bookmarkCard);
+            bookmarksContainer.appendChild(bookmarkFile);
         });
         
         // Save the reordered bookmarks before reinitializing Lenis
@@ -1196,88 +1203,88 @@ function reorderBookmark(expandedCard, fromIndex, toIndex, sectionElement) {
                 
                 // Only attempt to restore expanded state if it was expanded before
                 if (wasExpanded) {
-                    console.log('🔖 BOOKMARK: Card was expanded before sync, ensuring it remains expanded.');
+                    console.log('🔖 BOOKMARK: File was expanded before sync, ensuring it remains expanded.');
                     
                     // Use requestAnimationFrame to ensure DOM is stable before re-expanding
                     requestAnimationFrame(() => {
-                        // Check if card is still in DOM and needs re-expansion
-                        if (document.body.contains(expandedCard) && !expandedCard.classList.contains('expanded')) {
-                            console.log('🔖 BOOKMARK: Re-expanding card after sync to maintain state.');
-                            expandCard(expandedCard);
+                        // Check if file is still in DOM and needs re-expansion
+                        if (document.body.contains(expandedFile) && !expandedFile.classList.contains('expanded')) {
+                            console.log('🔖 BOOKMARK: Re-expanding file after sync to maintain state.');
+                            expandFile(expandedFile);
                             
                             // Restore editor content after re-expansion
-                            if (cardContentToRestore && expandedCard.quillEditor) {
+                            if (fileContentToRestore && expandedFile.quillEditor) {
                                 console.log('🔖 BOOKMARK: Restoring Quill content after re-expansion.');
-                                expandedCard.quillEditor.root.innerHTML = cardContentToRestore.content;
-                                expandedCard.initialContent = cardContentToRestore;
+                                expandedFile.quillEditor.root.innerHTML = fileContentToRestore.content;
+                                expandedFile.initialContent = fileContentToRestore;
                             }
                         }
                     });
                 }
                 
                 // Reinitialize modal Lenis to account for new content after save
-                reinitializeModalLenis(expandedCard);
+                reinitializeModalLenis(expandedFile);
             }).catch(err => {
                 console.error('🔧 SYNC DEBUG: Sync failed:', err);
                 // Still reinitialize Lenis even if save fails
-                reinitializeModalLenis(expandedCard);
+                reinitializeModalLenis(expandedFile);
             });
         } else {
             // Reinitialize modal Lenis to account for new content
-            reinitializeModalLenis(expandedCard);
+            reinitializeModalLenis(expandedFile);
         }
     }
 }
 
-function collapseCard(card) {
-    if (!card || !card.classList.contains('expanded')) return;
+function collapseFile(file) {
+    if (!file || !file.classList.contains('expanded')) return;
     
-    console.log('🔍 DEBUG: collapseCard called', { cardId: card.id });
+    console.log('🔍 DEBUG: collapseFile called', { fileId: file.id });
     
-    // Clean up any sections from card-content to prevent them showing in minimized state
-    const cardContent = card.querySelector('.card-content');
-    if (cardContent) {
+    // Clean up any sections from file-content to prevent them showing in minimized state
+    const fileContent = file.querySelector('.file-content');
+    if (fileContent) {
         // Remove any sections that might have been added
-        const sections = cardContent.querySelectorAll('.card-section');
+        const sections = fileContent.querySelectorAll('.file-section');
         sections.forEach(section => section.remove());
         
-        // Ensure card-content is empty and hidden
-        cardContent.innerHTML = '';
-        cardContent.style.display = 'none';
+        // Ensure file-content is empty and hidden
+        fileContent.innerHTML = '';
+        fileContent.style.display = 'none';
     }
     
     // Save sections data before collapsing
-    if (card.sections && card.appStateLocation) {
+    if (file.sections && file.appStateLocation) {
         console.log('🔍 DEBUG: Saving sections data before collapse', { 
-            sectionsCount: card.sections.length,
-            sectionIds: card.sections.map(s => s.id)
+            sectionsCount: file.sections.length,
+            sectionIds: file.sections.map(s => s.id)
         });
         const boards = AppState.get('boards');
         const currentBoardId = AppState.get('currentBoardId');
         const board = boards.find(b => b.id === currentBoardId);
         
         if (board && board.categories) {
-            const { categoryIndex, cardIndex } = card.appStateLocation;
-            if (board.categories[categoryIndex] && board.categories[categoryIndex].cards[cardIndex]) {
+            const { categoryIndex, fileIndex } = file.appStateLocation;
+            if (board.categories[categoryIndex] && board.categories[categoryIndex].files[fileIndex]) {
                 // Initialize sections array if it doesn't exist
-                if (!board.categories[categoryIndex].cards[cardIndex].sections) {
-                    board.categories[categoryIndex].cards[cardIndex].sections = [];
+                if (!board.categories[categoryIndex].files[fileIndex].sections) {
+                    board.categories[categoryIndex].files[fileIndex].sections = [];
                     console.log('🔍 DEBUG: Initialized sections array in AppState');
                 }
                 
                 console.log('🔍 DEBUG: Before updating board sections', {
-                    boardSectionsCount: board.categories[categoryIndex].cards[cardIndex].sections.length,
-                    sectionIds: board.categories[categoryIndex].cards[cardIndex].sections.map(s => s.id)
+                    boardSectionsCount: board.categories[categoryIndex].files[fileIndex].sections.length,
+                    sectionIds: board.categories[categoryIndex].files[fileIndex].sections.map(s => s.id)
                 });
                 
                 // Update sections in board data
-                card.sections.forEach(sectionData => {
+                file.sections.forEach(sectionData => {
                     console.log('🔍 DEBUG: Processing section for board save', { sectionId: sectionData.id });
                     // Find existing section or add new one
-                    const sectionIndex = board.categories[categoryIndex].cards[cardIndex].sections.findIndex(s => s.id === sectionData.id);
+                    const sectionIndex = board.categories[categoryIndex].files[fileIndex].sections.findIndex(s => s.id === sectionData.id);
                     if (sectionIndex !== -1) {
                         // Update existing section
-                        board.categories[categoryIndex].cards[cardIndex].sections[sectionIndex] = {
+                        board.categories[categoryIndex].files[fileIndex].sections[sectionIndex] = {
                             id: sectionData.id,
                             title: sectionData.title,
                             content: sectionData.content,
@@ -1286,7 +1293,7 @@ function collapseCard(card) {
                         console.log('🔍 DEBUG: Updated existing section in board data', { sectionId: sectionData.id });
                     } else {
                         // Add new section
-                        board.categories[categoryIndex].cards[cardIndex].sections.push({
+                        board.categories[categoryIndex].files[fileIndex].sections.push({
                             id: sectionData.id,
                             title: sectionData.title,
                             content: sectionData.content,
@@ -1297,13 +1304,13 @@ function collapseCard(card) {
                 });
                 
                 console.log('🔍 DEBUG: After updating board sections', {
-                    boardSectionsCount: board.categories[categoryIndex].cards[cardIndex].sections.length,
-                    sectionIds: board.categories[categoryIndex].cards[cardIndex].sections.map(s => s.id)
+                    boardSectionsCount: board.categories[categoryIndex].files[fileIndex].sections.length,
+                    sectionIds: board.categories[categoryIndex].files[fileIndex].sections.map(s => s.id)
                 });
                 
                 AppState.set('boards', boards);
                 console.log('🔖 SECTION: Saved sections to AppState before collapse', {
-                    totalBoardSections: board.categories[categoryIndex].cards[cardIndex].sections.length
+                    totalBoardSections: board.categories[categoryIndex].files[fileIndex].sections.length
                 });
             }
         }
@@ -1311,52 +1318,52 @@ function collapseCard(card) {
     
     // Wait for any pending saves
     if (window.syncService && window.syncService.isSaving) {
-        setTimeout(() => collapseCard(card), 100);
+        setTimeout(() => collapseFile(file), 100);
         return;
     }
     
     // Remove overlay
-    if (card.overlayElement) {
-        card.overlayElement.remove();
-        card.overlayElement = null;
+    if (file.overlayElement) {
+        file.overlayElement.remove();
+        file.overlayElement = null;
     }
     
     // Remove any orphaned overlays
-    const overlays = document.querySelectorAll('.expanded-card-overlay');
+    const overlays = document.querySelectorAll('.expanded-file-overlay');
     overlays.forEach(overlay => overlay.remove());
     
-    card.classList.remove('expanded');
-    card.draggable = true;
-    card.style.position = '';
-    card.style.width = '';
-    card.style.height = '';
-    card.style.left = '';
-    card.style.top = '';
-    card.style.transform = '';
-    card.style.zIndex = '';
+    file.classList.remove('expanded');
+    file.draggable = true;
+    file.style.position = '';
+    file.style.width = '';
+    file.style.height = '';
+    file.style.left = '';
+    file.style.top = '';
+    file.style.transform = '';
+    file.style.zIndex = '';
     
     // Destroy Quill instance when collapsing
-    if (card.quillEditor) {
-        card.quillEditor = null;
+    if (file.quillEditor) {
+        file.quillEditor = null;
     }
     
-    // Restore original card structure
-    const expandedWrapper = card.querySelector('.expanded-card-content');
+    // Restore original file structure
+    const expandedWrapper = file.querySelector('.expanded-file-content');
     if (expandedWrapper) {
-        // Get the title from header and restore it to card
-        const titleInHeader = expandedWrapper.querySelector('.expanded-card-header .card-title');
+        // Get the title from header and restore it to file
+        const titleInHeader = expandedWrapper.querySelector('.expanded-file-header .file-title');
         if (titleInHeader) {
             // Find or recreate the title container to maintain flex column layout
-            let titleContainer = card.querySelector('.card-title-container');
+            let titleContainer = file.querySelector('.file-title-container');
             
             if (!titleContainer) {
                 // Recreate the title container if it's missing
                 titleContainer = document.createElement('div');
-                titleContainer.className = 'card-title-container';
+                titleContainer.className = 'file-title-container';
                 
                 // Recreate the file icon SVG
                 const fileIcon = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-                fileIcon.className = 'card-title-icon';
+                fileIcon.className = 'file-title-icon';
                 fileIcon.setAttribute('width', '16');
                 fileIcon.setAttribute('height', '16');
                 fileIcon.setAttribute('viewBox', '0 0 24 24');
@@ -1365,16 +1372,16 @@ function collapseCard(card) {
                 
                 titleContainer.appendChild(fileIcon);
                 
-                // Find where to insert the container (before card-content and hover-overlay)
-                const cardContent = card.querySelector('.card-content');
-                const hoverOverlay = card.querySelector('.card-hover-overlay');
+                // Find where to insert the container (before file-content and hover-overlay)
+                const fileContent = file.querySelector('.file-content');
+                const hoverOverlay = file.querySelector('.file-hover-overlay');
                 
                 if (hoverOverlay) {
-                    card.insertBefore(titleContainer, hoverOverlay);
-                } else if (cardContent) {
-                    card.insertBefore(titleContainer, cardContent);
+                    file.insertBefore(titleContainer, hoverOverlay);
+                } else if (fileContent) {
+                    file.insertBefore(titleContainer, fileContent);
                 } else {
-                    card.appendChild(titleContainer);
+                    file.appendChild(titleContainer);
                 }
             }
             
@@ -1387,61 +1394,61 @@ function collapseCard(card) {
     }
     
     // Don't set maxWidth inline - let CSS handle it
-    // card.style.maxWidth = CONSTANTS.CARD_MAX_WIDTH;
+    // file.style.maxWidth = CONSTANTS.FILE_MAX_WIDTH;
     
     // Ensure original parent still exists and is in the DOM
-    if (card.originalParent && card.originalParent.isConnected) {
+    if (file.originalParent && file.originalParent.isConnected) {
         try {
-            if (card.originalNextSibling && card.originalNextSibling.parentElement === card.originalParent) {
-                card.originalParent.insertBefore(card, card.originalNextSibling);
+            if (file.originalNextSibling && file.originalNextSibling.parentElement === file.originalParent) {
+                file.originalParent.insertBefore(file, file.originalNextSibling);
             } else {
-                card.originalParent.appendChild(card);
+                file.originalParent.appendChild(file);
             }
         } catch (error) {
-            console.error('Error restoring card position:', error);
-            // Find a safe place for the card
+            console.error('Error restoring file position:', error);
+            // Find a safe place for the file
             const categories = document.querySelectorAll('.category');
             if (categories.length > 0) {
-                const firstCategoryGrid = categories[0].querySelector('.cards-grid');
-                const emptySlot = firstCategoryGrid.querySelector('.card-slot:empty');
+                const firstCategoryGrid = categories[0].querySelector('.files-grid');
+                const emptySlot = firstCategoryGrid.querySelector('.file-slot:empty');
                 if (emptySlot) {
-                    emptySlot.appendChild(card);
+                    emptySlot.appendChild(file);
                 } else {
-                    const newSlot = createCardSlot();
+                    const newSlot = createFileSlot();
                     firstCategoryGrid.appendChild(newSlot);
-                    newSlot.appendChild(card);
+                    newSlot.appendChild(file);
                 }
             }
         }
     } else {
-        // Card has no valid original parent - find first empty slot
-        const emptySlot = document.querySelector('.card-slot:empty');
+        // File has no valid original parent - find first empty slot
+        const emptySlot = document.querySelector('.file-slot:empty');
         if (emptySlot) {
-            emptySlot.appendChild(card);
+            emptySlot.appendChild(file);
         } else {
             // Create new slot in first category
             const firstCategory = document.querySelector('.category');
             if (firstCategory) {
-                const grid = firstCategory.querySelector('.cards-grid');
-                const newSlot = createCardSlot();
+                const grid = firstCategory.querySelector('.files-grid');
+                const newSlot = createFileSlot();
                 grid.appendChild(newSlot);
-                newSlot.appendChild(card);
+                newSlot.appendChild(file);
             } else {
-                // No categories exist - remove card from DOM
-                card.remove();
+                // No categories exist - remove file from DOM
+                file.remove();
             }
         }
     }
     
     // Destroy modal Lenis instance if exists
-    if (card.modalLenis) {
-        card.modalLenis.destroy();
-        card.modalLenis = null;
+    if (file.modalLenis) {
+        file.modalLenis.destroy();
+        file.modalLenis = null;
     }
 
     // Clear original parent references
-    card.originalParent = null;
-    card.originalNextSibling = null;
+    file.originalParent = null;
+    file.originalNextSibling = null;
 }
 
 function createBulletItem(list, text = '', indent = 0) {
@@ -1523,38 +1530,38 @@ function getCurrentIndent(li) {
 }
 
 // Function to reinitialize modal Lenis for smooth scrolling
-function reinitializeModalLenis(card) {
+function reinitializeModalLenis(file) {
     console.log('🔄 LENIS DEBUG: reinitializeModalLenis called', {
-        cardId: card.id,
-        hasSections: !!card.sections,
-        sectionsCount: card.sections?.length || 0,
+        fileId: file.id,
+        hasSections: !!file.sections,
+        sectionsCount: file.sections?.length || 0,
         timestamp: new Date().toISOString()
     });
     
     // CRITICAL: Store sections before destroying Lenis
-    const sectionsBackup = card.sections ? JSON.parse(JSON.stringify(card.sections)) : null;
+    const sectionsBackup = file.sections ? JSON.parse(JSON.stringify(file.sections)) : null;
     console.log('🔄 LENIS DEBUG: Backed up sections', {
         backedUp: !!sectionsBackup,
         count: sectionsBackup?.length || 0
     });
     
     // Destroy existing modal Lenis instance if it exists
-    if (card.modalLenis) {
-        card.modalLenis.destroy();
-        card.modalLenis = null;
+    if (file.modalLenis) {
+        file.modalLenis.destroy();
+        file.modalLenis = null;
     }
     
     // CRITICAL: Restore sections after destroying Lenis
-    if (sectionsBackup && (!card.sections || card.sections.length === 0)) {
-        card.sections = sectionsBackup;
+    if (sectionsBackup && (!file.sections || file.sections.length === 0)) {
+        file.sections = sectionsBackup;
         console.log('🔄 LENIS DEBUG: Restored sections after Lenis destroy', {
-            count: card.sections.length
+            count: file.sections.length
         });
     }
     
     // Initialize new Lenis instance for the modal
-    const modalWrapper = card.querySelector('.expanded-card-main');
-    const modalContent = card.querySelector('.expanded-card-content');
+    const modalWrapper = file.querySelector('.expanded-file-main');
+    const modalContent = file.querySelector('.expanded-file-content');
     
     if (modalWrapper && modalContent) {
         // Ensure the wrapper has the correct CSS properties for scrolling
@@ -1580,14 +1587,14 @@ function reinitializeModalLenis(card) {
             requestAnimationFrame(rafModal);
         }
         requestAnimationFrame(rafModal);
-        card.modalLenis = modalLenis;
+        file.modalLenis = modalLenis;
         
         // Add classes to indicate smooth scrolling is active
         modalWrapper.classList.add('lenis', 'lenis-smooth');
         
         console.log('🔄 LENIS DEBUG: Lenis reinitialized', {
-            cardId: card.id,
-            sectionsAfter: card.sections?.length || 0
+            fileId: file.id,
+            sectionsAfter: file.sections?.length || 0
         });
     }
 }
@@ -1599,24 +1606,24 @@ window.handleBookmarkData = function(data) {
     // NOTE: This function is now overridden in bookmark-destination-selector.js
     // to show the modal with section selection. This is kept as a fallback.
     
-    // Get the currently expanded card
-    const expandedCard = AppState.get('expandedCard');
-    if (!expandedCard) {
-        console.error('❌ BOOKMARK: No expanded card to add bookmark to');
+    // Get the currently expanded file
+    const expandedFile = AppState.get('expandedFile');
+    if (!expandedFile) {
+        console.error('❌ BOOKMARK: No expanded file to add bookmark to');
         // Show destination selector instead
         if (window.showBookmarkDestination) {
             window.showBookmarkDestination(data);
         } else {
             // Could show a notification to user
             if (window.simpleNotifications) {
-                window.simpleNotifications.showNotification('Please open a card first to add bookmarks', 'error');
+                window.simpleNotifications.showNotification('Please open a file first to add bookmarks', 'error');
             }
         }
         return;
     }
     
     // Get the first section by default (modal should override this)
-    const activeSection = expandedCard.querySelector('.card-section:first-child');
+    const activeSection = expandedFile.querySelector('.file-section:first-child');
     
     if (!activeSection) {
         console.error('❌ BOOKMARK: No section found');
@@ -1649,24 +1656,24 @@ window.handleBookmarkData = function(data) {
     console.log('🔖 BOOKMARK: Added bookmark to section:', bookmark.title);
     
     // Update AppState immediately
-    if (expandedCard.appStateLocation) {
+    if (expandedFile.appStateLocation) {
         const boards = AppState.get('boards');
         const currentBoardId = AppState.get('currentBoardId');
         const board = boards.find(b => b.id === currentBoardId);
         
         if (board && board.categories) {
-            const { categoryIndex, cardIndex } = expandedCard.appStateLocation;
-            if (board.categories[categoryIndex] && board.categories[categoryIndex].cards[cardIndex]) {
+            const { categoryIndex, fileIndex } = expandedFile.appStateLocation;
+            if (board.categories[categoryIndex] && board.categories[categoryIndex].files[fileIndex]) {
                 // Find the section in the board data
-                if (!board.categories[categoryIndex].cards[cardIndex].sections) {
-                    board.categories[categoryIndex].cards[cardIndex].sections = [];
+                if (!board.categories[categoryIndex].files[fileIndex].sections) {
+                    board.categories[categoryIndex].files[fileIndex].sections = [];
                 }
                 
-                const sectionIndex = board.categories[categoryIndex].cards[cardIndex].sections.findIndex(s => s.id === sectionData.id);
+                const sectionIndex = board.categories[categoryIndex].files[fileIndex].sections.findIndex(s => s.id === sectionData.id);
                 if (sectionIndex !== -1) {
-                    board.categories[categoryIndex].cards[cardIndex].sections[sectionIndex].bookmarks = [...sectionData.bookmarks];
+                    board.categories[categoryIndex].files[fileIndex].sections[sectionIndex].bookmarks = [...sectionData.bookmarks];
                 } else {
-                    board.categories[categoryIndex].cards[cardIndex].sections.push({
+                    board.categories[categoryIndex].files[fileIndex].sections.push({
                         id: sectionData.id,
                         title: sectionData.title,
                         content: sectionData.content,
@@ -1680,33 +1687,33 @@ window.handleBookmarkData = function(data) {
         }
     }
     
-    // Update the bookmarks section if card is expanded
+    // Update the bookmarks section if file is expanded
     const bookmarksSection = activeSection.querySelector('.section-bookmarks');
     if (bookmarksSection) {
         // Remove placeholder if it exists
-        const placeholders = bookmarksSection.querySelectorAll('.bookmark-card');
+        const placeholders = bookmarksSection.querySelectorAll('.bookmark-file');
         placeholders.forEach(p => {
             if (p.textContent.includes('Example Bookmark')) {
                 p.remove();
             }
         });
         
-        // Add the new bookmark card with proper index
-        const bookmarkCard = createBookmarkCard(
+        // Add the new bookmark file with proper index
+        const bookmarkFile = createBookmarkFile(
             bookmark.title,
             bookmark.description,
             bookmark.url,
             bookmark.timestamp,
             bookmark.screenshot,
             sectionData.bookmarks.length - 1,  // New bookmark is at the end
-            expandedCard,
+            expandedFile,
             activeSection  // Pass the section element
         );
-        bookmarksSection.appendChild(bookmarkCard);
+        bookmarksSection.appendChild(bookmarkFile);
         console.log('🔖 BOOKMARK: Updated UI with new bookmark');
         
         // Reinitialize modal Lenis to account for new content
-        reinitializeModalLenis(expandedCard);
+        reinitializeModalLenis(expandedFile);
     }
     
 // Save to Firebase
@@ -1741,8 +1748,8 @@ window.addEventListener('message', function(event) {
 });
 
 // Expose functions globally for file tree integration
-window.expandCard = expandCard;
-window.addCardToCategory = addCardToCategory;
+window.expandFile = expandFile;
+window.addFileToCategory = addFileToCategory;
 // window.createCategory is exposed in categories.js
 
 // Debug injection for extension
@@ -1752,17 +1759,17 @@ console.log('🔌 EXTENSION: processBookmarkOnce available:', typeof window.proc
 console.log('🔌 EXTENSION: handleBookmarkData available:', typeof window.handleBookmarkData);
 
 // Create a section with editor and bookmarks
-function createSection(card, bookmarks = [], existingSectionId = null) {
+function createSection(file, bookmarks = [], existingSectionId = null) {
     console.log('🔍 DEBUG: createSection called', { 
-        cardId: card.id, 
+        fileId: file.id, 
         bookmarksCount: bookmarks.length,
-        existingSectionsCount: card.sections ? card.sections.length : 0,
+        existingSectionsCount: file.sections ? file.sections.length : 0,
         existingSectionId: existingSectionId
     });
     
     // Create section container
     const section = document.createElement('div');
-    section.className = 'card-section';
+    section.className = 'file-section';
     
     // Create section title with automatic numbering
     const sectionTitle = document.createElement('div');
@@ -1774,7 +1781,7 @@ function createSection(card, bookmarks = [], existingSectionId = null) {
     sectionTitle.spellcheck = false;
     
     // Generate numbered section title
-    const sectionNumber = getNewSectionNumber(card);
+    const sectionNumber = getNewSectionNumber(file);
     const titleText = sectionNumber === 1 ? 'New Section' : `New Section ${sectionNumber}`;
     sectionTitle.textContent = titleText;
     sectionTitle.dataset.placeholder = titleText;
@@ -1828,28 +1835,28 @@ function createSection(card, bookmarks = [], existingSectionId = null) {
     // Store section data on the section element
     section.sectionData = sectionData;
     
-    // Add section to card's sections array ONLY if it doesn't already exist
-    if (!card.sections) {
-        card.sections = [];
+    // Add section to file's sections array ONLY if it doesn't already exist
+    if (!file.sections) {
+        file.sections = [];
     }
     
-    // Check if section with this ID already exists in card.sections
-    const existingSectionIndex = card.sections.findIndex(s => s.id === sectionData.id);
-    console.log('🔍 DEBUG: Checking for existing section in card.sections', { 
+    // Check if section with this ID already exists in file.sections
+    const existingSectionIndex = file.sections.findIndex(s => s.id === sectionData.id);
+    console.log('🔍 DEBUG: Checking for existing section in file.sections', { 
         existingSectionIndex, 
-        totalCardSections: card.sections.length 
+        totalFileSections: file.sections.length 
     });
     
     if (existingSectionIndex === -1) {
-        card.sections.push(sectionData);
-        console.log('🔍 DEBUG: Added new section to card.sections', { 
+        file.sections.push(sectionData);
+        console.log('🔍 DEBUG: Added new section to file.sections', { 
             sectionId: sectionData.id,
-            totalCardSections: card.sections.length 
+            totalFileSections: file.sections.length 
         });
     } else {
         // Update existing section data
-        card.sections[existingSectionIndex] = sectionData;
-        console.log('🔍 DEBUG: Updated existing section in card.sections', { 
+        file.sections[existingSectionIndex] = sectionData;
+        console.log('🔍 DEBUG: Updated existing section in file.sections', { 
             sectionId: sectionData.id,
             index: existingSectionIndex 
         });
@@ -1859,31 +1866,31 @@ function createSection(card, bookmarks = [], existingSectionId = null) {
     sectionData.element = section;
     
     // Save to AppState
-    if (card.appStateLocation) {
+    if (file.appStateLocation) {
         const boards = AppState.get('boards');
         const currentBoardId = AppState.get('currentBoardId');
         const board = boards.find(b => b.id === currentBoardId);
         
         if (board && board.categories) {
-            const { categoryIndex, cardIndex } = card.appStateLocation;
-            if (board.categories[categoryIndex] && board.categories[categoryIndex].cards[cardIndex]) {
+            const { categoryIndex, fileIndex } = file.appStateLocation;
+            if (board.categories[categoryIndex] && board.categories[categoryIndex].files[fileIndex]) {
                 // Initialize sections array if it doesn't exist
-                if (!board.categories[categoryIndex].cards[cardIndex].sections) {
-                    board.categories[categoryIndex].cards[cardIndex].sections = [];
+                if (!board.categories[categoryIndex].files[fileIndex].sections) {
+                    board.categories[categoryIndex].files[fileIndex].sections = [];
                 }
                 
                 console.log('🔍 DEBUG: Board sections before processing', { 
-                    boardSectionsCount: board.categories[categoryIndex].cards[cardIndex].sections.length,
-                    sectionIds: board.categories[categoryIndex].cards[cardIndex].sections.map(s => s.id)
+                    boardSectionsCount: board.categories[categoryIndex].files[fileIndex].sections.length,
+                    sectionIds: board.categories[categoryIndex].files[fileIndex].sections.map(s => s.id)
                 });
                 
                 // Check if section with this ID already exists in board data
-                const boardSectionIndex = board.categories[categoryIndex].cards[cardIndex].sections.findIndex(s => s.id === sectionData.id);
+                const boardSectionIndex = board.categories[categoryIndex].files[fileIndex].sections.findIndex(s => s.id === sectionData.id);
                 console.log('🔍 DEBUG: Checking for existing section in board data', { boardSectionIndex });
                 
                 if (boardSectionIndex === -1) {
                     // Add the new section to the board data
-                    board.categories[categoryIndex].cards[cardIndex].sections.push({
+                    board.categories[categoryIndex].files[fileIndex].sections.push({
                         id: sectionData.id,
                         title: sectionData.title,
                         content: null,
@@ -1892,7 +1899,7 @@ function createSection(card, bookmarks = [], existingSectionId = null) {
                     console.log('🔍 DEBUG: Added new section to board data', { sectionId: sectionData.id });
                 } else {
                     // Update existing section in board data
-                    board.categories[categoryIndex].cards[cardIndex].sections[boardSectionIndex] = {
+                    board.categories[categoryIndex].files[fileIndex].sections[boardSectionIndex] = {
                         id: sectionData.id,
                         title: sectionData.title,
                         content: null,
@@ -1906,7 +1913,7 @@ function createSection(card, bookmarks = [], existingSectionId = null) {
                 
                 AppState.set('boards', boards);
                 console.log('🔖 SECTION: Updated AppState with section', {
-                    totalBoardSections: board.categories[categoryIndex].cards[cardIndex].sections.length
+                    totalBoardSections: board.categories[categoryIndex].files[fileIndex].sections.length
                 });
             }
         }
@@ -1914,7 +1921,7 @@ function createSection(card, bookmarks = [], existingSectionId = null) {
     
     // Initialize editor in this section
     console.log('🔍 DEBUG: Initializing editor for section', { sectionId: sectionData.id });
-    initializeEditorJS(card, editorContainer);
+    initializeEditorJS(file, editorContainer);
     
     // Add bookmarks to section
     if (bookmarks && bookmarks.length > 0) {
@@ -1923,50 +1930,50 @@ function createSection(card, bookmarks = [], existingSectionId = null) {
             bookmarksCount: bookmarks.length 
         });
         bookmarks.forEach((bookmark, index) => {
-            const bookmarkCard = createBookmarkCard(
+            const bookmarkFile = createBookmarkFile(
                 bookmark.title,
                 bookmark.description || bookmark.url,
                 bookmark.url,
                 bookmark.timestamp || new Date(),
                 bookmark.screenshot || bookmark.image,
                 index,
-                card,
+                file,
                 section  // Pass the section element
             );
-            bookmarksSection.appendChild(bookmarkCard);
+            bookmarksSection.appendChild(bookmarkFile);
         });
     } else {
         console.log('🔍 DEBUG: Adding sample bookmark to section', { sectionId: sectionData.id });
-        // Create sample bookmark card
-        const bookmarkCard = createBookmarkCard('Example Bookmark', 'This is a sample bookmark description that shows how bookmarks will appear.', 'https://example.com', new Date(), null, 0, card, section);
-        bookmarksSection.appendChild(bookmarkCard);
+        // Create sample bookmark file
+        const bookmarkFile = createBookmarkFile('Example Bookmark', 'This is a sample bookmark description that shows how bookmarks will appear.', 'https://example.com', new Date(), null, 0, file, section);
+        bookmarksSection.appendChild(bookmarkFile);
     }
     
     // Update section title listener to save changes
     sectionTitle.addEventListener('blur', function() {
-        if (card.appStateLocation) {
+        if (file.appStateLocation) {
             const boards = AppState.get('boards');
             const currentBoardId = AppState.get('currentBoardId');
             const board = boards.find(b => b.id === currentBoardId);
             
             if (board && board.categories) {
-                const { categoryIndex, cardIndex } = card.appStateLocation;
-                if (board.categories[categoryIndex] && board.categories[categoryIndex].cards[cardIndex]) {
+                const { categoryIndex, fileIndex } = file.appStateLocation;
+                if (board.categories[categoryIndex] && board.categories[categoryIndex].files[fileIndex]) {
                     // Find and update this section in the board data
-                    if (!board.categories[categoryIndex].cards[cardIndex].sections) {
-                        board.categories[categoryIndex].cards[cardIndex].sections = [];
+                    if (!board.categories[categoryIndex].files[fileIndex].sections) {
+                        board.categories[categoryIndex].files[fileIndex].sections = [];
                     }
                     
                     // Update or add section
-                    const sectionIndex = board.categories[categoryIndex].cards[cardIndex].sections.findIndex(s => s.id === sectionData.id);
+                    const sectionIndex = board.categories[categoryIndex].files[fileIndex].sections.findIndex(s => s.id === sectionData.id);
                     if (sectionIndex !== -1) {
-                        board.categories[categoryIndex].cards[cardIndex].sections[sectionIndex].title = this.textContent;
+                        board.categories[categoryIndex].files[fileIndex].sections[sectionIndex].title = this.textContent;
                         console.log('🔍 DEBUG: Updated section title in board data', { 
                             sectionId: sectionData.id, 
                             newTitle: this.textContent 
                         });
                     } else {
-                        board.categories[categoryIndex].cards[cardIndex].sections.push({
+                        board.categories[categoryIndex].files[fileIndex].sections.push({
                             id: sectionData.id,
                             title: this.textContent,
                             content: null,
@@ -1994,13 +2001,13 @@ function createSection(card, bookmarks = [], existingSectionId = null) {
     return section;
 }
 
-// Initialize Quill Editor in expanded card
-async function initializeEditorJS(card, container = null) {
-    // Use provided container or default to card's editorContainer
-    const editorContainer = container || card.editorContainer;
+// Initialize Quill Editor in expanded file
+async function initializeEditorJS(file, container = null) {
+    // Use provided container or default to file's editorContainer
+    const editorContainer = container || file.editorContainer;
     
     if (!editorContainer) {
-        console.error('No editor container found on card');
+        console.error('No editor container found on file');
         return;
     }
     
@@ -2063,35 +2070,35 @@ async function initializeEditorJS(card, container = null) {
     });
     
     // Restore dark mode state if it was previously enabled
-    if (card.darkModeEnabled) {
-        const toolbar = card.querySelector('.ql-toolbar');
-        const container = card.querySelector('.editor-container');
-        const editor = card.querySelector('.ql-editor');
-        const expandedContent = card.querySelector('.expanded-card-content');
-        const expandedHeader = card.querySelector('.expanded-card-header');
-        const expandedMain = card.querySelector('.expanded-card-main');
+    if (file.darkModeEnabled) {
+        const toolbar = file.querySelector('.ql-toolbar');
+        const container = file.querySelector('.editor-container');
+        const editor = file.querySelector('.ql-editor');
+        const expandedContent = file.querySelector('.expanded-file-content');
+        const expandedHeader = file.querySelector('.expanded-file-header');
+        const expandedMain = file.querySelector('.expanded-file-main');
         
         if (container) container.classList.add('dark-mode');
         if (toolbar) toolbar.classList.add('dark-mode');
         if (editor) editor.classList.add('dark-mode');
-        card.classList.add('dark-mode');
+        file.classList.add('dark-mode');
         if (expandedContent) expandedContent.classList.add('dark-mode');
         if (expandedHeader) expandedHeader.classList.add('dark-mode');
         if (expandedMain) expandedMain.classList.add('dark-mode');
     }
     
     // Set initial content
-    if (card.initialContent?.content) {
-        quill.root.innerHTML = card.initialContent.content;
+    if (file.initialContent?.content) {
+        quill.root.innerHTML = file.initialContent.content;
     }
     
     // Store reference
-    card.quillEditor = quill;
+    file.quillEditor = quill;
     
     // Save content on changes
     quill.on('text-change', () => {
         // Check if this editor is in a section
-        const section = editorContainer.closest('.card-section');
+        const section = editorContainer.closest('.file-section');
         
         if (section && section.sectionData) {
             // Update the section data
@@ -2100,25 +2107,25 @@ async function initializeEditorJS(card, container = null) {
             };
             
             // Save to AppState
-            if (card.appStateLocation) {
+            if (file.appStateLocation) {
                 const boards = AppState.get('boards');
                 const currentBoardId = AppState.get('currentBoardId');
                 const board = boards.find(b => b.id === currentBoardId);
                 
                 if (board && board.categories) {
-                    const { categoryIndex, cardIndex } = card.appStateLocation;
-                    if (board.categories[categoryIndex] && board.categories[categoryIndex].cards[cardIndex]) {
-                        if (!board.categories[categoryIndex].cards[cardIndex].sections) {
-                            board.categories[categoryIndex].cards[cardIndex].sections = [];
+                    const { categoryIndex, fileIndex } = file.appStateLocation;
+                    if (board.categories[categoryIndex] && board.categories[categoryIndex].files[fileIndex]) {
+                        if (!board.categories[categoryIndex].files[fileIndex].sections) {
+                            board.categories[categoryIndex].files[fileIndex].sections = [];
                         }
                         
-                        const sectionIndex = board.categories[categoryIndex].cards[cardIndex].sections.findIndex(s => s.id === section.sectionData.id);
+                        const sectionIndex = board.categories[categoryIndex].files[fileIndex].sections.findIndex(s => s.id === section.sectionData.id);
                         if (sectionIndex !== -1) {
-                            board.categories[categoryIndex].cards[cardIndex].sections[sectionIndex].content = {
+                            board.categories[categoryIndex].files[fileIndex].sections[sectionIndex].content = {
                                 content: quill.root.innerHTML
                             };
                         } else {
-                            board.categories[categoryIndex].cards[cardIndex].sections.push({
+                            board.categories[categoryIndex].files[fileIndex].sections.push({
                                 id: section.sectionData.id,
                                 title: section.sectionData.title,
                                 content: {
@@ -2139,8 +2146,8 @@ async function initializeEditorJS(card, container = null) {
                 window.syncService.saveAfterAction('section content edited');
             }
         } else {
-            // This is the main card editor
-            card.initialContent = {
+            // This is the main file editor
+            file.initialContent = {
                 content: quill.root.innerHTML
             };
         }

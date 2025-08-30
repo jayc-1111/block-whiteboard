@@ -10,7 +10,7 @@
     background: #fff;
 }
 
-.light-mode .card-slot {
+.light-mode .file-slot {
     border: 1px solid #fff;
     background-color: #fff;
 }
@@ -63,72 +63,72 @@
     border-color: #CBD5E0 !important;
 }
 
-/* Cards */
-.light-mode .card {
+/* Files */
+.light-mode .file {
     background: #F8F9FF !important;
     border: none !important;
     box-shadow: none !important;
 }
 
-.light-mode .card:hover {
+.light-mode .file:hover {
     box-shadow: none !important;
     border-color: #CBD5E0 !important;
 }
 
-.light-mode .card-title {
+.light-mode .file-title {
     color: #5c5c5c !important;
 }
 
-.light-mode .card-title-icon {
+.light-mode .file-title-icon {
     fill: #5c5c5c !important;
 }
 
-.light-mode .card-content {
+.light-mode .file-content {
     color: #5c5c5c !important;
 }
 
-.light-mode .card-hover-overlay {
+.light-mode .file-hover-overlay {
     background: rgba(26, 32, 44, 0.85) !important;
 }
 
-.light-mode .card-hover-overlay svg {
+.light-mode .file-hover-overlay svg {
     stroke: #FFFFFF !important;
 }
 
-/* Expanded Cards */
-.light-mode .card.expanded {
+/* Expanded Files */
+.light-mode .file.expanded {
     background: #FFFFFF !important;
     box-shadow: none !important;
 }
 
-.light-mode .expanded-card-overlay {
+.light-mode .expanded-file-overlay {
     background: rgba(0, 0, 0, 0.3) !important;
 }
 
-.light-mode .expanded-card-content {
+.light-mode .expanded-file-content {
     background: #FFFFFF !important;
 }
 
-.light-mode .expanded-card-header {
+.light-mode .expanded-file-header {
     background: #FFFFFF !important;
     border-bottom: 1px solid #ffffff !important;
 }
 
-.light-mode .expanded-card-header .card-title {
+.light-mode .expanded-file-header .file-title {
     color: #5c5c5c !important;
 }
 
-.light-mode .expanded-card-buttons {
+.light-mode .expanded-file-buttons {
     background: #FFFFFF !important;
     border-bottom: 1px solid #ffffff !important;
 }
 
-.light-mode .expanded-card-main {
+.light-mode .expanded-file-main {
     background: #FFFFFF !important;
 }
 
 /* Sections */
-.light-mode .card-section {
+.light-mode .file-section {
     background: #F5F7FB !important;
     border: 1px solid #ffffff !important;
 }
@@ -140,13 +140,13 @@
 }
 
 /* Bookmarks */
-.light-mode .bookmark-card {
+.light-mode .bookmark-file {
     background: #FFFFFF !important;
     border-radius: 20px !important;
     box-shadow: none !important;
 }
 
-.light-mode .bookmark-card:hover {
+.light-mode .bookmark-file:hover {
     box-shadow: none !important;
 }
 
@@ -231,26 +231,26 @@
 
 /* Buttons */
 .light-mode .btn-primary,
-.light-mode .save-card-btn {
+.light-mode .save-file-btn {
     background: #3B82F6 !important;
     color: #FFFFFF !important;
     border: none !important;
 }
 
 .light-mode .btn-primary:hover,
-.light-mode .save-card-btn:hover {
+.light-mode .save-file-btn:hover {
     background: #2563EB !important;
 }
 
 .light-mode .btn-danger,
-.light-mode .delete-card-btn {
+.light-mode .delete-file-btn {
     background: #EF4444 !important;
     color: #FFFFFF !important;
     border: none !important;
 }
 
 .light-mode .btn-danger:hover,
-.light-mode .delete-card-btn:hover {
+.light-mode .delete-file-btn:hover {
     background: #DC2626 !important;
 }
 
@@ -413,46 +413,46 @@
 }
 
 /* ===================================
-   HAMBURGER MENU - Match category styling
+   sidebar MENU - Match category styling
    =================================== */
-.light-mode #hamburgerMenu .hamburger-btn {
+.light-mode #sidebarMenu .sidebar-btn {
     background: #FFFFFF !important;
     border: 2px solid #ffffff !important;
     box-shadow: none !important;
 }
 
-.light-mode #hamburgerMenu .hamburger-btn:hover {
+.light-mode #sidebarMenu .sidebar-btn:hover {
     background: #E8EBF0 !important;
     border-color: #E8EBF0 !important;
 }
 
-.light-mode #hamburgerMenu .hamburger-btn svg {
+.light-mode #sidebarMenu .sidebar-btn svg {
     color: #5c5c5c !important;
 }
 
-.light-mode .hamburger-dropdown {
+.light-mode .sidebar-dropdown {
     background: #FFFFFF !important;
     border: 2px solid #ffffff !important;
     box-shadow: none !important;
 }
 
-.light-mode .hamburger-item {
+.light-mode .sidebar-item {
     color: #5c5c5c !important;
 }
 
-.light-mode .hamburger-item:hover {
+.light-mode .sidebar-item:hover {
     background: #E8EBF0 !important;
 }
 
-.light-mode .hamburger-item svg {
+.light-mode .sidebar-item svg {
     stroke: #5c5c5c !important;
 }
 
-.light-mode .hamburger-separator {
+.light-mode .sidebar-separator {
     background: #E8EBF0 !important;
 }
 
-/* Hamburger Settings Menu */
+/* sidebar Settings Menu */
 .light-mode #settingsItem .settings-menu {
     background: #FFFFFF !important;
     border: 2px solid #ffffff !important;
@@ -529,11 +529,11 @@
     color: #5c5c5c !important;
 }
 
-.light-mode .file-structure-list li.card-item {
+.light-mode .file-structure-list li.file-item {
     color: #718096 !important;
 }
 
-.light-mode .file-structure-list li.card-item {
+.light-mode .file-structure-list li.file-item {
     color: #718096 !important;
 }
 
@@ -813,6 +813,6 @@
 
 /* Transitions for smooth theme switching - exclude dropdowns */
 .light-mode,
-.light-mode *:not(.board-dropdown):not(.settings-menu):not(.add-dropdown-menu):not(.file-structure-dropdown):not(.hamburger-dropdown):not(.customization-submenu) {
+.light-mode *:not(.board-dropdown):not(.settings-menu):not(.add-dropdown-menu):not(.file-structure-dropdown):not(.sidebar-dropdown):not(.customization-submenu) {
     transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
 }

@@ -6,7 +6,7 @@ Zenban is a visual project management tool that combines the tranquility of zen 
 
 ## Features
 
-- **Drag & Drop Interface**: Intuitive card and category management
+- **Drag & Drop Interface**: Intuitive file and category management
 - **Rich Text Editing**: Powered by Quill editor for formatting notes
 - **Multiple Boards**: Organize different projects separately
 - **Super Headers**: Create visual groupings with large headers
@@ -42,9 +42,9 @@ Zenban is a visual project management tool that combines the tranquility of zen 
 
 1. **Sign In/Sign Up**: Click the "Sign In" button in the top bar
 2. **Create Categories**: Click "Add Category" or right-click on canvas
-3. **Add Cards**: Click the "+" button in any category
-4. **Edit Cards**: Click the edit icon that appears on hover
-5. **Drag & Drop**: Move cards between categories or reposition elements
+3. **Add Files**: Click the "+" button in any category
+4. **Edit Files**: Click the edit icon that appears on hover
+5. **Drag & Drop**: Move files between categories or reposition elements
 6. **Save**: Changes auto-save every 30 seconds when signed in
 
 ## Development
@@ -55,7 +55,7 @@ The app uses vanilla JavaScript with modular architecture:
 - `js/sync-service.js` - Cloud synchronization logic
 - `js/boards.js` - Board management
 - `js/categories.js` - Category operations
-- `js/cards.js` - Card functionality
+- `js/files.js` - File functionality
 
 ## Local Development
 
@@ -66,7 +66,7 @@ The app uses vanilla JavaScript with modular architecture:
 ## Future Features
 
 - Real-time collaboration
-- Card attachments and images
+- File attachments and images
 - Board sharing and permissions
 - Mobile app version
 - Export/Import functionality

@@ -13,11 +13,11 @@ const CONSTANTS = {
     
     // Z-index management
     BASE_Z_INDEX: 100,
-    EXPANDED_CARD_Z_INDEX: 20000,
+    EXPANDED_FILE_Z_INDEX: 20000,
     
     // Category defaults
-    INITIAL_CARD_SLOTS: 2,
-    CARDS_BEFORE_COLLAPSE: 3,
+    INITIAL_FILE_SLOTS: 2,
+    FILES_BEFORE_COLLAPSE: 3,
     
     // Animation durations (ms)
     TRANSITION_DURATION: 200,
@@ -31,9 +31,9 @@ const CONSTANTS = {
     // File export
     EXPORT_INDENT_SPACES: 2,
     
-    // Card dimensions
-    CARD_MAX_WIDTH: '182px',
-    EXPANDED_CARD_WIDTH: 850,
+    // File dimensions
+    FILE_MAX_WIDTH: '182px',
+    EXPANDED_FILE_WIDTH: 850,
     
     // Bullet list
     MAX_INDENT_LEVEL: 3

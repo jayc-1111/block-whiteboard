@@ -410,7 +410,7 @@ window.Debug.drawing = {
 // console.log('📊 Board comparison') → Debug.board.detail('Board comparison', data)
 // console.log('📁 Loading categories') → Debug.board.step('Loading categories')
 // console.log('📂 Created category') → Debug.board.step('Created category')
-// console.log('📄 Added card') → Debug.board.detail('Added card')
+// console.log('📄 Added file') → Debug.board.detail('Added file')
 // console.log('🏷️ Tagged as') → Debug.board.detail('Tagged', data)
 // console.log('🎯 Target found') → Debug.board.detail('Target', data)
 //

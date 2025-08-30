@@ -66,7 +66,7 @@
 
 ## Tab Switch Bookmark Failure (2025-08-08)
 ### Problem
-- First bookmark works perfectly and loads into card
+- First bookmark works perfectly and loads into file
 - Second bookmark attempt switches tabs but fails to create modal
 - Extension appears to stop without error messages
 - No console errors in extension debugger
@@ -81,10 +81,10 @@
 - Creates new scope for each execution, preventing variable conflicts
 - Changed `const bookmarkData = ...` to `(function() { const bookmarkData = ...; })();`
 
-## UX Improvement: Expanded Card Bookmark Modal (2025-08-08)
-- Issue: Bookmarks automatically added to expanded cards without user confirmation
-- Solution: Added modal asking "Add to open card?" or "Add elsewhere"
-- Prevents accidental additions to wrong cards
+## UX Improvement: Expanded File Bookmark Modal (2025-08-08)
+- Issue: Bookmarks automatically added to expanded files without user confirmation
+- Solution: Added modal asking "Add to open file?" or "Add elsewhere"
+- Prevents accidental additions to wrong files
 
 ### Debugging Improvements
 - Added heartbeat monitoring to track content script lifecycle

@@ -1,10 +1,10 @@
-# Lenis Smooth Scroll Solution for Modals and Expanded Cards
+# Lenis Smooth Scroll Solution for Modals and Expanded Files
 
 ## Problem
-Lenis smooth scrolling was not working properly in modals and expanded cards. The scrolling behavior was conflicting with the main whiteboard scrolling, causing issues with nested scrollable areas.
+Lenis smooth scrolling was not working properly in modals and expanded files. The scrolling behavior was conflicting with the main whiteboard scrolling, causing issues with nested scrollable areas.
 
 ## Solution Overview
-Implemented proper scroll isolation for modals and expanded cards using the `data-lenis-prevent` attribute and custom Lenis instances for modal content.
+Implemented proper scroll isolation for modals and expanded files using the `data-lenis-prevent` attribute and custom Lenis instances for modal content.
 
 ## Changes Made
 
@@ -12,15 +12,15 @@ Implemented proper scroll isolation for modals and expanded cards using the `dat
 - Added styles to handle elements with `data-lenis-prevent` attribute
 - Ensured proper overscroll behavior for modal content
 
-### 2. JavaScript Updates (`js/cards.js`)
-- Added `data-lenis-prevent` attribute to the main content area in expanded cards
+### 2. JavaScript Updates (`js/files.js`)
+- Added `data-lenis-prevent` attribute to the main content area in expanded files
 - Implemented a custom Lenis instance for modal scrolling
 - Added `reinitializeModalLenis` function to handle dynamic content changes
 - Integrated Lenis reinitialization with bookmark operations (add, remove, reorder)
 
 ### 3. Modal Scrolling Implementation
-- Each expanded card now gets its own Lenis instance for internal scrolling
-- The modal Lenis instance is destroyed when the card is collapsed
+- Each expanded file now gets its own Lenis instance for internal scrolling
+- The modal Lenis instance is destroyed when the file is collapsed
 - The modal Lenis instance is reinitialized when content changes (adding sections, bookmarks, etc.)
 
 ## Technical Details
@@ -57,7 +57,7 @@ The `reinitializeModalLenis` function ensures that Lenis scrolling continues to 
 
 ## Testing
 The solution has been tested with:
-- Expanding/collapsing cards
+- Expanding/collapsing files
 - Adding/removing sections
 - Adding/removing/reordering bookmarks
 - Editor content changes

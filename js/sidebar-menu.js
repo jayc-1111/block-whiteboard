@@ -1,7 +1,7 @@
-// Hamburger Menu Functionality
+// sidebar Menu Functionality
 document.addEventListener('DOMContentLoaded', function() {
-    const hamburgerMenu = document.getElementById('hamburgerMenu');
-    const hamburgerBtn = document.querySelector('.hamburger-btn');
+    const sidebarMenu = document.getElementById('sidebarMenu');
+    const sidebarBtn = document.querySelector('.sidebar-btn');
     const yourBookmarksItem = document.getElementById('yourBookmarksItem');
     const settingsItem = document.getElementById('settingsItem');
     const whiteboard = document.getElementById('whiteboard');
@@ -15,13 +15,13 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    // Toggle hamburger menu
-    if (hamburgerBtn) {
-        hamburgerBtn.addEventListener('click', function() {
-            hamburgerMenu.classList.toggle('open');
+    // Toggle sidebar menu
+    if (sidebarBtn) {
+        sidebarBtn.addEventListener('click', function() {
+            sidebarMenu.classList.toggle('open');
             
             // Add push effect to whiteboard
-            if (hamburgerMenu.classList.contains('open')) {
+            if (sidebarMenu.classList.contains('open')) {
                 document.body.classList.add('sidebar-open');
             } else {
                 document.body.classList.remove('sidebar-open');
@@ -30,9 +30,9 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     // Update file tree when menu opens
-    if (hamburgerMenu) {
-        hamburgerMenu.addEventListener('transitionend', function() {
-            if (hamburgerMenu.classList.contains('open')) {
+    if (sidebarMenu) {
+        sidebarMenu.addEventListener('transitionend', function() {
+            if (sidebarMenu.classList.contains('open')) {
                 updateFileTree();
             }
         });
@@ -50,8 +50,8 @@ document.addEventListener('DOMContentLoaded', function() {
             e.preventDefault();
             e.stopPropagation();
             
-            // Close hamburger menu
-            hamburgerMenu.classList.remove('open');
+            // Close sidebar menu
+            sidebarMenu.classList.remove('open');
             document.body.classList.remove('sidebar-open');
             
             // Open bookmarks modal
@@ -139,8 +139,8 @@ document.addEventListener('DOMContentLoaded', function() {
             e.preventDefault();
             e.stopPropagation();
             
-            // Close hamburger menu
-            hamburgerMenu.classList.remove('open');
+            // Close sidebar menu
+            sidebarMenu.classList.remove('open');
             document.body.classList.remove('sidebar-open');
             
             // Open settings modal
@@ -224,7 +224,7 @@ function updateFileTree() {
     boards.forEach(board => {
         // Check board content
         const categories = board.categories || [];
-        const cardCount = categories.reduce((sum, cat) => sum + (cat.cards?.length || 0), 0);
+        const fileCount = categories.reduce((sum, cat) => sum + (cat.files?.length || 0), 0);
 
         if (categories.length > 0) {
             const isExpanded = board.id === currentBoardId;
@@ -246,7 +246,7 @@ function updateFileTree() {
                 <ul class="nested" style="display: ${isExpanded ? 'block' : 'none'};">`;
 
             categories.forEach(cat => {
-                if (cat.cards?.length > 0) {
+                if (cat.files?.length > 0) {
                     html += `<li class="tree-item">
                         <div class="tree-toggle">
                             <span class="toggle-icon">
@@ -266,9 +266,9 @@ function updateFileTree() {
                         <ul class="nested">
                             `;
 
-                    cat.cards.forEach(card => {
+                    cat.files.forEach(file => {
                         html += `<li class="tree-item">
-                            <div class="tree-toggle" onclick="openCard(${board.id}, '${cat.title}', '${card.title.replace(/'/g, "\\'")}')">
+                            <div class="tree-toggle" onclick="openFile(${board.id}, '${cat.title}', '${file.title.replace(/'/g, "\\'")}')">
                                 <span class="toggle-icon"></span>
                                 <div class="item-name">
                                     <svg class="item-icon file file-js" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -276,7 +276,7 @@ function updateFileTree() {
                                         <path d="M14 3v4a1 1 0 0 0 1 1h4" />
                                         <path d="M17 21h-10a2 2 0 0 1 -2 -2v-14a2 2 0 0 1 2 -2h7l5 5v11a2 2 0 0 1 -2 2z" />
                                     </svg>
-                                    <span>${card.title}</span>
+                                    <span>${file.title}</span>
                                 </div>
                             </div>
                         </li>`;
@@ -291,22 +291,73 @@ function updateFileTree() {
         }
     });
 
-    fileList.innerHTML = html || '<li class="tree-item"><span>No cards yet</span></li>';
-
-    // Add event listeners for tree toggling
-    document.querySelectorAll('.file-structure-list .tree-toggle').forEach(toggle => {
-        toggle.addEventListener('click', function(e) {
-            e.stopPropagation();
-            this.classList.toggle('expanded');
-            const nested = this.nextElementSibling;
-            if (nested) {
-                if (this.classList.contains('expanded')) {
-                    nested.style.display = 'block';
-                } else {
-                    nested.style.display = 'none';
-                }
+    // Preserve expanded states before rebuilding
+    const expandedKeys = new Set();
+    document.querySelectorAll('.file-structure-list .tree-toggle.expanded').forEach(toggle => {
+        // Create a unique key based on the item's path in the tree
+        const path = [];
+        let current = toggle;
+        while (current && current.classList.contains('tree-toggle')) {
+            const name = current.querySelector('.item-name span')?.textContent.trim();
+            if (name) {
+                path.unshift(name);
             }
-        });
+            // Move to parent tree-item
+            const parentItem = current.closest('.tree-item')?.parentElement?.closest('.tree-item');
+            current = parentItem ? parentItem.querySelector('.tree-toggle') : null;
+        }
+        if (path.length > 0) {
+            expandedKeys.add(path.join('/'));
+        }
+    });
+
+    fileList.innerHTML = html || '<li class="tree-item"><span>No files yet</span></li>';
+
+    // Restore expanded states and add toggling
+    document.querySelectorAll('.file-structure-list .tree-toggle').forEach(toggle => {
+        // Create a unique key for this toggle based on its path
+        const path = [];
+        let current = toggle;
+        const name = current.querySelector('.item-name span')?.textContent.trim();
+        if (name) {
+            path.unshift(name);
+        }
+        
+        // Move up the tree to build the full path
+        let parentItem = toggle.closest('.tree-item')?.parentElement?.closest('.tree-item');
+        while (parentItem) {
+            const parentToggle = parentItem.querySelector('.tree-toggle');
+            const parentName = parentToggle?.querySelector('.item-name span')?.textContent.trim();
+            if (parentName) {
+                path.unshift(parentName);
+            }
+            parentItem = parentToggle?.closest('.tree-item')?.parentElement?.closest('.tree-item');
+        }
+        
+        const key = path.join('/');
+        if (expandedKeys.has(key)) {
+            toggle.classList.add('expanded');
+            const nested = toggle.nextElementSibling;
+            if (nested) nested.style.display = 'block';
+        }
+        
+        // Add click event listener only if it doesn't already have one
+        // We use a custom property to track if we've added the listener
+        if (!toggle.hasAttribute('data-has-listener')) {
+            toggle.setAttribute('data-has-listener', 'true');
+            toggle.addEventListener('click', function(e) {
+                e.stopPropagation();
+                this.classList.toggle('expanded');
+                const nested = this.nextElementSibling;
+                if (nested) {
+                    if (this.classList.contains('expanded')) {
+                        nested.style.display = 'block';
+                    } else {
+                        nested.style.display = 'none';
+                    }
+                }
+            });
+        }
     });
 }
 
@@ -345,23 +396,23 @@ function filterFileTree(searchTerm) {
     });
 }
 
-// Open specific card
-window.openCard = function(boardId, categoryTitle, cardTitle) {
+// Open specific file
+window.openFile = function(boardId, categoryTitle, fileTitle) {
     // Switch board if needed
     if (boardId !== AppState.get('currentBoardId')) {
         loadBoard(boardId);
     }
     
-    // Find and expand card
+    // Find and expand file
     setTimeout(() => {
         const categories = document.querySelectorAll('.category');
         for (const cat of categories) {
             const title = cat.querySelector('.category-title');
             if (title?.textContent === categoryTitle) {
-                const cards = cat.querySelectorAll('.card');
-                for (const card of cards) {
-                    if (getCardTitleText(card) === cardTitle) {
-                        const overlay = card.querySelector('.card-hover-overlay');
+                const files = cat.querySelectorAll('.file');
+                for (const file of files) {
+                    if (getFileTitleText(file) === fileTitle) {
+                        const overlay = file.querySelector('.file-hover-overlay');
                         if (overlay) overlay.click();
                         break;
                     }

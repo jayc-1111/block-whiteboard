@@ -14,7 +14,7 @@
 }
 
 /* Smooth transitions for elements during scroll */
-.card,
+.file,
 .super-header,
 .category-wrapper {
     transition: none; /* Prevent conflicts with scroll animations */
@@ -39,24 +39,24 @@ html.lenis body {
     overflow: hidden;
 }
 
-/* Modal and expanded card scrollable areas - prevent Lenis interference */
-.card.expanded .expanded-card-main[data-lenis-prevent],
-.card.expanded .section-bookmarks[data-lenis-prevent],
-.card.expanded .editor-container[data-lenis-prevent],
+/* Modal and expanded file scrollable areas - prevent Lenis interference */
+.file.expanded .expanded-file-main[data-lenis-prevent],
+.file.expanded .section-bookmarks[data-lenis-prevent],
+.file.expanded .editor-container[data-lenis-prevent],
 [data-lenis-prevent] {
     overscroll-behavior: contain;
 }
 
 /* Ensure modal content scrolls smoothly */
-.card.expanded .expanded-card-main {
+.file.expanded .expanded-file-main {
     scroll-behavior: smooth !important;
 }
 
-.card.expanded .section-bookmarks {
+.file.expanded .section-bookmarks {
     scroll-behavior: smooth !important;
 }
 
-.card.expanded .editor-container .ql-editor {
+.file.expanded .editor-container .ql-editor {
     scroll-behavior: smooth !important;
 }
 

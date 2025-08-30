@@ -1,6 +1,6 @@
 /**
  * File Viewer Modal - A clean file management interface
- * Displays all cards as files for easy access
+ * Displays all files as files for easy access
  */
 
 // File viewer data structure - will be populated from all boards
@@ -28,35 +28,35 @@ function initializeFileViewer() {
         console.log(`  Board ${i}: "${board.name}" - Categories: ${board.categories?.length || 0}`);
         if (board.categories) {
             board.categories.forEach((cat, j) => {
-                console.log(`    Category ${j}: "${cat.title}" - Cards: ${cat.cards?.length || 0}`);
-                if (cat.cards) {
-                    cat.cards.forEach((card, k) => {
-                        console.log(`      Card ${k}: "${card.title}"`);
+                console.log(`    Category ${j}: "${cat.title}" - Files: ${cat.files?.length || 0}`);
+                if (cat.files) {
+                    cat.files.forEach((file, k) => {
+                        console.log(`      File ${k}: "${file.title}"`);
                     });
                 }
             });
         }
     });
     
-    // Collect all cards from all boards
+    // Collect all files from all boards
     fileViewerData.allFiles = [];
     
     boards.forEach(board => {
         if (board.categories && board.categories.length > 0) {
             board.categories.forEach(category => {
-                if (category.cards && category.cards.length > 0) {
-                    category.cards.forEach(card => {
-                        // Create file entry for each card
+                if (category.files && category.files.length > 0) {
+                    category.files.forEach(file => {
+                        // Create file entry for each file
                         fileViewerData.allFiles.push({
-                            id: `${board.id}-${category.title}-${card.title}`,
-                            title: card.title,
-                            content: card.content,
+                            id: `${board.id}-${category.title}-${file.title}`,
+                            title: file.title,
+                            content: file.content,
                             boardId: board.id,
                             boardName: board.name,
                             categoryTitle: category.title,
-                            type: 'card',
-                            lastModified: card.lastModified || new Date().toISOString(),
-                            size: calculateCardSize(card),
+                            type: 'file',
+                            lastModified: file.lastModified || new Date().toISOString(),
+                            size: calculateFileSize(file),
                             thumbnail: null
                         });
                     });
@@ -75,10 +75,10 @@ function initializeFileViewer() {
 }
 
 /**
- * Calculate approximate size of a card
+ * Calculate approximate size of a file
  */
-function calculateCardSize(card) {
-    const content = card.content?.content || card.content || '';
+function calculateFileSize(file) {
+    const content = file.content?.content || file.content || '';
     const sizeInBytes = new Blob([content]).size;
     return formatFileSize(sizeInBytes);
 }
@@ -111,7 +111,7 @@ function renderFileViewer() {
     
     if (fileViewerData.allFiles.length > 0) {
         // All files section
-        const allSection = createSection('All Cards', fileViewerData.allFiles);
+        const allSection = createSection('All Files', fileViewerData.allFiles);
         fileList.appendChild(allSection);
     }
     
@@ -125,8 +125,8 @@ function renderFileViewer() {
                 <line x1="12" y1="8" x2="12" y2="16"/>
                 <line x1="8" y1="12" x2="16" y2="12"/>
             </svg>
-            <h3>No Cards Yet</h3>
-            <p>Create categories and add cards to get started</p>
+            <h3>No Files Yet</h3>
+            <p>Create categories and add files to get started</p>
             <button class="file-viewer-create-btn" onclick="closeFileViewerModal(); document.getElementById('addCategoryBtn').click();">
                 Create Category
             </button>
@@ -151,8 +151,8 @@ function createSection(title, files) {
     grid.className = 'file-viewer-grid';
     
     files.forEach(file => {
-        const fileCard = createFileCard(file);
-        grid.appendChild(fileCard);
+        const fileFile = createFileFile(file);
+        grid.appendChild(fileFile);
     });
     
     section.appendChild(grid);
@@ -160,11 +160,11 @@ function createSection(title, files) {
 }
 
 /**
- * Create a file card element
+ * Create a file file element
  */
-function createFileCard(file) {
-    const card = document.createElement('div');
-    card.className = 'file-viewer-card';
+function createFileFile(file) {
+    const file = document.createElement('div');
+    file.className = 'file-viewer-file';
     
     // Thumbnail or icon
     const thumbnail = document.createElement('div');
@@ -182,7 +182,7 @@ function createFileCard(file) {
             </svg>
         `;
     }
-    card.appendChild(thumbnail);
+    file.appendChild(thumbnail);
     
     // File info
     const info = document.createElement('div');
@@ -198,7 +198,7 @@ function createFileCard(file) {
     meta.textContent = `${file.boardName} • ${file.categoryTitle} • ${file.size}`;
     info.appendChild(meta);
     
-    card.appendChild(info);
+    file.appendChild(info);
     
     // Actions
     const actions = document.createElement('div');
@@ -235,19 +235,19 @@ function createFileCard(file) {
     };
     actions.appendChild(deleteBtn);
     
-    card.appendChild(actions);
+    file.appendChild(actions);
     
-    // Click handler for the card
-    card.addEventListener('click', () => openFile(file));
+    // Click handler for the file
+    file.addEventListener('click', () => openFile(file));
     
-    return card;
+    return file;
 }
 
 /**
- * Open a file (expand the card)
+ * Open a file (expand the file)
  */
 function openFile(file) {
-    console.log('Opening card:', file.title);
+    console.log('Opening file:', file.title);
     
     // Close the modal
     const modal = document.getElementById('fileViewerModal');
@@ -255,12 +255,12 @@ function openFile(file) {
         modal.style.display = 'none';
     }
     
-    // First, load the board that contains this card
+    // First, load the board that contains this file
     if (window.loadBoard) {
         window.loadBoard(file.boardId);
     }
     
-    // Then find and expand the card
+    // Then find and expand the file
     setTimeout(() => {
         const canvas = document.getElementById('canvas');
         if (canvas) {
@@ -268,12 +268,12 @@ function openFile(file) {
             categories.forEach(category => {
                 const categoryTitle = category.querySelector('.category-title');
                 if (categoryTitle && categoryTitle.textContent === file.categoryTitle) {
-                    const cards = category.querySelectorAll('.card');
-                    cards.forEach(card => {
-                        const cardTitle = card.querySelector('.card-title');
-                        if (cardTitle && cardTitle.textContent === file.title) {
-                            // Expand the card
-                            card.click();
+                    const files = category.querySelectorAll('.file');
+                    files.forEach(file => {
+                        const fileTitle = file.querySelector('.file-title');
+                        if (fileTitle && fileTitle.textContent === file.title) {
+                            // Expand the file
+                            file.click();
                         }
                     });
                 }
@@ -286,7 +286,7 @@ function openFile(file) {
 }
 
 /**
- * Delete a file (remove the card)
+ * Delete a file (remove the file)
  */
 function deleteFile(file) {
     if (confirm(`Are you sure you want to delete "${file.title}"?`)) {
@@ -295,12 +295,12 @@ function deleteFile(file) {
         const board = boards.find(b => b.id === file.boardId);
         
         if (board && board.categories) {
-            // Find and remove the card from the board data
+            // Find and remove the file from the board data
             board.categories.forEach(category => {
-                if (category.title === file.categoryTitle && category.cards) {
-                    const cardIndex = category.cards.findIndex(card => card.title === file.title);
-                    if (cardIndex !== -1) {
-                        category.cards.splice(cardIndex, 1);
+                if (category.title === file.categoryTitle && category.files) {
+                    const fileIndex = category.files.findIndex(file => file.title === file.title);
+                    if (fileIndex !== -1) {
+                        category.files.splice(fileIndex, 1);
                     }
                 }
             });

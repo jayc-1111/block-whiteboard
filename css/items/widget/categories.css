@@ -109,14 +109,14 @@
 }
 
 /* Specific adjustments for SVG icons */
-.category-header .add-card-btn svg {
+.category-header .add-file-btn svg {
     width: 16px;
     height: 16px;
     display: block;
     transition: transform 0.2s ease;
 }
 
-.category-header .add-card-btn:hover svg {
+.category-header .add-file-btn:hover svg {
     transform: scale(1.1);
 }
 
@@ -143,26 +143,26 @@
     box-shadow: 0 0 8px rgba(0, 0, 0, 0.15) !important;
 }
 
-/* Cards grid layout */
-.cards-grid {
+/* Files grid layout */
+.files-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 0;  /* Changed from 5px to allow cards to touch each other */
+    gap: 0;  /* Changed from 5px to allow files to touch each other */
     min-height: 38px;
     width: 100%;
     box-sizing: border-box;
 }
 
-.category.collapsed .cards-grid {
-    /* Keep grid visible but limit to 2 rows (4 cards) */
+.category.collapsed .files-grid {
+    /* Keep grid visible but limit to 2 rows (4 files) */
 }
 
-/* Hide cards after the 2nd one when collapsed */
-.category.collapsed .cards-grid .card-slot:nth-child(n+3) {
+/* Hide files after the 2nd one when collapsed */
+.category.collapsed .files-grid .file-slot:nth-child(n+3) {
     display: none;
 }
 
-.category.collapsed .cards-grid .card:nth-child(n+3) {
+.category.collapsed .files-grid .file:nth-child(n+3) {
     display: none;
 }
 
@@ -229,8 +229,8 @@
     border-color: rgba(0, 0, 0, 0.15);
 }
 
-/* Card slots */
-.card-slot {
+/* File slots */
+.file-slot {
     min-height: 87px;
     border: 2px dashed #121212;
     border-radius: 4px;
@@ -238,7 +238,7 @@
     background: rgba(7, 7, 7, 0.03);
 }
 
-.card-slot.drag-over {
+.file-slot.drag-over {
     border-color: #60a5fa;
     background: #1a2332;
 }

@@ -25,19 +25,19 @@
     color: #fff;
 }
 
-/* Dark frosted glass cards - same as cosmic mode */
-.with-background .card {
+/* Dark frosted glass files - same as cosmic mode */
+.with-background .file {
     background: rgba(0, 0, 0, 0.7);
     backdrop-filter: blur(10px);
     border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-/* White text for dark cards */
-.with-background .card-title {
+/* White text for dark files */
+.with-background .file-title {
     color: #fff;
 }
 
-.with-background .card-content {
+.with-background .file-content {
     color: #ddd;
 }
 

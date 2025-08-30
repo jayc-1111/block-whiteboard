@@ -1,0 +1,294 @@
+/* ===================================
+   sidebar MENU STYLES - NO PADDING
+   =================================== */
+
+/* Base reset - Single definition only */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Helvetica', 'Fira Code', 'Courier New', monospace;
+}
+
+/* sidebar menu container - With padding top */
+#sidebarMenu {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1000001;
+    height: 100vh;
+    width: 300px;
+    background-color: #131313;
+    transition: transform 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    padding-top: 90px;
+}
+
+#sidebarMenu:not(.open) {
+    transform: translateX(-300px);
+}
+
+#sidebarMenu.open {
+    transform: translateX(0);
+}
+
+#sidebarMenu.open .sidebar-content {
+    display: flex;
+}
+
+/* sidebar content - No padding */
+.sidebar-content {
+    display: none;
+    flex-direction: column;
+    height: 100%;
+    overflow-y: auto;
+}
+
+/* sidebar button - Single definition only */
+.sidebar-btn {
+    position: fixed;
+    left: 25px;
+    top: 22px;
+    width: 48px;
+    height: 48px;
+    background: #131313;
+    border: 2px solid #1a1a1a;
+    border-radius: 12px;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    transition: all 0.3s ease;
+    z-index: 1000002;
+}
+
+.sidebar-btn:hover {
+    background: #3a3a3a;
+    border-color: #2a2a2a;
+}
+
+.sidebar-btn svg {
+    width: 24px;
+    height: 24px;
+    color: #fff;
+    transition: all 0.3s ease;
+}
+
+/* Sidebar layout - No vertical padding */
+.sidebar-content {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    gap: 0;
+}
+
+
+
+/* File tree section - Clean definitions */
+.file-tree-section {
+    flex: 2;
+    overflow-y: auto;
+    margin: 10px 0;
+}
+
+/* Bookmarks section - No top padding */
+.bookmarks-section {
+    flex: 1;
+    overflow-y: auto;
+    border-top: 1px solid #2a2a2a;
+    margin-top: 15px;
+}
+
+.bookmarks-section h3 {
+    color: #ddd;
+    font-size: 0.9rem;
+    margin: 0 0 10px 0;
+    border-bottom: 1px solid #2a2a2a;
+}
+
+.bookmarks-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.bookmark-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    color: #9ca3af;
+    font-size: 0.8rem;
+}
+
+.bookmark-item:hover {
+    background: #2a2a2a;
+    color: #ddd;
+}
+
+.bookmark-item svg {
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+}
+
+
+/* sidebar items - No horizontal padding */
+.sidebar-item {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    color: #ddd;
+    font-family: 'Nunito', sans-serif !important;
+    font-size: 0.80rem;
+    font-weight: 500;
+}
+
+.sidebar-item:hover {
+    background: #2a2a2a;
+}
+
+.sidebar-item svg {
+    width: 18px;
+    height: 18px;
+    stroke: #ddd;
+    flex-shrink: 0;
+}
+
+.sidebar-item span {
+    flex: 1;
+}
+
+/* Settings menu - No padding */
+#settingsItem .settings-menu {
+    position: absolute;
+    left: 100%;
+    bottom: 0;
+    background: #131313;
+    border-radius: 12px;
+    min-width: 200px;
+    z-index: 10000;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.2s, visibility 0.2s;
+}
+
+#settingsItem:hover .settings-menu {
+    opacity: 1;
+    visibility: visible;
+}
+
+.settings-option {
+    position: relative;
+    display: flex;
+    align-items: center;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    color: #ddd;
+    font-family: 'Nunito', sans-serif !important;
+    font-size: 0.80rem;
+    font-weight: 500;
+}
+
+.settings-option:hover {
+    background: #2a2a2a;
+}
+
+.settings-option.separator {
+    height: 1px;
+    background: #2a2a2a;
+    margin: 8px 0;
+    cursor: default;
+    width: 100%;
+}
+
+.bg-option {
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all 0.3s ease-out;
+    color: #7e8590;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.bg-option:hover {
+    background-color: #5353ff;
+    color: #ffffff;
+}
+
+.bg-option.active {
+    background: #3b82f6;
+    color: white;
+}
+
+/* Light mode adjustments - Clean definitions */
+.light-mode #sidebarMenu .sidebar-btn {
+    background: #F5F7FB;
+    border: 1px solid #F5F7FB;
+}
+
+.light-mode #sidebarMenu .sidebar-btn:hover {
+    background: #ECECEC;
+    border-color: #ECECEC;
+}
+
+.light-mode #sidebarMenu .sidebar-btn svg,
+.light-mode .sidebar-item svg {
+    color: #7f7f7f;
+    stroke: #7f7f7f;
+}
+
+.light-mode .sidebar-item,
+.light-mode .sidebar-item:hover {
+    color: #7f7f7f;
+    background: transparent;
+}
+
+.light-mode .sidebar-item:hover {
+    background: #F5F7FB;
+}
+
+.light-mode .sidebar-separator {
+    background: #F5F7FB;
+}
+
+/* Push effect for whiteboard */
+body.sidebar-open #whiteboard {
+    transform: translateX(300px);
+    transition: transform 0.3s ease;
+    width: calc(100% - 300px);
+}
+
+#whiteboard {
+    transition: transform 0.3s ease, width 0.3s ease;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #1e1e2e;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #3b3b4d;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #4d4d63;
+}

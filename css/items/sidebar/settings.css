@@ -1,0 +1,406 @@
+/* Sidebar Dropdown Components */
+
+/* Settings Menu popup - sidebar menu style */
+/* Note: Positioning handled by sidebar.css to avoid conflicts */
+.settings-menu {
+    background: #131313;
+    border-radius: 12px;
+    padding: 8px;
+    z-index: 1000002;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+    flex-direction: column;
+    min-width: 220px;
+    display: flex;
+    position: absolute;
+    /* Position and placement handled by sidebar.css */
+}
+
+/* Show settings menu on hover of settings item */
+#settingsItem:hover .settings-menu {
+    opacity: 1;
+    visibility: visible;
+    display: flex;
+}
+
+.settings-option {
+    width: calc(100% - 18px);
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    padding: 4px 6px;
+    margin: 0 9px;
+    background: transparent;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all 0.3s ease-out;
+    color: #7e8590;
+    font-family: 'Nunito', sans-serif !important;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-align: left;
+    height: auto;
+    justify-content: flex-start;
+}
+
+.settings-option:hover {
+    background-color: #5353ff;
+    color: #ffffff;
+}
+
+.settings-option:active {
+    transform: scale(0.99);
+}
+
+.settings-option.active {
+    background: #2b2a2a;
+    font-weight: 600;
+}
+
+.settings-option.separator {
+    height: 1px;
+    background: #2a2a2a;
+    margin: 8px 0;
+    cursor: default;
+}
+
+.settings-option.separator:hover {
+    background: transparent;
+}
+
+/* Toggle indicator styling */
+.toggle-indicator {
+    font-size: 0.72rem;
+    font-weight: 600;
+    transition: color 0.2s;
+}
+
+/* Customization submenu - sidebar menu style */
+.customization-submenu {
+    position: absolute;
+    left: 100%;
+    top: 0;
+    background: #0a0a0a;
+    border-radius: 8px;
+    padding: 8px;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.2s, visibility 0.2s;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    min-width: 150px;
+    pointer-events: none;
+    z-index: 1001;
+}
+
+.customization-submenu::before {
+    content: '';
+    position: absolute;
+    left: -5px;
+    top: 0;
+    width: 10px;
+    height: 100%;
+    background: transparent;
+}
+
+.settings-option.has-submenu {
+    position: relative;
+}
+
+.settings-option.has-submenu::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: -10px;
+    bottom: 0;
+    background: transparent;
+    pointer-events: none;
+}
+
+.settings-option.has-submenu:hover .customization-submenu,
+.customization-submenu:hover {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    transition: opacity 0.15s ease, visibility 0s;
+}
+
+.bg-option {
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    color: #ddd;
+    font-size: 0.75rem;
+    user-select: none;
+    white-space: nowrap;
+}
+
+.bg-option:hover {
+    background: #2a2a2a;
+}
+
+.bg-option.active {
+    background: #2b2a2a;
+    font-weight: 600;
+}
+
+
+/* Settings Modal Styles - Using same pattern as bookmarks modal */
+.settings-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 9999999;
+    animation: fadeIn 0.3s ease;
+}
+
+.settings-modal.active {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.settings-modal-content {
+    position: fixed;
+    top: 12%;
+    left: 12%;
+    width: 76%;
+    height: 76%;
+    background: #1a1a1a;
+    border-radius: 12px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    display: flex;
+    flex-direction: column;
+    animation: slideUp 0.3s ease;
+    overflow: hidden;
+}
+
+.settings-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 24px 32px;
+    background: #2d2d2d;
+    border-bottom: 1px solid #444;
+    flex-shrink: 0;
+}
+
+.settings-modal-header h2 {
+    margin: 0;
+    font-size: 24px;
+    font-weight: 600;
+    color: #e0e0e0;
+}
+
+.settings-modal-controls {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.settings-modal-close {
+    background: none;
+    border: none;
+    font-size: 32px;
+    color: #6b7280;
+    cursor: pointer;
+    padding: 0;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    transition: all 0.2s;
+}
+
+.settings-modal-close:hover {
+    background: #374151;
+    color: #e0e0e0;
+}
+
+.settings-modal-body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: auto;
+    background: #1a1a1a;
+    padding: 32px;
+}
+
+.settings-option {
+    width: 100%;
+    margin: 0;
+    padding: 16px 20px;
+    border-radius: 8px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    color: #e0e0e0;
+    font-family: 'Nunito', sans-serif !important;
+    font-size: 0.9rem;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    text-align: left;
+}
+
+.settings-option:hover {
+    background-color: #374151;
+    color: #ffffff;
+}
+
+.settings-option.separator {
+    height: 1px;
+    background: #444;
+    margin: 16px 0;
+    cursor: default;
+}
+
+.settings-option.separator:hover {
+    background: #444;
+}
+
+.settings-submenu {
+    margin-top: 24px;
+}
+
+.settings-submenu-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    color: #e0e0e0;
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 16px;
+    cursor: pointer;
+    padding: 16px;
+    border-radius: 8px;
+    transition: background-color 0.2s ease;
+}
+
+.settings-submenu-header:hover {
+    background-color: #374151;
+}
+
+.settings-submenu-header svg {
+    width: 24px;
+    height: 24px;
+}
+
+.settings-modal .settings-option[data-theme]:hover {
+    background-color: #374151;
+    color: #ffffff;
+}
+
+.settings-modal .settings-option[data-theme].active {
+    background-color: #5353ff;
+    color: #ffffff;
+    font-weight: 600;
+}
+
+/* Settings options grid for theme selection */
+.settings-options-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-top: 16px;
+}
+
+.settings-options-grid .settings-option {
+    padding: 12px 16px;
+    font-size: 0.85rem;
+    text-align: center;
+    justify-content: center;
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes slideUp {
+    from {
+        transform: translateY(20px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+/* Light mode overrides for settings modal */
+.light-mode .settings-modal-content {
+    background: #FFFFFF;
+    border: 1px solid #F5F7FB;
+}
+
+.light-mode .settings-modal-header {
+    border-bottom: 1px solid #F5F7FB;
+}
+
+.light-mode .settings-modal-header h2 {
+    color: #333333;
+}
+
+.light-mode .settings-modal-close {
+    color: #333333;
+}
+
+.light-mode .settings-modal-close:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+}
+
+.light-mode .settings-submenu-header {
+    color: #333333;
+}
+
+.light-mode .settings-submenu-header:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+}
+
+.light-mode .settings-modal .settings-option {
+    color: #7f7f7f;
+}
+
+.light-mode .settings-modal .settings-option:hover {
+    background-color: #F5F7FB;
+    color: #7f7f7f;
+}
+.light-mode .settings-modal-close {
+    color: #333333;
+}
+
+.light-mode .settings-modal-close:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+}
+
+.light-mode .settings-submenu-header {
+    color: #333333;
+}
+
+.light-mode .settings-submenu-header:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+}
+
+.light-mode .settings-modal .settings-option {
+    color: #7f7f7f;
+}
+
+.light-mode .settings-modal .settings-option:hover {
+    background-color: #F5F7FB;
+    color: #7f7f7f;
+}

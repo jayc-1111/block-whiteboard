@@ -77,9 +77,9 @@ export const authUI = {
         this.addAuthButton();
         Debug.auth.step('Auth button added to toolbar');
         
-        // Add user info to hamburger menu
-        this.addUserInfoToHamburger();
-        Debug.auth.step('User info added to hamburger menu');
+        // Add user info to sidebar menu
+        this.addUserInfoTosidebar();
+        Debug.auth.step('User info added to sidebar menu');
         
         // Setup event listeners after modal is created
         this.setupEventListeners();
@@ -121,7 +121,7 @@ export const authUI = {
             // Force UI update with delay to ensure DOM is ready
             setTimeout(() => {
                 this.updateUIForUser(user);
-                this.updateUserInfoForHamburger(user);
+                this.updateUserInfoForsidebar(user);
             }, 0);
             
             // Update dev mode info immediately when auth state changes
@@ -148,7 +148,7 @@ export const authUI = {
         if (currentUser) {
             Debug.auth.detail('Current user on init', { uid: currentUser.uid });
             this.updateUIForUser(currentUser);
-            this.updateUserInfoForHamburger(currentUser);
+            this.updateUserInfoForsidebar(currentUser);
             
             // Update dev info for current user
             if (window.setDevInfo) {
@@ -476,47 +476,47 @@ export const authUI = {
         }
     },
     
-    addUserInfoToHamburger() {
+    addUserInfoTosidebar() {
         const attemptAddUserInfo = () => {
-            const hamburgerContent = document.querySelector('.hamburger-content .sidebar-content');
-            if (!hamburgerContent) {
-                Debug.auth.detail('Auth UI: Hamburger content not found, retrying in 500ms...');
+            const sidebarContent = document.querySelector('.sidebar-content .sidebar-content');
+            if (!sidebarContent) {
+                Debug.auth.detail('Auth UI: sidebar content not found, retrying in 500ms...');
                 setTimeout(attemptAddUserInfo, 500);
                 return;
             }
             
             // Check if user info container already exists
-            if (document.querySelector('.hamburger-user-info')) {
-                Debug.auth.detail('Hamburger user info container already exists');
+            if (document.querySelector('.sidebar-user-info')) {
+                Debug.auth.detail('sidebar user info container already exists');
                 return;
             }
             
-            // Create user info container for hamburger menu
+            // Create user info container for sidebar menu
             const userInfoContainer = document.createElement('div');
-            userInfoContainer.className = 'hamburger-user-info';
+            userInfoContainer.className = 'sidebar-user-info';
             userInfoContainer.innerHTML = `
-                <div class="hamburger-separator"></div>
-                <div class="hamburger-item" id="hamburgerUserInfo" style="display: none;">
-                    <span id="hamburgerUserEmail" style="margin-left: 0; font-size: 0.85rem;"></span>
+                <div class="sidebar-separator"></div>
+                <div class="sidebar-item" id="sidebarUserInfo" style="display: none;">
+                    <span id="sidebarUserEmail" style="margin-left: 0; font-size: 0.85rem;"></span>
                 </div>
             `;
             
             // Insert at the bottom of the sidebar content, above the settings section
-            const bookmarksSection = hamburgerContent.querySelector('.bookmarks-section');
+            const bookmarksSection = sidebarContent.querySelector('.bookmarks-section');
             if (bookmarksSection) {
-                hamburgerContent.insertBefore(userInfoContainer, bookmarksSection);
+                sidebarContent.insertBefore(userInfoContainer, bookmarksSection);
             } else {
                 // Fallback: insert at the end
-                hamburgerContent.appendChild(userInfoContainer);
+                sidebarContent.appendChild(userInfoContainer);
             }
             
-            Debug.auth.step('User info added to hamburger menu successfully');
+            Debug.auth.step('User info added to sidebar menu successfully');
             
             // Check if we have a current user and update UI immediately
             const currentUser = authService.getCurrentUser();
             if (currentUser) {
                 Debug.auth.detail('Current user found during user info setup', { user: currentUser.email || 'Anonymous' });
-                setTimeout(() => this.updateUserInfoForHamburger(currentUser), 100);
+                setTimeout(() => this.updateUserInfoForsidebar(currentUser), 100);
             }
         };
         
@@ -524,14 +524,14 @@ export const authUI = {
         attemptAddUserInfo();
     },
     
-    updateUserInfoForHamburger(user) {
-        const userInfoContainer = document.querySelector('.hamburger-user-info');
-        const userInfoElement = document.getElementById('hamburgerUserInfo');
-        const userEmailElement = document.getElementById('hamburgerUserEmail');
+    updateUserInfoForsidebar(user) {
+        const userInfoContainer = document.querySelector('.sidebar-user-info');
+        const userInfoElement = document.getElementById('sidebarUserInfo');
+        const userEmailElement = document.getElementById('sidebarUserEmail');
         
         if (!userInfoContainer || !userInfoElement || !userEmailElement) {
-            Debug.auth.stepError('Hamburger user info elements not found, retrying...');
-            setTimeout(() => this.updateUserInfoForHamburger(user), 100);
+            Debug.auth.stepError('sidebar user info elements not found, retrying...');
+            setTimeout(() => this.updateUserInfoForsidebar(user), 100);
             return;
         }
         
@@ -548,34 +548,34 @@ export const authUI = {
             
             if (isAuthenticatedUser) {
                 // Real authenticated user - show user email
-                Debug.auth.step('AUTHENTICATED USER CONFIRMED for hamburger');
-                Debug.auth.detail('User email for hamburger', { email: user.email });
+                Debug.auth.step('AUTHENTICATED USER CONFIRMED for sidebar');
+                Debug.auth.detail('User email for sidebar', { email: user.email });
                 
                 userInfoElement.style.display = 'flex';
                 
                 if (userEmailElement) {
                     userEmailElement.textContent = user.email;
                     userEmailElement.style.color = '#40c9ff';
-                    Debug.auth.detail('Email element updated for hamburger', { email: user.email });
+                    Debug.auth.detail('Email element updated for sidebar', { email: user.email });
                 }
                 
             } else if (isGuestUser) {
                 // Guest user - show guest ID
                 const guestId = user.uid.slice(-6).toUpperCase();
-                Debug.auth.step('GUEST USER CONFIRMED for hamburger');
-                Debug.auth.detail('Guest ID for hamburger', { guestId });
+                Debug.auth.step('GUEST USER CONFIRMED for sidebar');
+                Debug.auth.detail('Guest ID for sidebar', { guestId });
                 
                 userInfoElement.style.display = 'flex';
                 
                 if (userEmailElement) {
                     userEmailElement.textContent = `Guest: ${guestId}`;
                     userEmailElement.style.color = '#888';
-                    Debug.auth.detail('Guest ID element updated for hamburger', { guestId });
+                    Debug.auth.detail('Guest ID element updated for sidebar', { guestId });
                 }
             }
         } else {
             // No user - hide user info
-            Debug.auth.detail('No user - hiding user info in hamburger');
+            Debug.auth.detail('No user - hiding user info in sidebar');
             userInfoElement.style.display = 'none';
         }
     },

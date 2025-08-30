@@ -1,7 +1,7 @@
 // Bookmark Move Modal
 (function() {
     let bookmarkToMove = null;
-    let sourceCard = null;
+    let sourceFile = null;
     let sourceSectionId = null;
     let fileTree = null;
     
@@ -72,9 +72,9 @@
     }
     
     // Show move modal
-    function showMoveModal(bookmark, card, sectionId = null) {
+    function showMoveModal(bookmark, file, sectionId = null) {
         bookmarkToMove = bookmark;
-        sourceCard = card;
+        sourceFile = file;
         sourceSectionId = sectionId;
         
         const modal = document.getElementById('bookmarkMoveModal');
@@ -96,20 +96,20 @@
         fileTree = new window.FileTree({
             showSections: true,
             showCreateNew: true,
-            onSelect: (card) => {
-                // Enable move button when a card is selected
+            onSelect: (file) => {
+                // Enable move button when a file is selected
                 if (moveBtn) {
                     moveBtn.disabled = false;
                 }
             },
-            onSectionSelect: (card, sectionId) => {
+            onSectionSelect: (file, sectionId) => {
                 // Enable move button when a section is selected
                 if (moveBtn) {
                     moveBtn.disabled = false;
                 }
             },
             onCreateNew: () => {
-                createNewCardForBookmark();
+                createNewFileForBookmark();
             }
         });
         
@@ -140,7 +140,7 @@
         }
         
         bookmarkToMove = null;
-        sourceCard = null;
+        sourceFile = null;
         sourceSectionId = null;
     }
     
@@ -148,11 +148,11 @@
     function moveBookmark() {
         if (!bookmarkToMove || !fileTree) return;
         
-        const targetCard = fileTree.getSelectedCard();
+        const targetFile = fileTree.getSelectedFile();
         const targetSectionId = fileTree.getSelectedSectionId();
         
-        if (!targetCard) {
-            console.error('No target card selected');
+        if (!targetFile) {
+            console.error('No target file selected');
             return;
         }
         
@@ -160,7 +160,7 @@
         removeBookmarkFromSource();
         
         // Add bookmark to target
-        addBookmarkToTarget(targetCard, targetSectionId);
+        addBookmarkToTarget(targetFile, targetSectionId);
         
         // Close modal
         closeModal();
@@ -170,36 +170,36 @@
             window.simpleNotifications.showNotification('Bookmark moved successfully');
         }
         
-        // Expand the target card
-        expandTargetCard(targetCard);
+        // Expand the target file
+        expandTargetFile(targetFile);
     }
     
-    // Expand the target card after moving a bookmark
-    function expandTargetCard(targetCard) {
-        // Check if targetCard is a string ID or DOM element
-        let cardElement = targetCard;
+    // Expand the target file after moving a bookmark
+    function expandTargetFile(targetFile) {
+        // Check if targetFile is a string ID or DOM element
+        let fileElement = targetFile;
         
-        // If it's a string ID, find the card element
-        if (typeof targetCard === 'string') {
-            cardElement = document.getElementById(targetCard);
+        // If it's a string ID, find the file element
+        if (typeof targetFile === 'string') {
+            fileElement = document.getElementById(targetFile);
         }
         
-        // If we found the card element, expand it
-        if (cardElement && typeof window.expandCard === 'function') {
+        // If we found the file element, expand it
+        if (fileElement && typeof window.expandFile === 'function') {
             // Use setTimeout to ensure the UI has updated before expanding
             setTimeout(() => {
-                window.expandCard(cardElement);
+                window.expandFile(fileElement);
             }, 100);
         } else {
-            console.warn('Could not find target card element to expand');
+            console.warn('Could not find target file element to expand');
         }
     }
     
     // Remove bookmark from source
     function removeBookmarkFromSource() {
-        // If there's no source card, this bookmark is from the bookmarks modal
+        // If there's no source file, this bookmark is from the bookmarks modal
         // In this case, we just need to remove it from localStorage
-        if (!sourceCard || !bookmarkToMove) {
+        if (!sourceFile || !bookmarkToMove) {
             // Remove from localStorage if it exists there
             for (let i = localStorage.length - 1; i >= 0; i--) {
                 const key = localStorage.key(i);
@@ -219,11 +219,11 @@
         
         // Find source section
         let sourceSection = null;
-        if (sourceSectionId && sourceCard.sections) {
-            sourceSection = sourceCard.sections.find(s => s.id === sourceSectionId);
+        if (sourceSectionId && sourceFile.sections) {
+            sourceSection = sourceFile.sections.find(s => s.id === sourceSectionId);
         }
         
-        // Remove from source section or card
+        // Remove from source section or file
         if (sourceSection) {
             // Remove from section
             const index = sourceSection.bookmarks.findIndex(b => b.id === bookmarkToMove.id);
@@ -231,33 +231,33 @@
                 sourceSection.bookmarks.splice(index, 1);
             }
         } else {
-            // Remove from card
-            const index = sourceCard.bookmarks.findIndex(b => b.id === bookmarkToMove.id);
+            // Remove from file
+            const index = sourceFile.bookmarks.findIndex(b => b.id === bookmarkToMove.id);
             if (index !== -1) {
-                sourceCard.bookmarks.splice(index, 1);
+                sourceFile.bookmarks.splice(index, 1);
             }
         }
         
-        // Update UI in source card if it's expanded
-        if (sourceCard.classList && sourceCard.classList.contains('expanded')) {
-            updateSourceCardUI();
+        // Update UI in source file if it's expanded
+        if (sourceFile.classList && sourceFile.classList.contains('expanded')) {
+            updateSourceFileUI();
         }
         
         // Update AppState
-        updateAppState(sourceCard, sourceSection, false);
+        updateAppState(sourceFile, sourceSection, false);
     }
     
     // Add bookmark to target
-    function addBookmarkToTarget(targetCard, targetSectionId) {
-        if (!targetCard || !bookmarkToMove) return;
+    function addBookmarkToTarget(targetFile, targetSectionId) {
+        if (!targetFile || !bookmarkToMove) return;
         
         // Find target section
         let targetSection = null;
-        if (targetSectionId && targetCard.sections) {
-            targetSection = targetCard.sections.find(s => s.id === targetSectionId);
+        if (targetSectionId && targetFile.sections) {
+            targetSection = targetFile.sections.find(s => s.id === targetSectionId);
         }
         
-        // Add to target section or card
+        // Add to target section or file
         if (targetSection) {
             // Add to section
             if (!targetSection.bookmarks) {
@@ -265,28 +265,28 @@
             }
             targetSection.bookmarks.push(bookmarkToMove);
         } else {
-            // Add to card
-            if (!targetCard.bookmarks) {
-                targetCard.bookmarks = [];
+            // Add to file
+            if (!targetFile.bookmarks) {
+                targetFile.bookmarks = [];
             }
-            targetCard.bookmarks.push(bookmarkToMove);
+            targetFile.bookmarks.push(bookmarkToMove);
         }
         
-        // Update UI in target card if it's expanded
-        if (targetCard.classList && targetCard.classList.contains('expanded')) {
-            updateTargetCardUI(targetCard, targetSection, targetSectionId);
+        // Update UI in target file if it's expanded
+        if (targetFile.classList && targetFile.classList.contains('expanded')) {
+            updateTargetFileUI(targetFile, targetSection, targetSectionId);
         }
         
         // Update AppState
-        updateAppState(targetCard, targetSection, true);
+        updateAppState(targetFile, targetSection, true);
     }
     
-    // Update source card UI
-    function updateSourceCardUI() {
-        // Find the section element in the source card
+    // Update source file UI
+    function updateSourceFileUI() {
+        // Find the section element in the source file
         let sectionElement = null;
         if (sourceSectionId) {
-            const sections = sourceCard.querySelectorAll('.card-section');
+            const sections = sourceFile.querySelectorAll('.file-section');
             for (const section of sections) {
                 if (section.sectionData && section.sectionData.id === sourceSectionId) {
                     sectionElement = section;
@@ -298,20 +298,20 @@
         // Update bookmarks section UI
         const bookmarksContainer = sectionElement ? 
             sectionElement.querySelector('.section-bookmarks') : 
-            sourceCard.querySelector('.bookmarks-section');
+            sourceFile.querySelector('.bookmarks-section');
         
         if (bookmarksContainer) {
             // Refresh all bookmarks to update indices
-            refreshBookmarksUI(bookmarksContainer, sectionElement || sourceCard);
+            refreshBookmarksUI(bookmarksContainer, sectionElement || sourceFile);
         }
     }
     
-    // Update target card UI
-    function updateTargetCardUI(targetCard, targetSection, targetSectionId) {
-        // Find the section element in the target card
+    // Update target file UI
+    function updateTargetFileUI(targetFile, targetSection, targetSectionId) {
+        // Find the section element in the target file
         let sectionElement = null;
         if (targetSection && targetSectionId) {
-            const sections = targetCard.querySelectorAll('.card-section');
+            const sections = targetFile.querySelectorAll('.file-section');
             for (const section of sections) {
                 if (section.sectionData && section.sectionData.id === targetSectionId) {
                     sectionElement = section;
@@ -323,96 +323,96 @@
         // Update bookmarks section UI
         const bookmarksContainer = sectionElement ? 
             sectionElement.querySelector('.section-bookmarks') : 
-            targetCard.querySelector('.bookmarks-section');
+            targetFile.querySelector('.bookmarks-section');
         
         if (bookmarksContainer) {
             // Add the moved bookmark to the UI
-            const bookmarkCard = window.createBookmarkCard(
+            const bookmarkFile = window.createBookmarkFile(
                 bookmarkToMove.title,
                 bookmarkToMove.description || bookmarkToMove.url,
                 bookmarkToMove.url,
                 bookmarkToMove.timestamp || new Date(),
                 bookmarkToMove.screenshot || bookmarkToMove.image,
-                targetSection ? targetSection.bookmarks.length - 1 : targetCard.bookmarks.length - 1,
-                targetCard,
+                targetSection ? targetSection.bookmarks.length - 1 : targetFile.bookmarks.length - 1,
+                targetFile,
                 sectionElement
             );
-            bookmarksContainer.appendChild(bookmarkCard);
+            bookmarksContainer.appendChild(bookmarkFile);
         }
     }
     
     // Refresh bookmarks UI
-    function refreshBookmarksUI(container, cardOrSection) {
+    function refreshBookmarksUI(container, fileOrSection) {
         if (!container) return;
         
         // Clear container
         container.innerHTML = '';
         
-        // Get bookmarks from card or section
+        // Get bookmarks from file or section
         let bookmarks = [];
-        if (cardOrSection.sectionData) {
+        if (fileOrSection.sectionData) {
             // Section
-            bookmarks = cardOrSection.sectionData.bookmarks || [];
+            bookmarks = fileOrSection.sectionData.bookmarks || [];
         } else {
-            // Card
-            bookmarks = cardOrSection.bookmarks || [];
+            // File
+            bookmarks = fileOrSection.bookmarks || [];
         }
         
-        // Re-create all bookmark cards
+        // Re-create all bookmark files
         if (bookmarks.length > 0) {
             bookmarks.forEach((bookmark, index) => {
-                const bookmarkCard = window.createBookmarkCard(
+                const bookmarkFile = window.createBookmarkFile(
                     bookmark.title,
                     bookmark.description || bookmark.url,
                     bookmark.url,
                     bookmark.timestamp || new Date(),
                     bookmark.screenshot || bookmark.image,
                     index,
-                    cardOrSection,
-                    cardOrSection.sectionData ? cardOrSection : null
+                    fileOrSection,
+                    fileOrSection.sectionData ? fileOrSection : null
                 );
-                container.appendChild(bookmarkCard);
+                container.appendChild(bookmarkFile);
             });
         } else {
             // Show placeholder when no bookmarks remain
-            const bookmarkCard = window.createBookmarkCard(
+            const bookmarkFile = window.createBookmarkFile(
                 'Example Bookmark', 
                 'This is a sample bookmark description that shows how bookmarks will appear.', 
                 'https://example.com', 
                 new Date(), 
                 null, 
                 0, 
-                cardOrSection,
-                cardOrSection.sectionData ? cardOrSection : null
+                fileOrSection,
+                fileOrSection.sectionData ? fileOrSection : null
             );
-            container.appendChild(bookmarkCard);
+            container.appendChild(bookmarkFile);
         }
     }
     
     // Update AppState
-    function updateAppState(card, section, isAdding) {
-        if (!card.appStateLocation) return;
+    function updateAppState(file, section, isAdding) {
+        if (!file.appStateLocation) return;
         
         const boards = AppState.get('boards');
         const currentBoardId = AppState.get('currentBoardId');
         const board = boards.find(b => b.id === currentBoardId);
         
         if (board && board.categories) {
-            const { categoryIndex, cardIndex } = card.appStateLocation;
-            if (board.categories[categoryIndex] && board.categories[categoryIndex].cards[cardIndex]) {
+            const { categoryIndex, fileIndex } = file.appStateLocation;
+            if (board.categories[categoryIndex] && board.categories[categoryIndex].files[fileIndex]) {
                 if (section) {
                     // Update section bookmarks
-                    if (!board.categories[categoryIndex].cards[cardIndex].sections) {
-                        board.categories[categoryIndex].cards[cardIndex].sections = [];
+                    if (!board.categories[categoryIndex].files[fileIndex].sections) {
+                        board.categories[categoryIndex].files[fileIndex].sections = [];
                     }
                     
-                    const sectionIndex = board.categories[categoryIndex].cards[cardIndex].sections.findIndex(s => s.id === section.id);
+                    const sectionIndex = board.categories[categoryIndex].files[fileIndex].sections.findIndex(s => s.id === section.id);
                     if (sectionIndex !== -1) {
-                        board.categories[categoryIndex].cards[cardIndex].sections[sectionIndex].bookmarks = 
+                        board.categories[categoryIndex].files[fileIndex].sections[sectionIndex].bookmarks = 
                             isAdding ? [...section.bookmarks] : section.bookmarks.filter(b => b.id !== bookmarkToMove.id);
                     } else if (section.id) {
                         // Add new section if it doesn't exist
-                        board.categories[categoryIndex].cards[cardIndex].sections.push({
+                        board.categories[categoryIndex].files[fileIndex].sections.push({
                             id: section.id,
                             title: section.title || 'New Section',
                             content: section.content || null,
@@ -420,23 +420,23 @@
                         });
                     }
                 } else {
-                    // Update card bookmarks
-                    board.categories[categoryIndex].cards[cardIndex].bookmarks = 
-                        isAdding ? [...card.bookmarks] : card.bookmarks.filter(b => b.id !== bookmarkToMove.id);
+                    // Update file bookmarks
+                    board.categories[categoryIndex].files[fileIndex].bookmarks = 
+                        isAdding ? [...file.bookmarks] : file.bookmarks.filter(b => b.id !== bookmarkToMove.id);
                 }
                 
                 AppState.set('boards', boards);
                 
                 // Save to Firebase
                 if (window.syncService) {
-                    window.syncService.saveAfterAction(isAdding ? 'bookmark moved to card' : 'bookmark removed from card');
+                    window.syncService.saveAfterAction(isAdding ? 'bookmark moved to file' : 'bookmark removed from file');
                 }
             }
         }
     }
     
-    // Create new card for bookmark with category selection
-    function createNewCardForBookmark() {
+    // Create new file for bookmark with category selection
+    function createNewFileForBookmark() {
         // Get all categories
         const canvas = document.getElementById('canvas');
         const categories = canvas ? Array.from(canvas.querySelectorAll('.category')) : [];
@@ -448,13 +448,13 @@
                 if (newCategory >= 0) {
                     const categories = AppState.get('categories');
                     const category = categories[newCategory];
-                    if (category && window.addCardToCategory) {
-                        const newCard = window.addCardToCategory(newCategory, 'New Bookmark Card');
-                        if (newCard) {
-                            // Select the new card in the file tree
+                    if (category && window.addFileToCategory) {
+                        const newFile = window.addFileToCategory(newCategory, 'New Bookmark File');
+                        if (newFile) {
+                            // Select the new file in the file tree
                             if (fileTree) {
-                                // Simulate selection of the new card
-                                fileTree.selectedCard = newCard;
+                                // Simulate selection of the new file
+                                fileTree.selectedFile = newFile;
                                 
                                 // Move the bookmark
                                 moveBookmark();
@@ -477,7 +477,7 @@
             <div id="categorySelectionDialog" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 10000001; display: flex; align-items: center; justify-content: center;">
                 <div style="background: #1a1a1a; border-radius: 12px; padding: 24px; width: 400px; max-width: 90%;">
                     <h3 style="margin: 0 0 16px 0; color: #fff;">Select Category</h3>
-                    <p style="color: #999; margin-bottom: 20px;">Choose where to create the new card:</p>
+                    <p style="color: #999; margin-bottom: 20px;">Choose where to create the new file:</p>
                     
                     <div style="max-height: 200px; overflow-y: auto; margin-bottom: 20px;">
         `;
@@ -490,7 +490,7 @@
                 <div style="padding: 10px; margin: 5px 0; background: #2d2d2d; border-radius: 6px; cursor: pointer; transition: background 0.2s;" 
                      data-category-index="${index}">
                     <div style="font-weight: 500; color: #fff;">${title}</div>
-                    <div style="font-size: 12px; color: #999;">${category.querySelectorAll('.card').length} cards</div>
+                    <div style="font-size: 12px; color: #999;">${category.querySelectorAll('.file').length} files</div>
                 </div>
             `;
         });
@@ -519,14 +519,14 @@
                     // Remove dialog
                     dialog.remove();
                     
-                    // Create new card in selected category
-                    if (window.addCardToCategory) {
-                        const newCard = window.addCardToCategory(index, 'New Bookmark Card');
-                        if (newCard) {
-                            // Select the new card in the file tree
+                    // Create new file in selected category
+                    if (window.addFileToCategory) {
+                        const newFile = window.addFileToCategory(index, 'New Bookmark File');
+                        if (newFile) {
+                            // Select the new file in the file tree
                             if (fileTree) {
-                                // Simulate selection of the new card
-                                fileTree.selectedCard = newCard;
+                                // Simulate selection of the new file
+                                fileTree.selectedFile = newFile;
                                 
                                 // Move the bookmark
                                 moveBookmark();
@@ -550,14 +550,14 @@
                     if (window.createCategory) {
                         const newCategoryIndex = window.createCategory(categoryName, 200, 200);
                         if (newCategoryIndex >= 0) {
-                            // Create new card in the new category
-                            if (window.addCardToCategory) {
-                                const newCard = window.addCardToCategory(newCategoryIndex, 'New Bookmark Card');
-                                if (newCard) {
-                                    // Select the new card in the file tree
+                            // Create new file in the new category
+                            if (window.addFileToCategory) {
+                                const newFile = window.addFileToCategory(newCategoryIndex, 'New Bookmark File');
+                                if (newFile) {
+                                    // Select the new file in the file tree
                                     if (fileTree) {
-                                        // Simulate selection of the new card
-                                        fileTree.selectedCard = newCard;
+                                        // Simulate selection of the new file
+                                        fileTree.selectedFile = newFile;
                                         
                                         // Move the bookmark
                                         moveBookmark();

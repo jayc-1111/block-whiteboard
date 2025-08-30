@@ -292,19 +292,19 @@ export const liveSyncService = {
         if (board.categories) {
             weight += board.categories.length * 100; // Each category worth 100 points
             
-            // Cards weight
+            // Files weight
             board.categories.forEach(cat => {
-                if (cat.cards) {
-                    weight += cat.cards.length * 50; // Each card worth 50 points
+                if (cat.files) {
+                    weight += cat.files.length * 50; // Each file worth 50 points
                     
                     // Content weight (based on actual content)
-                    cat.cards.forEach(card => {
-                        if (card.content && card.content.ops) {
+                    cat.files.forEach(file => {
+                        if (file.content && file.content.ops) {
                             // Count actual text content
-                            const textLength = card.content.ops.reduce((sum, op) => {
+                            const textLength = file.content.ops.reduce((sum, op) => {
                                 return sum + (typeof op.insert === 'string' ? op.insert.length : 0);
                             }, 0);
-                            weight += Math.min(textLength, 1000); // Cap at 1000 per card
+                            weight += Math.min(textLength, 1000); // Cap at 1000 per file
                         }
                     });
                 }
@@ -394,7 +394,7 @@ export const liveSyncService = {
                 createdAt: new Date().toISOString(),
                 contentWeight: this.calculateContentWeight(currentBoard),
                 categoriesCount: currentBoard.categories?.length || 0,
-                cardsCount: currentBoard.categories?.reduce((sum, cat) => sum + (cat.cards?.length || 0), 0) || 0
+                filesCount: currentBoard.categories?.reduce((sum, cat) => sum + (cat.files?.length || 0), 0) || 0
             };
             
             const backupsRef = collection(window.db, 'users', user.uid, 'backups');
@@ -450,7 +450,7 @@ export const liveSyncService = {
                     createdAt: data.createdAt,
                     contentWeight: data.contentWeight || 0,
                     categoriesCount: data.categoriesCount || 0,
-                    cardsCount: data.cardsCount || 0
+                    filesCount: data.filesCount || 0
                 });
             });
             
@@ -680,8 +680,8 @@ export const liveSyncService = {
         // Clear canvas
         const canvas = document.getElementById('canvas');
         if (canvas) {
-            // Save expanded card state before clearing
-            const expandedCard = AppState.get('expandedCard');
+            // Save expanded file state before clearing
+            const expandedFile = AppState.get('expandedFile');
             
             canvas.innerHTML = '';
             AppState.set('categories', []);
@@ -709,13 +709,13 @@ export const liveSyncService = {
                 selectorText.textContent = board.name;
             }
             
-            // Restore expanded card if it still exists
-            if (expandedCard) {
+            // Restore expanded file if it still exists
+            if (expandedFile) {
                 setTimeout(() => {
-                    const newCard = document.querySelector(`[data-card-id="${expandedCard.dataset.cardId}"]`);
-                    if (newCard) {
-                        // Re-expand the card
-                        newCard.click();
+                    const newFile = document.querySelector(`[data-file-id="${expandedFile.dataset.fileId}"]`);
+                    if (newFile) {
+                        // Re-expand the file
+                        newFile.click();
                     }
                 }, 100);
             }
@@ -737,11 +737,11 @@ export const liveSyncService = {
                 catIndex = this.createCategoryManually(catData, index);
             }
             
-            // Add cards
-            if (catData.cards) {
-                catData.cards.forEach((cardData) => {
-                    if (typeof addCardToCategory === 'function') {
-                        addCardToCategory(catIndex, cardData.title, cardData.content);
+            // Add files
+            if (catData.files) {
+                catData.files.forEach((fileData) => {
+                    if (typeof addFileToCategory === 'function') {
+                        addFileToCategory(catIndex, fileData.title, fileData.content);
                     }
                 });
             }
@@ -888,7 +888,7 @@ export const liveSyncService = {
                         node.nodeType === Node.ELEMENT_NODE && 
                         (node.classList.contains('category') || 
                          node.classList.contains('super-header') ||
-                         node.classList.contains('card'))
+                         node.classList.contains('file'))
                     );
                     
                     if (meaningfulNodes.length > 0) {
@@ -965,7 +965,7 @@ export const liveSyncService = {
     // Check if user is currently dragging anything
     isUserCurrentlyDragging() {
         // Check AppState for drag operations
-        const draggedCard = AppState.get('draggedCard');
+        const draggedFile = AppState.get('draggedFile');
         const currentCategory = AppState.get('currentCategory');
         const currentSuperHeader = AppState.get('currentSuperHeader');
         const isDraggingMultiple = AppState.get('isDraggingMultiple');
@@ -979,7 +979,7 @@ export const liveSyncService = {
         // Check for elements being dragged
         const draggedElement = document.querySelector('.being-dragged, .dragging, .selected');
         
-        const isDragging = !!(draggedCard || currentCategory || currentSuperHeader || 
+        const isDragging = !!(draggedFile || currentCategory || currentSuperHeader || 
                              isDraggingMultiple || isSelecting || hasMouseDown || 
                              draggedElement);
         
@@ -1147,18 +1147,18 @@ export const liveSyncService = {
                 if (cat1.title !== cat2.title ||
                     cat1.position?.left !== cat2.position?.left ||
                     cat1.position?.top !== cat2.position?.top ||
-                    cat1.cards?.length !== cat2.cards?.length) {
+                    cat1.files?.length !== cat2.files?.length) {
                     return false;
                 }
                 
-                // Compare cards
-                if (cat1.cards) {
-                    for (let j = 0; j < cat1.cards.length; j++) {
-                        const card1 = cat1.cards[j];
-                        const card2 = cat2.cards[j];
+                // Compare files
+                if (cat1.files) {
+                    for (let j = 0; j < cat1.files.length; j++) {
+                        const file1 = cat1.files[j];
+                        const file2 = cat2.files[j];
                         
-                        if (card1.title !== card2.title ||
-                            JSON.stringify(card1.content) !== JSON.stringify(card2.content)) {
+                        if (file1.title !== file2.title ||
+                            JSON.stringify(file1.content) !== JSON.stringify(file2.content)) {
                             return false;
                         }
                     }
@@ -1281,24 +1281,24 @@ export const liveSyncService = {
     fallbackDeserializeBoard(board) {
         const deserialized = { ...board };
         
-        // Deserialize categories with their cards
+        // Deserialize categories with their files
         if (deserialized.categories) {
             deserialized.categories = deserialized.categories.map(category => {
                 const catCopy = { ...category };
-                // Deserialize card content (Quill Delta objects)
-                if (catCopy.cards) {
-                    catCopy.cards = catCopy.cards.map(card => {
-                        const cardCopy = { ...card };
+                // Deserialize file content (Quill Delta objects)
+                if (catCopy.files) {
+                    catCopy.files = catCopy.files.map(file => {
+                        const fileCopy = { ...file };
                         // Parse JSON string back to Delta object
-                        if (cardCopy.content && typeof cardCopy.content === 'string') {
+                        if (fileCopy.content && typeof fileCopy.content === 'string') {
                             try {
-                                cardCopy.content = JSON.parse(cardCopy.content);
+                                fileCopy.content = JSON.parse(fileCopy.content);
                             } catch (e) {
-                                Debug.liveSync.stepError('Error parsing card content', e);
-                                cardCopy.content = { ops: [] }; // Empty Quill delta
+                                Debug.liveSync.stepError('Error parsing file content', e);
+                                fileCopy.content = { ops: [] }; // Empty Quill delta
                             }
                         }
-                        return cardCopy;
+                        return fileCopy;
                     });
                 }
                 return catCopy;
@@ -1342,14 +1342,14 @@ export const liveSyncService = {
         titleDiv.style.marginBottom = '12px';
         titleDiv.style.color = 'white';
         
-        const cardsGrid = document.createElement('div');
-        cardsGrid.className = 'cards-grid';
-        cardsGrid.style.display = 'flex';
-        cardsGrid.style.flexDirection = 'column';
-        cardsGrid.style.gap = '8px';
+        const filesGrid = document.createElement('div');
+        filesGrid.className = 'files-grid';
+        filesGrid.style.display = 'flex';
+        filesGrid.style.flexDirection = 'column';
+        filesGrid.style.gap = '8px';
         
         categoryDiv.appendChild(titleDiv);
-        categoryDiv.appendChild(cardsGrid);
+        categoryDiv.appendChild(filesGrid);
         canvas.appendChild(categoryDiv);
         
         Debug.liveSync.detail(`Fallback created category: "${catData.title}"`);

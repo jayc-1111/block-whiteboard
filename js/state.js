@@ -15,11 +15,11 @@ const AppState = (() => {
         isGridSnapEnabled: true,
         
         // Drag state
-        draggedCard: null,
+        draggedFile: null,
         currentCategory: null,
         currentCanvasHeader: null,
         offset: { x: 0, y: 0 },
-        expandedCard: null,
+        expandedFile: null,
         highestZIndex: (typeof CONSTANTS !== 'undefined' && CONSTANTS.BASE_Z_INDEX) || 1000,
         
         // Selection state
@@ -37,8 +37,8 @@ const AppState = (() => {
     // List of keys that should sync to global variables
     const globalSyncKeys = [
         'categories', 'boards', 'currentBoardId', 'isDevMode', 'isGridSnapEnabled',
-        'draggedCard', 'currentCategory', 'currentCanvasHeader', 'offset', 
-        'expandedCard', 'highestZIndex', 'selectedItems', 'isSelecting',
+        'draggedFile', 'currentCategory', 'currentCanvasHeader', 'offset', 
+        'expandedFile', 'highestZIndex', 'selectedItems', 'isSelecting',
         'selectionStart', 'selectionRectangle', 'isDraggingMultiple', 'multiDragOffsets'
     ];
     
@@ -170,11 +170,11 @@ let isDevMode = AppState.get('isDevMode') || false;
 let isGridSnapEnabled = AppState.get('isGridSnapEnabled') !== false;
 
 // Drag and drop state
-let draggedCard = AppState.get('draggedCard') || null;
+let draggedFile = AppState.get('draggedFile') || null;
 let currentCategory = AppState.get('currentCategory') || null;
 let currentCanvasHeader = AppState.get('currentCanvasHeader') || null;
 let offset = AppState.get('offset') || { x: 0, y: 0 };
-let expandedCard = AppState.get('expandedCard') || null;
+let expandedFile = AppState.get('expandedFile') || null;
 let highestZIndex = AppState.get('highestZIndex') || (typeof CONSTANTS !== 'undefined' ? CONSTANTS.BASE_Z_INDEX : 1000);
 
 // Selection state

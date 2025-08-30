@@ -27,7 +27,7 @@ Or use the provided icon generator script below.
 ### From Zenban App:
 1. Click the bookmark button in Zenban
 2. Enter a URL
-3. Select a card
+3. Select a file
 4. Extension automatically captures screenshot
 
 ### Manual Capture:

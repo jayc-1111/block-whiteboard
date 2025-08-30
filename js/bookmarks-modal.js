@@ -1,4 +1,4 @@
-// Bookmarks Modal Handler with Card Grid
+// Bookmarks Modal Handler with File Grid
 document.addEventListener('DOMContentLoaded', function() {
     const bookmarksTrigger = document.querySelector('#yourBookmarksItem');
     
@@ -103,8 +103,8 @@ document.addEventListener('DOMContentLoaded', function() {
         return bookmarks.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
     }
     
-    // Create bookmark cards
-    function createBookmarkCards() {
+    // Create bookmark files
+    function createBookmarkFiles() {
         const bookmarkGrid = document.querySelector('.bookmark-grid');
         if (!bookmarkGrid) return;
         
@@ -112,12 +112,12 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Clear existing content and styles
         bookmarkGrid.innerHTML = '';
-        const existingStyles = document.querySelectorAll('#bookmark-card-styles');
+        const existingStyles = document.querySelectorAll('#bookmark-file-styles');
         existingStyles.forEach(s => s.remove());
         
         // Create style element for dynamic backgrounds
         const styleElement = document.createElement('style');
-        styleElement.id = 'bookmark-card-styles';
+        styleElement.id = 'bookmark-file-styles';
         // Ensure CSS file takes precedence by inserting before it
         const firstStyleSheet = document.querySelector('link[href*="bookmarks-modal.css"]');
         if (firstStyleSheet) {
@@ -127,30 +127,30 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         let styles = '';
         
-        // Create cards (limit to 9 for 3x3 grid)
+        // Create files (limit to 9 for 3x3 grid)
         bookmarks.slice(0, 9).forEach((bookmark, index) => {
-            const card = document.createElement('div');
-            card.className = 'bookmark-card';
-            card.dataset.index = index;
+            const file = document.createElement('div');
+            file.className = 'bookmark-file';
+            file.dataset.index = index;
             
             // Check if bookmark has screenshot/image
             const imageUrl = bookmark.screenshot || bookmark.image || bookmark.screenshotData;
             
             if (!imageUrl) {
-                card.classList.add('no-image');
+                file.classList.add('no-image');
             } else {
-                // Add dynamic style for this card's background with !important to ensure it applies
+                // Add dynamic style for this file's background with !important to ensure it applies
                 styles += `
-                    .bookmark-card[data-index="${index}"]::before {
+                    .bookmark-file[data-index="${index}"]::before {
                         background-image: url('${imageUrl}') !important;
                     }
-                    .bookmark-card[data-index="${index}"] .image-overlay {
+                    .bookmark-file[data-index="${index}"] .image-overlay {
                         background-image: url('${imageUrl}') !important;
                     }
                 `;
             }
             
-            card.innerHTML = `
+            file.innerHTML = `
                 <div class="image-container">
                     <div class="image-overlay"></div>
                     <button class="delete-button" aria-label="Delete bookmark">
@@ -169,12 +169,12 @@ document.addEventListener('DOMContentLoaded', function() {
                         </svg>
                     </a>
                 </div>
-                <button class="up-button" aria-label="Move card up">
+                <button class="up-button" aria-label="Move file up">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M12 19V5M5 12l7-7 7 7"/>
                     </svg>
                 </button>
-                <button class="down-button" aria-label="Move card down">
+                <button class="down-button" aria-label="Move file down">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M12 5v14M5 12l7 7 7-7"/>
                     </svg>
@@ -186,27 +186,27 @@ document.addEventListener('DOMContentLoaded', function() {
                         <line x1="10" y1="14" x2="21" y2="3"/>
                     </svg>
                 </button>
-                <div class="card-content">
-                    <h3 class="card-title" title="${bookmark.title}">${bookmark.title}</h3>
+                <div class="file-content">
+                    <h3 class="file-title" title="${bookmark.title}">${bookmark.title}</h3>
                     <p class="date-added">Added: ${formatDate(bookmark.timestamp)}</p>
                 </div>
             `;
             
             // Add event listeners
-            const deleteBtn = card.querySelector('.delete-button');
+            const deleteBtn = file.querySelector('.delete-button');
             deleteBtn.addEventListener('click', (e) => {
                 e.preventDefault();
-                card.remove();
+                file.remove();
                 updateIndices();
             });
             
-            const upBtn = card.querySelector('.up-button');
-            upBtn.addEventListener('click', () => moveCard(index, -1));
+            const upBtn = file.querySelector('.up-button');
+            upBtn.addEventListener('click', () => moveFile(index, -1));
             
-            const downBtn = card.querySelector('.down-button');
-            downBtn.addEventListener('click', () => moveCard(index, 1));
+            const downBtn = file.querySelector('.down-button');
+            downBtn.addEventListener('click', () => moveFile(index, 1));
             
-            const moveBtn = card.querySelector('.move-button');
+            const moveBtn = file.querySelector('.move-button');
             moveBtn.addEventListener('click', (e) => {
                 e.preventDefault();
                 e.stopPropagation();
@@ -214,33 +214,33 @@ document.addEventListener('DOMContentLoaded', function() {
                 const bookmark = bookmarks[index];
                 // Show move modal
                 if (window.showBookmarkMoveModal) {
-                    // For bookmarks in the modal, we don't have a source card/section
+                    // For bookmarks in the modal, we don't have a source file/section
                     // so we'll pass null for those parameters
                     window.showBookmarkMoveModal(bookmark, null, null);
                 }
             });
             
-            bookmarkGrid.appendChild(card);
+            bookmarkGrid.appendChild(file);
         });
         
         // Apply all dynamic styles
         styleElement.textContent = styles;
     }
     
-    // Function to move cards
-    function moveCard(currentIndex, direction) {
-        const cards = Array.from(document.querySelectorAll('.bookmark-card'));
+    // Function to move files
+    function moveFile(currentIndex, direction) {
+        const files = Array.from(document.querySelectorAll('.bookmark-file'));
         const newIndex = currentIndex + direction;
         
-        if (newIndex >= 0 && newIndex < cards.length) {
-            const currentCard = cards[currentIndex];
-            const targetCard = cards[newIndex];
-            const parent = currentCard.parentNode;
+        if (newIndex >= 0 && newIndex < files.length) {
+            const currentFile = files[currentIndex];
+            const targetFile = files[newIndex];
+            const parent = currentFile.parentNode;
             
             if (direction === -1) {
-                parent.insertBefore(currentCard, targetCard);
+                parent.insertBefore(currentFile, targetFile);
             } else {
-                parent.insertBefore(targetCard, currentCard);
+                parent.insertBefore(targetFile, currentFile);
             }
             
             updateIndices();
@@ -249,13 +249,13 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Update indices after reorder
     function updateIndices() {
-        const cards = document.querySelectorAll('.bookmark-card');
-        cards.forEach((card, index) => {
-            card.dataset.index = index;
-            const upBtn = card.querySelector('.up-button');
-            const downBtn = card.querySelector('.down-button');
-            if (upBtn) upBtn.onclick = () => moveCard(index, -1);
-            if (downBtn) downBtn.onclick = () => moveCard(index, 1);
+        const files = document.querySelectorAll('.bookmark-file');
+        files.forEach((file, index) => {
+            file.dataset.index = index;
+            const upBtn = file.querySelector('.up-button');
+            const downBtn = file.querySelector('.down-button');
+            if (upBtn) upBtn.onclick = () => moveFile(index, -1);
+            if (downBtn) downBtn.onclick = () => moveFile(index, 1);
         });
     }
     
@@ -295,7 +295,7 @@ document.addEventListener('DOMContentLoaded', function() {
             e.preventDefault();
             e.stopPropagation();
             modal.classList.add('active');
-            createBookmarkCards();
+            createBookmarkFiles();
         });
     }
     
@@ -333,7 +333,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 // Refresh display if modal is open
                 if (modal.classList.contains('active')) {
-                    createBookmarkCards();
+                    createBookmarkFiles();
                 }
             } catch (e) {
                 console.error('Error processing bookmark:', e);

@@ -13,7 +13,7 @@
                 onCreateNew: options.onCreateNew || (() => {}),
                 ...options
             };
-            this.selectedCard = null;
+            this.selectedFile = null;
             this.selectedSectionId = null;
         }
         
@@ -24,14 +24,14 @@
             
             let html = '<div class="file-tree"><ul>';
             
-            // Add "Create New Card" option if enabled
+            // Add "Create New File" option if enabled
             if (this.options.showCreateNew) {
                 html += `<li class="create-new-option">
-                    <button class="create-new-card-btn" style="width: 100%; text-align: left; padding: 8px; background: #5353ff; color: white; border: none; border-radius: 4px; cursor: pointer; margin-bottom: 10px;">
+                    <button class="create-new-file-btn" style="width: 100%; text-align: left; padding: 8px; background: #5353ff; color: white; border: none; border-radius: 4px; cursor: pointer; margin-bottom: 10px;">
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" style="vertical-align: middle; margin-right: 8px;">
                             <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
                         </svg>
-                        Create New Card
+                        Create New File
                     </button>
                 </li>`;
             }
@@ -42,7 +42,7 @@
                 boards.forEach(board => {
                     // Check board content
                     const categories = board.categories || [];
-                    const cardCount = categories.reduce((sum, cat) => sum + (cat.cards?.length || 0), 0);
+                    const fileCount = categories.reduce((sum, cat) => sum + (cat.files?.length || 0), 0);
                     
                     if (categories.length > 0) {
                         html += `<li>
@@ -52,12 +52,12 @@
                                         <path d="M5 19l2.757 -7.351a1 1 0 0 1 .936 -.649h12.307a1 1 0 0 1 .986 1.164l-.996 5.211a2 2 0 0 1 -1.964 1.625h-14.026a2 2 0 0 1 -2 -2v-11a2 2 0 0 1 2 -2h4l3 3h7a2 2 0 0 1 2 2v2" />
                                     </svg>
                                     <span>${board.name}</span>
-                                    <span class="item-count">${cardCount} cards</span>
+                                    <span class="item-count">${fileCount} files</span>
                                 </summary>
                                 <ul>`;
                         
                         categories.forEach(cat => {
-                            if (cat.cards?.length > 0) {
+                            if (cat.files?.length > 0) {
                                 html += `<li>
                                     <details>
                                         <summary>
@@ -65,26 +65,26 @@
                                                 <path d="M5 19l2.757 -7.351a1 1 0 0 1 .936 -.649h12.307a1 1 0 0 1 .986 1.164l-.996 5.211a2 2 0 0 1 -1.964 1.625h-14.026a2 2 0 0 1 -2 -2v-11a2 2 0 0 1 2 -2h4l3 3h7a2 2 0 0 1 2 2v2" />
                                             </svg>
                                             <span>${cat.title}</span>
-                                            <span class="item-count">${cat.cards.length} cards</span>
+                                            <span class="item-count">${cat.files.length} files</span>
                                         </summary>
                                         <ul>`;
                                 
-                                cat.cards.forEach(card => {
-                                    const cardId = card.id || `card-${Date.now()}-${Math.random()}`;
-                                    const bookmarkCount = card.bookmarks ? card.bookmarks.length : 0;
+                                cat.files.forEach(file => {
+                                    const fileId = file.id || `file-${Date.now()}-${Math.random()}`;
+                                    const bookmarkCount = file.bookmarks ? file.bookmarks.length : 0;
                                     
-                                    html += `<li class="card-item" data-card-id="${cardId}">
+                                    html += `<li class="file-item" data-file-id="${fileId}">
                                         <svg class="file-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                             <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
                                             <path d="M14 3v4a1 1 0 0 0 1 1h4" />
                                             <path d="M17 21h-10a2 2 0 0 1 -2 -2v-14a2 2 0 0 1 2 -2h7l5 5v11a2 2 0 0 1 -2 2z" />
                                         </svg>
-                                        ${card.title}
+                                        ${file.title}
                                         ${bookmarkCount > 0 ? `<span class="item-count">${bookmarkCount} bookmarks</span>` : ''}
                                     </li>`;
                                     
-                                    // If sections are enabled and card has sections, add them as nested items
-                                    if (this.options.showSections && card.sections && card.sections.length > 0) {
+                                    // If sections are enabled and file has sections, add them as nested items
+                                    if (this.options.showSections && file.sections && file.sections.length > 0) {
                                         html += `<li class="section-container" style="margin-left: 20px;">
                                             <details open>
                                                 <summary style="padding-left: 10px;">
@@ -92,15 +92,15 @@
                                                         <path d="M5 19l2.757 -7.351a1 1 0 0 1 .936 -.649h12.307a1 1 0 0 1 .986 1.164l-.996 5.211a2 2 0 0 1 -1.964 1.625h-14.026a2 2 0 0 1 -2 -2v-11a2 2 0 0 1 2 -2h4l3 3h7a2 2 0 0 1 2 2v2" />
                                                     </svg>
                                                     <span>Sections</span>
-                                                    <span class="item-count">${card.sections.length} sections</span>
+                                                    <span class="item-count">${file.sections.length} sections</span>
                                                 </summary>
                                                 <ul>`;
                                         
-                                        card.sections.forEach(section => {
+                                        file.sections.forEach(section => {
                                             const sectionTitle = section.title || 'Untitled Section';
                                             const sectionId = section.id;
                                             
-                                            html += `<li class="section-item" data-card-id="${cardId}" data-section-id="${sectionId}">
+                                            html += `<li class="section-item" data-file-id="${fileId}" data-section-id="${sectionId}">
                                                 <svg class="file-icon" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                                     <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
                                                     <path d="M14 3v4a1 1 0 0 0 1 1h4" />
@@ -118,7 +118,7 @@
                                 
                                 html += '</ul></details></li>';
                             } else {
-                                // No cards in category
+                                // No files in category
                                 html += `<li>
                                     <details>
                                         <summary style="opacity: 0.5;">
@@ -126,7 +126,7 @@
                                                 <path d="M5 19l2.757 -7.351a1 1 0 0 1 .936 -.649h12.307a1 1 0 0 1 .986 1.164l-.996 5.211a2 2 0 0 1 -1.964 1.625h-14.026a2 2 0 0 1 -2 -2v-11a2 2 0 0 1 2 -2h4l3 3h7a2 2 0 0 1 2 2v2" />
                                             </svg>
                                             <span>${cat.title}</span>
-                                            <span class="item-count">No cards</span>
+                                            <span class="item-count">No files</span>
                                         </summary>
                                     </details>
                                 </li>`;
@@ -147,24 +147,24 @@
         
         // Add event listeners to the tree elements
         addEventListeners(container) {
-            // Card selection
-            container.querySelectorAll('.card-item').forEach(item => {
+            // File selection
+            container.querySelectorAll('.file-item').forEach(item => {
                 item.addEventListener('click', (e) => {
                     e.stopPropagation();
                     
                     // Remove previous selection
-                    container.querySelectorAll('.card-item, .section-item').forEach(i => {
+                    container.querySelectorAll('.file-item, .section-item').forEach(i => {
                         i.classList.remove('selected');
                     });
                     
-                    // Select this card
+                    // Select this file
                     item.classList.add('selected');
-                    const cardId = item.dataset.cardId;
-                    this.selectedCard = document.getElementById(cardId) || cardId;
+                    const fileId = item.dataset.fileId;
+                    this.selectedFile = document.getElementById(fileId) || fileId;
                     this.selectedSectionId = null;
                     
                     // Call onSelect callback
-                    this.options.onSelect(this.selectedCard, null);
+                    this.options.onSelect(this.selectedFile, null);
                 });
             });
             
@@ -174,27 +174,27 @@
                     e.stopPropagation();
                     
                     // Remove previous selection
-                    container.querySelectorAll('.card-item, .section-item').forEach(i => {
+                    container.querySelectorAll('.file-item, .section-item').forEach(i => {
                         i.classList.remove('selected');
                     });
                     
                     // Select this section
                     item.classList.add('selected');
-                    const cardId = item.dataset.cardId;
+                    const fileId = item.dataset.fileId;
                     const sectionId = item.dataset.sectionId;
-                    const card = document.getElementById(cardId) || cardId;
+                    const file = document.getElementById(fileId) || fileId;
                     
-                    this.selectedCard = card;
+                    this.selectedFile = file;
                     this.selectedSectionId = sectionId;
                     
                     // Call onSectionSelect callback
-                    this.options.onSectionSelect(card, sectionId);
+                    this.options.onSectionSelect(file, sectionId);
                 });
             });
             
-            // Create new card button
+            // Create new file button
             if (this.options.showCreateNew) {
-                const createNewBtn = container.querySelector('.create-new-card-btn');
+                const createNewBtn = container.querySelector('.create-new-file-btn');
                 if (createNewBtn) {
                     createNewBtn.addEventListener('click', (e) => {
                         e.stopPropagation();
@@ -204,9 +204,9 @@
             }
         }
         
-        // Get selected card
-        getSelectedCard() {
-            return this.selectedCard;
+        // Get selected file
+        getSelectedFile() {
+            return this.selectedFile;
         }
         
         // Get selected section ID
@@ -216,7 +216,7 @@
         
         // Clear selection
         clearSelection() {
-            this.selectedCard = null;
+            this.selectedFile = null;
             this.selectedSectionId = null;
         }
     }
@@ -224,8 +224,8 @@
     // Make FileTree available globally
     window.FileTree = FileTree;
     
-    // Also expose the existing buildCardTree function for backward compatibility
-    window.buildCardTree = function(container) {
+    // Also expose the existing buildFileTree function for backward compatibility
+    window.buildFileTree = function(container) {
         const fileTree = new FileTree({
             showSections: true,
             showCreateNew: true

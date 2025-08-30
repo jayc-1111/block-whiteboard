@@ -33,84 +33,10 @@ function toggleDevMode() {
     // Nothing should be hidden/shown
 }
 
-function updateFileStructure() {
-    // Create or get the file structure dropdown
-    let dropdown = document.querySelector('.file-structure-dropdown');
-    if (!dropdown) {
-        dropdown = document.createElement('div');
-        dropdown.className = 'file-structure-dropdown';
-        
-        const list = document.createElement('ul');
-        list.className = 'file-structure-list';
-        dropdown.appendChild(list);
-        
-        const container = document.querySelector('.file-structure-container');
-        if (container) {
-            container.appendChild(dropdown);
-        }
-    }
-    
-    const list = dropdown.querySelector('.file-structure-list');
-    if (!list) return;
-    
-    // Clear existing content
-    list.innerHTML = '';
-    
-    // Get current board's categories
-    const categories = AppState.get('categories') || [];
-    
-    if (categories.length === 0) {
-        const emptyItem = document.createElement('li');
-        emptyItem.textContent = 'No categories yet';
-        emptyItem.style.color = '#666';
-        emptyItem.style.fontStyle = 'italic';
-        list.appendChild(emptyItem);
-        return;
-    }
-    
-    // Add categories and their cards (skip board level)
-    categories.forEach((category, categoryIndex) => {
-        if (!category.element) return;
-        
-        // Add category item
-        const categoryItem = document.createElement('li');
-        categoryItem.className = 'category-item';
-        const categoryTitle = category.element.querySelector('.category-title');
-        categoryItem.textContent = categoryTitle ? categoryTitle.textContent : `Category ${categoryIndex + 1}`;
-        
-        // Make category clickable to focus on it
-        categoryItem.addEventListener('click', () => {
-            if (category.element) {
-                category.element.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                // Add temporary highlight
-                category.element.style.outline = '2px solid #5353ff';
-                setTimeout(() => {
-                    category.element.style.outline = '';
-                }, 2000);
-            }
-        });
-        
-        list.appendChild(categoryItem);
-        
-        // Add cards under this category
-        const cards = category.cards || [];
-        cards.forEach((card, cardIndex) => {
-            const cardItem = document.createElement('li');
-            cardItem.className = 'card-item';
-            const cardTitle = card.querySelector('.card-title');
-            cardItem.textContent = cardTitle ? cardTitle.textContent : `Card ${cardIndex + 1}`;
-            
-            // Make card clickable to expand it
-            cardItem.addEventListener('click', (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                expandCard(card);
-            });
-            
-            list.appendChild(cardItem);
-        });
-    });
-}
+/**
+ * Deprecated: updateFileStructure has been removed.
+ * Use updateFileTree() in sidebar-menu.js instead as the canonical implementation.
+ */
 
 // Expand Space Button Functionality
 function initializeExpandSpaceButtons() {
@@ -187,7 +113,7 @@ document.addEventListener('DOMContentLoaded', () => {
         clearBoardOption.addEventListener('click', () => {
             showConfirmDialog(
                 'Clear Board',
-                'Are you sure you want to clear the entire board? This will remove all categories, cards, headers, and drawings.',
+                'Are you sure you want to clear the entire board? This will remove all categories, files, headers, and drawings.',
                 () => {
                     clearBoard();
                 }

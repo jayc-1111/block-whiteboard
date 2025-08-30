@@ -37,17 +37,17 @@ function initSmoothScroll() {
     lenisInitialized = true;
 }
 
-// Function to reinitialize Lenis for modals/expanded cards
-function reinitializeModalLenis(card) {
+// Function to reinitialize Lenis for modals/expanded files
+function reinitializeModalLenis(file) {
     // Destroy existing modal Lenis instance if it exists
-    if (card.modalLenis) {
-        card.modalLenis.destroy();
-        card.modalLenis = null;
+    if (file.modalLenis) {
+        file.modalLenis.destroy();
+        file.modalLenis = null;
     }
     
     // Initialize new Lenis instance for the modal
-    const modalWrapper = card.querySelector('.expanded-card-main');
-    const modalContent = card.querySelector('.expanded-card-content');
+    const modalWrapper = file.querySelector('.expanded-file-main');
+    const modalContent = file.querySelector('.expanded-file-content');
     
     if (modalWrapper && modalContent) {
         // Ensure the wrapper has the correct CSS properties for scrolling
@@ -73,7 +73,7 @@ function reinitializeModalLenis(card) {
             requestAnimationFrame(rafModal);
         }
         requestAnimationFrame(rafModal);
-        card.modalLenis = modalLenis;
+        file.modalLenis = modalLenis;
         
         // Add classes to indicate smooth scrolling is active
         modalWrapper.classList.add('lenis', 'lenis-smooth');

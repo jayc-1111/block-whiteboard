@@ -23,8 +23,8 @@
     padding: 1em !important;
 }
 
-/* Override expanded card editor padding specifically for bookmark editor */
-.card.expanded .ql-bookmark-editor-blot .ql-editor {
+/* Override expanded file editor padding specifically for bookmark editor */
+.file.expanded .ql-bookmark-editor-blot .ql-editor {
     padding: 0 !important;
 }
 
@@ -35,8 +35,8 @@
     width: calc(100% + 80px);
 }
 
-/* Adjust for the expanded card's 60px padding */
-.card.expanded .ql-bookmark-editor-blot {
+/* Adjust for the expanded file's 60px padding */
+.file.expanded .ql-bookmark-editor-blot {
     margin-left: -60px;
     margin-right: -60px;
     width: calc(100% + 120px);

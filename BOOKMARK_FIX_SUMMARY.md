@@ -39,7 +39,7 @@ With these fixes:
 
 ## 🔄 **How It Works Now**
 
-1. When a user adds bookmarks to cards, the data is properly captured
+1. When a user adds bookmarks to files, the data is properly captured
 2. During the save process, the `board` variable can be safely modified (cleaned up, validated, serialized)
 3. The complete bookmark data is sent to Firestore without errors
 4. All bookmarks persist across page refreshes and sessions

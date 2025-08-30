@@ -123,8 +123,8 @@ body.dark-mode .file-viewer-section-header {
     gap: 16px;
 }
 
-/* File card */
-.file-viewer-card {
+/* File file */
+.file-viewer-file {
     background: #f9fafb;
     border: 1px solid #e5e7eb;
     border-radius: 8px;
@@ -137,19 +137,19 @@ body.dark-mode .file-viewer-section-header {
     gap: 12px;
 }
 
-body.dark-mode .file-viewer-card {
+body.dark-mode .file-viewer-file {
     background: #111827;
     border-color: #374151;
 }
 
-.file-viewer-card:hover {
+.file-viewer-file:hover {
     background: #f3f4f6;
     border-color: #d1d5db;
     transform: translateY(-2px);
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
 }
 
-body.dark-mode .file-viewer-card:hover {
+body.dark-mode .file-viewer-file:hover {
     background: #1f2937;
     border-color: #4b5563;
 }
@@ -218,7 +218,7 @@ body.dark-mode .file-viewer-meta {
     transition: opacity 0.2s;
 }
 
-.file-viewer-card:hover .file-viewer-actions {
+.file-viewer-file:hover .file-viewer-actions {
     opacity: 1;
 }
 

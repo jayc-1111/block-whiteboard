@@ -1,5 +1,5 @@
-/* File icon for card titles */
-.card-title-icon {
+/* File icon for file titles */
+.file-title-icon {
     width: 16px;
     height: 16px;
     margin-bottom: 4px;
@@ -10,8 +10,8 @@
     margin-right: auto;  /* Center horizontally */
 }
 
-/* New flexbox container for SVG above card titles */
-.card-title-container {
+/* New flexbox container for SVG above file titles */
+.file-title-container {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -21,22 +21,22 @@
     padding: 4px 0; /* Add some padding to prevent touching edges */
 }
 
-.card-title-container .card-title-icon {
+.file-title-container .file-title-icon {
     margin-right: 0;
     margin-bottom: 4px;
 }
 
-/* Hide file icon in expanded cards */
-.card.expanded .card-title-icon {
+/* Hide file icon in expanded files */
+.file.expanded .file-title-icon {
     display: none;
 }
 
-/* Hide file icon in expanded card title */
-.card.expanded .card-title .card-title-icon {
+/* Hide file icon in expanded file title */
+.file.expanded .file-title .file-title-icon {
     display: none;
 }
 
-/* Specific rule to hide the file-svg icon in expanded card header */
-.expanded-card-header .card-title svg {
+/* Specific rule to hide the file-svg icon in expanded file header */
+.expanded-file-header .file-title svg {
     display: none;
 }

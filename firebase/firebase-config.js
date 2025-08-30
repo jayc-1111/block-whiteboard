@@ -370,7 +370,7 @@ export const dbService = {
                 ...saveData,
                 categories: saveData.categories?.map(cat => ({
                     title: cat.title,
-                    cardCount: cat.cards?.length || 0
+                    fileCount: cat.files?.length || 0
                 })) || [],
                 canvasHeaders: saveData.canvasHeaders?.map(h => ({ text: h.text })) || []
             };

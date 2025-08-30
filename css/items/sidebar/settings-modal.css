@@ -1,7 +1,7 @@
 /* Sidebar Dropdown Components */
 
-/* Settings Menu popup - Hamburger menu style */
-/* Note: Positioning handled by hamburger.css to avoid conflicts */
+/* Settings Menu popup - sidebar menu style */
+/* Note: Positioning handled by sidebar.css to avoid conflicts */
 .settings-menu {
     background: #131313;
     border-radius: 12px;
@@ -14,7 +14,7 @@
     min-width: 220px;
     display: flex;
     position: absolute;
-    /* Position and placement handled by hamburger.css */
+    /* Position and placement handled by sidebar.css */
 }
 
 /* Show settings menu on hover of settings item */
@@ -77,7 +77,7 @@
     transition: color 0.2s;
 }
 
-/* Customization submenu - Hamburger menu style */
+/* Customization submenu - sidebar menu style */
 .customization-submenu {
     position: absolute;
     left: 100%;
@@ -149,94 +149,6 @@
     font-weight: 600;
 }
 
-/* File structure dropdown - Hamburger menu style */
-.file-structure-dropdown {
-    position: absolute;
-    left: 0;
-    margin-top: 10px;
-    width: 220px;
-    background: #0a0a0a;
-    border-radius: 12px;
-    border: 1px solid rgba(255, 255, 255, 0.05);
-    opacity: 0;
-    visibility: hidden;
-    transition: opacity 0.3s ease, visibility 0.3s ease;
-    z-index: 1000002;
-    max-height: 400px;
-    overflow-y: auto;
-    pointer-events: auto;
-}
-
-.file-structure-container:hover .file-structure-dropdown,
-.file-structure-dropdown:hover {
-    opacity: 1;
-    visibility: visible;
-}
-
-.file-structure-list {
-    list-style: none;
-}
-
-.file-structure-list li {
-    color: #ddd;
-    font-family: 'Nunito', sans-serif !important;
-    font-size: 0.80rem;
-    font-weight: 500;
-    cursor: pointer;
-    border-radius: 8px;
-    margin: 2px 0;
-    position: relative;
-    z-index: 1;
-}
-
-.file-structure-list li.board-item {
-    font-weight: 600;
-}
-
-.file-structure-list li.category-item {
-    padding-left: 32px;
-}
-
-.file-structure-list li.header-item {
-    padding-left: 32px;
-    color: #6b7280;
-}
-
-.file-structure-list li.card-item {
-    padding-left: 52px;
-    font-size: 11px;
-    color: #9ca3af;
-}
-
-.file-structure-list li.active {
-    background-color: rgba(83, 83, 255, 0.2);
-    color: #bd89ff;
-}
-
-/* Light mode overrides for sidebar dropdowns */
-.light-mode .settings-menu {
-    background: #FFFFFF;
-    border: 1px solid #F5F7FB;
-}
-
-.light-mode .customization-submenu {
-    background: #FFFFFF;
-    border: 1px solid #F5F7FB;
-}
-
-.light-mode .file-structure-dropdown {
-    background: #FFFFFF;
-    border: 1px solid #F5F7FB;
-}
-
-.light-mode .settings-option {
-    color: #7f7f7f;
-}
-
-.light-mode .settings-option:hover {
-    background-color: #F5F7FB;
-    color: #7f7f7f;
-}
 
 /* Settings Modal Styles - Using same pattern as bookmarks modal */
 .settings-modal {

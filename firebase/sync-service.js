@@ -156,20 +156,20 @@ export const syncService = {
         // Count content
         const localContent = {
             categories: localBoard.categories?.length || 0,
-            cards: localBoard.categories?.reduce((sum, cat) => sum + (cat.cards?.length || 0), 0) || 0,
+            files: localBoard.categories?.reduce((sum, cat) => sum + (cat.files?.length || 0), 0) || 0,
             headers: localBoard.canvasHeaders?.length || 0,
             drawingPaths: localBoard.drawingPaths?.length || 0
         };
         
         const firebaseContent = {
             categories: firebaseBoard.categories?.length || 0,
-            cards: firebaseBoard.categories?.reduce((sum, cat) => sum + (cat.cards?.length || 0), 0) || 0,
+            files: firebaseBoard.categories?.reduce((sum, cat) => sum + (cat.files?.length || 0), 0) || 0,
             headers: firebaseBoard.canvasHeaders?.length || 0,
             drawingPaths: firebaseBoard.drawingPaths?.length || 0
         };
         
-        const localTotal = localContent.categories + localContent.cards + localContent.headers;
-        const firebaseTotal = firebaseContent.categories + firebaseContent.cards + firebaseContent.headers;
+        const localTotal = localContent.categories + localContent.files + localContent.headers;
+        const firebaseTotal = firebaseContent.categories + firebaseContent.files + firebaseContent.headers;
         
         Debug.sync.detail('Board comparison', {
             local: { time: new Date(localTime).toLocaleString(), content: localTotal },
@@ -410,12 +410,12 @@ export const syncService = {
                 catIndex = this.createCategoryManually(catData, index);
             }
             
-            // Add cards to the category with staggered delay
-            if (catData.cards && catData.cards.length > 0) {
-                catData.cards.forEach((cardData, cardIndex) => {
+            // Add files to the category with staggered delay
+            if (catData.files && catData.files.length > 0) {
+                catData.files.forEach((fileData, fileIndex) => {
                     setTimeout(() => {
-                        this.addCardToCategory(catIndex, cardData);
-                    }, (cardIndex + 1) * 150); // 150ms delay between cards
+                        this.addFileToCategory(catIndex, fileData);
+                    }, (fileIndex + 1) * 150); // 150ms delay between files
                 });
             }
             
@@ -424,32 +424,32 @@ export const syncService = {
         }
     },
     
-    // Add card to category
-    addCardToCategory(catIndex, cardData) {
+    // Add file to category
+    addFileToCategory(catIndex, fileData) {
         try {
-            if (typeof addCardToCategory === 'function') {
+            if (typeof addFileToCategory === 'function') {
                 // Pass bookmarks as 4th parameter and sections as 5th
-                console.log('💾 LOAD DEBUG: Loading card with sections', {
-                    title: cardData.title,
-                    hasSections: !!cardData.sections,
-                    sectionsCount: cardData.sections?.length || 0,
-                    sectionIds: cardData.sections?.map(s => s.id) || []
+                console.log('💾 LOAD DEBUG: Loading file with sections', {
+                    title: fileData.title,
+                    hasSections: !!fileData.sections,
+                    sectionsCount: fileData.sections?.length || 0,
+                    sectionIds: fileData.sections?.map(s => s.id) || []
                 });
                 
-                const card = addCardToCategory(catIndex, cardData.title, cardData.content, cardData.bookmarks, cardData.sections);
-                Debug.sync.detail(`Added card: "${cardData.title}" with ${cardData.bookmarks?.length || 0} bookmarks and ${cardData.sections?.length || 0} sections`);
+                const file = addFileToCategory(catIndex, fileData.title, fileData.content, fileData.bookmarks, fileData.sections);
+                Debug.sync.detail(`Added file: "${fileData.title}" with ${fileData.bookmarks?.length || 0} bookmarks and ${fileData.sections?.length || 0} sections`);
                 
-                if (cardData.sections?.length > 0) {
-                    console.log('💾 LOAD DEBUG: Card loaded with sections:', {
-                        cardTitle: cardData.title,
-                        sectionsLoaded: cardData.sections.length
+                if (fileData.sections?.length > 0) {
+                    console.log('💾 LOAD DEBUG: File loaded with sections:', {
+                        fileTitle: fileData.title,
+                        sectionsLoaded: fileData.sections.length
                     });
                 }
             } else {
-                Debug.sync.detail('addCardToCategory function not available');
+                Debug.sync.detail('addFileToCategory function not available');
             }
         } catch (error) {
-            Debug.sync.stepError(`Failed to add card "${cardData.title}"`, error);
+            Debug.sync.stepError(`Failed to add file "${fileData.title}"`, error);
         }
     },
     
@@ -468,11 +468,11 @@ export const syncService = {
         titleDiv.className = 'category-title';
         titleDiv.textContent = catData.title;
         
-        const cardsGrid = document.createElement('div');
-        cardsGrid.className = 'cards-grid';
+        const filesGrid = document.createElement('div');
+        filesGrid.className = 'files-grid';
         
         categoryDiv.appendChild(titleDiv);
-        categoryDiv.appendChild(cardsGrid);
+        categoryDiv.appendChild(filesGrid);
         canvas.appendChild(categoryDiv);
         
         Debug.sync.detail(`Manually created category: "${catData.title}"`);
@@ -528,7 +528,7 @@ export const syncService = {
         Debug.sync.detail(`Updated UI elements for board: "${board.name}"`);
     },
     
-    // Manual save function for expanded cards
+    // Manual save function for expanded files
     async manualSave() {
         console.log('[SYNC DEBUG] Manual save triggered by user');
         Debug.sync.step('Manual save triggered');
@@ -608,10 +608,10 @@ export const syncService = {
                 let totalBookmarks = 0;
                 if (board.categories) {
                     board.categories.forEach(cat => {
-                        if (cat.cards) {
-                            cat.cards.forEach(card => {
-                                if (card.bookmarks && Array.isArray(card.bookmarks)) {
-                                    totalBookmarks += card.bookmarks.length;
+                        if (cat.files) {
+                            cat.files.forEach(file => {
+                                if (file.bookmarks && Array.isArray(file.bookmarks)) {
+                                    totalBookmarks += file.bookmarks.length;
                                 }
                             });
                         }
@@ -794,33 +794,33 @@ export const syncService = {
         // Add dev mode status
         serialized.isDevMode = AppState.get('isDevMode');
         
-        // Serialize categories with their cards
+        // Serialize categories with their files
         if (serialized.categories) {
             serialized.categories = serialized.categories.map(category => {
                 const catCopy = { ...category };
-                // Serialize card content (Quill Delta objects)
-                if (catCopy.cards) {
-                    catCopy.cards = catCopy.cards.map(card => {
-                        const cardCopy = { ...card };
+                // Serialize file content (Quill Delta objects)
+                if (catCopy.files) {
+                    catCopy.files = catCopy.files.map(file => {
+                        const fileCopy = { ...file };
                         // Convert Delta object to JSON string
-                        if (cardCopy.content && typeof cardCopy.content === 'object') {
+                        if (fileCopy.content && typeof fileCopy.content === 'object') {
                             try {
-                                cardCopy.content = JSON.stringify(cardCopy.content);
+                                fileCopy.content = JSON.stringify(fileCopy.content);
                             } catch (e) {
-                                Debug.sync.stepError('Error serializing card content', e);
-                                cardCopy.content = '{}';
+                                Debug.sync.stepError('Error serializing file content', e);
+                                fileCopy.content = '{}';
                             }
                         }
                         // Ensure bookmarks are preserved
-                        if (!cardCopy.bookmarks) {
-                            cardCopy.bookmarks = [];
+                        if (!fileCopy.bookmarks) {
+                            fileCopy.bookmarks = [];
                         }
                         
                         // Ensure sections are preserved
-                        if (!cardCopy.sections) {
-                            cardCopy.sections = [];
+                        if (!fileCopy.sections) {
+                            fileCopy.sections = [];
                         }
-                        return cardCopy;
+                        return fileCopy;
                     });
                 }
                 return catCopy;
@@ -859,24 +859,24 @@ export const syncService = {
             }
         }
         
-        // Deserialize categories with their cards
+        // Deserialize categories with their files
         if (deserialized.categories) {
             deserialized.categories = deserialized.categories.map(category => {
                 const catCopy = { ...category };
-                // Deserialize card content (Quill Delta objects)
-                if (catCopy.cards) {
-                    catCopy.cards = catCopy.cards.map(card => {
-                        const cardCopy = { ...card };
+                // Deserialize file content (Quill Delta objects)
+                if (catCopy.files) {
+                    catCopy.files = catCopy.files.map(file => {
+                        const fileCopy = { ...file };
                         // Parse JSON string back to Delta object
-                        if (cardCopy.content && typeof cardCopy.content === 'string') {
+                        if (fileCopy.content && typeof fileCopy.content === 'string') {
                             try {
-                                cardCopy.content = JSON.parse(cardCopy.content);
+                                fileCopy.content = JSON.parse(fileCopy.content);
                             } catch (e) {
-                                Debug.sync.stepError('Error parsing card content', e);
-                                cardCopy.content = { ops: [] };
+                                Debug.sync.stepError('Error parsing file content', e);
+                                fileCopy.content = { ops: [] };
                             }
                         }
-                        return cardCopy;
+                        return fileCopy;
                     });
                 }
                 return catCopy;
@@ -897,7 +897,7 @@ export const syncService = {
         }
         
         // MISSING: Deserialize canvasHeaders - just pass them through as-is
-        // Headers don't need special deserialization like cards do
+        // Headers don't need special deserialization like files do
         
         Debug.sync.detail('Deserialized board result', {
             categoriesAfterDeser: deserialized.categories?.length || 0,
@@ -1010,10 +1010,10 @@ export const syncService = {
         // Validate bookmark data structure
         if (board.categories) {
             for (const category of board.categories) {
-                if (category.cards) {
-                    for (const card of category.cards) {
-                        if (card.bookmarks && Array.isArray(card.bookmarks)) {
-                            for (const bookmark of card.bookmarks) {
+                if (category.files) {
+                    for (const file of category.files) {
+                        if (file.bookmarks && Array.isArray(file.bookmarks)) {
+                            for (const bookmark of file.bookmarks) {
                                 // Check for required bookmark fields
                                 if (!bookmark.title || !bookmark.url) {
                                     console.error('[SYNC ERROR] Invalid bookmark structure - missing title or url:', bookmark);
@@ -1093,13 +1093,13 @@ export const syncService = {
                     recommendations.push('Large bookmark images/screenshots detected');
                 }
                 if (analysis.totalBookmarks > 50) {
-                    recommendations.push('Too many bookmarks - consider splitting into multiple cards');
+                    recommendations.push('Too many bookmarks - consider splitting into multiple files');
                 }
                 if (analysis.largeDescriptions > 10) {
                     recommendations.push('Long descriptions detected');
                 }
-                if (analysis.totalCards > 20) {
-                    recommendations.push('Too many cards - consider splitting into multiple categories');
+                if (analysis.totalFiles > 20) {
+                    recommendations.push('Too many files - consider splitting into multiple categories');
                 }
                 
                 if (recommendations.length > 0) {
@@ -1122,7 +1122,7 @@ export const syncService = {
     analyzeBoardSize(board) {
         const analysis = {
             totalBookmarks: 0,
-            totalCards: 0,
+            totalFiles: 0,
             totalCategories: 0,
             largestBookmarkSize: 0,
             largestBookmarkTitle: '',
@@ -1138,12 +1138,12 @@ export const syncService = {
             board.categories.forEach(category => {
                 let categorySize = 0;
                 
-                if (category.cards) {
-                    analysis.totalCards += category.cards.length;
+                if (category.files) {
+                    analysis.totalFiles += category.files.length;
                     
-                    category.cards.forEach(card => {
-                        if (card.bookmarks && Array.isArray(card.bookmarks)) {
-                            card.bookmarks.forEach(bookmark => {
+                    category.files.forEach(file => {
+                        if (file.bookmarks && Array.isArray(file.bookmarks)) {
+                            file.bookmarks.forEach(bookmark => {
                                 analysis.totalBookmarks++;
                                 
                                 const bookmarkSize = JSON.stringify(bookmark).length;
@@ -1191,11 +1191,11 @@ export const syncService = {
         }
         
         for (const category of board.categories) {
-            if (category.cards) {
-                for (const card of category.cards) {
-                    if (card.bookmarks && Array.isArray(card.bookmarks)) {
+            if (category.files) {
+                for (const file of category.files) {
+                    if (file.bookmarks && Array.isArray(file.bookmarks)) {
                         // Filter out invalid bookmarks
-                        const validBookmarks = card.bookmarks.filter(bookmark => {
+                        const validBookmarks = file.bookmarks.filter(bookmark => {
                             // Check required fields
                             if (!bookmark.title || !bookmark.url) {
                                 Debug.sync.detail('Filtering out invalid bookmark - missing title or url');
@@ -1206,15 +1206,15 @@ export const syncService = {
                             return true;
                         });
                         
-                        if (validBookmarks.length !== card.bookmarks.length) {
-                            card.bookmarks = validBookmarks;
+                        if (validBookmarks.length !== file.bookmarks.length) {
+                            file.bookmarks = validBookmarks;
                             cleaned = true;
                         }
                         
-                        // 6. Limit number of bookmarks per card to prevent bloat
-                        if (card.bookmarks.length > 20) { // Max 20 bookmarks per card
-                            Debug.sync.detail(`Limiting bookmarks per card from ${card.bookmarks.length} to 20`);
-                            card.bookmarks = card.bookmarks.slice(0, 20);
+                        // 6. Limit number of bookmarks per file to prevent bloat
+                        if (file.bookmarks.length > 20) { // Max 20 bookmarks per file
+                            Debug.sync.detail(`Limiting bookmarks per file from ${file.bookmarks.length} to 20`);
+                            file.bookmarks = file.bookmarks.slice(0, 20);
                             cleaned = true;
                         }
                     }
@@ -1224,10 +1224,10 @@ export const syncService = {
         
         // Process async compression for all bookmarks
         for (const category of board.categories) {
-            if (category.cards) {
-                for (const card of category.cards) {
-                    if (card.bookmarks && Array.isArray(card.bookmarks)) {
-                        for (const bookmark of card.bookmarks) {
+            if (category.files) {
+                for (const file of category.files) {
+                    if (file.bookmarks && Array.isArray(file.bookmarks)) {
+                        for (const bookmark of file.bookmarks) {
                             // 1. Compress screenshots - reduce to 100KB max
                             if (bookmark.screenshot && bookmark.screenshot.length > 100000) { // 100KB limit
                                 Debug.sync.detail('Compressing screenshot data');
@@ -1437,10 +1437,10 @@ export const syncService = {
         let count = 0;
         if (board.categories) {
             board.categories.forEach(cat => {
-                if (cat.cards) {
-                    cat.cards.forEach(card => {
-                        if (card.bookmarks && Array.isArray(card.bookmarks)) {
-                            count += card.bookmarks.length;
+                if (cat.files) {
+                    cat.files.forEach(file => {
+                        if (file.bookmarks && Array.isArray(file.bookmarks)) {
+                            count += file.bookmarks.length;
                         }
                     });
                 }

@@ -1,0 +1,128 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Helvetica', 'Fira Code', 'Courier New', monospace;
+}
+
+.flex-container {
+    display: flex;
+    height: 100vh;
+}
+
+.sidebar {
+    width: 300px;
+    background-color: #131313;
+    height: 100vh;
+    overflow-y: auto;
+    padding: 15px 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.sidebar-title {
+    padding: 10px 15px 5px;
+    font-size: 12px;
+    color: #6c7086;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.file-tree {
+    list-style-type: none;
+}
+
+.tree-item {
+    margin: 2px 0;
+    position: relative;
+}
+
+.tree-toggle {
+    display: inline-flex;
+    align-items: center;
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 4px;
+    transition: background-color 0.2s ease;
+    width: 100%;
+}
+
+.tree-toggle.active {
+    background-color: rgb(137, 180, 250);
+}
+
+.toggle-icon {
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    margin-right: 5px;
+    color: #bac2de;
+    transition: transform 0.2s ease;
+    filter: brightness(0) invert(1);
+}
+
+.tree-toggle.expanded .toggle-icon {
+    transform: rotate(90deg);
+}
+
+.item-name {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+}
+
+/* Override any .file class styles that might affect tree items */
+.tree-item .file {
+    min-height: auto !important;
+    height: auto !important;
+}
+
+.item-icon {
+    width: 14px;
+    height: 14px;
+    color: #ffffff;
+}
+
+.item-icon.file-css {
+    color: #89b4fa;
+    min-height: auto !important;
+}
+
+.item-icon.file-json {
+    color: #89dceb;
+    min-height: auto !important;
+}
+
+.item-icon.file-md {
+    color: #cba6f7;
+    min-height: auto !important;
+}
+
+.item-icon.file-ts {
+    color: #89b4fa;
+    min-height: auto !important;
+}
+
+.item-icon.file-img {
+    color: #a6e3a1;
+    min-height: auto !important;
+}
+
+.item-icon.file-txt {
+    color: #bac2de;
+    min-height: auto !important;
+}
+
+.nested {
+    display: none;
+    padding-left: 20px;
+    margin-top: 2px;
+    list-style-type: none;
+    height: auto !important;
+}
+
+.tree-toggle.expanded + .nested {
+    display: block;
+    height: auto !important;
+}

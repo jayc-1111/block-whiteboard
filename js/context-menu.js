@@ -83,18 +83,18 @@ function setupContextMenu() {
         const category = e.target.closest('.category');
         const superHeader = e.target.closest('.super-header');
         const canvasHeader = e.target.closest('.canvas-header');
-        const card = e.target.closest('.card');
+        const file = e.target.closest('.file');
         const canvas = e.target.id === 'grid' || e.target.id === 'whiteboard' || e.target.id === 'canvas';
-        const expandedCard = AppState.get('expandedCard');
+        const expandedFile = AppState.get('expandedFile');
         
-        // Check if we're clicking on an expanded card - if so, allow default context menu
-        if (card && card.classList.contains('expanded')) {
+        // Check if we're clicking on an expanded file - if so, allow default context menu
+        if (file && file.classList.contains('expanded')) {
             hideContextMenu();
             return; // Allow default browser context menu
         }
         
-        // Check if there's an expanded card and we're clicking elsewhere - allow default menu
-        if (expandedCard && !category && !superHeader && !canvasHeader && !canvas) {
+        // Check if there's an expanded file and we're clicking elsewhere - allow default menu
+        if (expandedFile && !category && !superHeader && !canvasHeader && !canvas) {
             hideContextMenu();
             return; // Allow default browser context menu
         }
@@ -102,17 +102,17 @@ function setupContextMenu() {
         // For all other cases, prevent default and show our custom menu
         e.preventDefault();
         
-        if (category && !expandedCard) {
+        if (category && !expandedFile) {
             showContextMenu(e, category, 'element');
         } else if (superHeader) {
             showContextMenu(e, superHeader, 'element');
         } else if (canvasHeader) {
             showContextMenu(e, canvasHeader, 'element');
-        } else if (card && !card.classList.contains('expanded')) {
-            // Only show context menu for non-expanded cards
-            showContextMenu(e, card, 'element');
-        } else if (canvas && !expandedCard) {
-            // Don't show whiteboard context menu if there's an expanded card
+        } else if (file && !file.classList.contains('expanded')) {
+            // Only show context menu for non-expanded files
+            showContextMenu(e, file, 'element');
+        } else if (canvas && !expandedFile) {
+            // Don't show whiteboard context menu if there's an expanded file
             showWhiteboardContextMenu(e);
         } else {
             hideContextMenu();
@@ -222,9 +222,9 @@ function setupContextMenu() {
             toggleBtn.removeEventListener('click', toggleBtn._clickHandler);
             toggleBtn.addEventListener('click', () => toggleCategory(clone));
             
-            const addCardBtn = clone.querySelector('.add-card-btn');
-            addCardBtn.removeEventListener('click', addCardBtn._clickHandler);
-            addCardBtn.addEventListener('click', () => addCardToCategory(categories.length));
+            const addFileBtn = clone.querySelector('.add-file-btn');
+            addFileBtn.removeEventListener('click', addFileBtn._clickHandler);
+            addFileBtn.addEventListener('click', () => addFileToCategory(categories.length));
             
             const deleteBtn = clone.querySelector('.delete-btn');
             deleteBtn.removeEventListener('click', deleteBtn._clickHandler);
@@ -250,7 +250,7 @@ function setupContextMenu() {
             
             categories.push({
                 element: clone,
-                cards: []
+                files: []
             });
         } else {
             // Duplicate super header
@@ -287,20 +287,20 @@ function setupContextMenu() {
         
         if (contextItem.classList.contains('category')) {
             const categoryTitle = contextItem.querySelector('.category-title').textContent;
-            const cards = [];
+            const files = [];
             
-            contextItem.querySelectorAll('.card').forEach(card => {
-                const title = card.querySelector('.card-title').textContent;
-                const quill = card.quillInstance;
+            contextItem.querySelectorAll('.file').forEach(file => {
+                const title = file.querySelector('.file-title').textContent;
+                const quill = file.quillInstance;
                 const content = quill ? quill.getContents() : {};
                 
-                cards.push({ title, content });
+                files.push({ title, content });
             });
             
             exportData = {
                 type: 'category',
                 title: categoryTitle,
-                cards: cards,
+                files: files,
                 position: {
                     left: contextItem.style.left,
                     top: contextItem.style.top

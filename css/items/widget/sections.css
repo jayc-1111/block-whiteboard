@@ -1,5 +1,5 @@
-/* Card section container */
-.card-section {
+/* File section container */
+.file-section {
     background: white;
     border-radius: 8px;
     margin-bottom: 16px;
@@ -43,17 +43,17 @@
     box-sizing: border-box;
 }
 
-/* Ensure proper flex layout in expanded card */
+/* Ensure proper flex layout in expanded file */
 .expanded .section-content {
     display: flex;
 }
 
-.card.expanded .editor-container,
+.file.expanded .editor-container,
 .expanded .section-editor {
     flex: 2; /* Reduced from 3 to match section-editor */
 }
 
-.card.expanded .bookmarks-section,
+.file.expanded .bookmarks-section,
 .expanded .section-bookmarks {
     flex: 2; /* Increased from 1.2 for more space */
     display: flex;
@@ -101,7 +101,7 @@
     background: #1f2937;
 }
 
-.dark-mode .card-section {
+.dark-mode .file-section {
     background: #1f2937;
     border-color: #374151;
 }
@@ -121,8 +121,8 @@
     background: transparent;
 }
 
-/* Bookmark Card Styles for Grid Layout */
-.bookmark-card {
+/* Bookmark File Styles for Grid Layout */
+.bookmark-file {
     /* Use flex basis for more reliable sizing */
     flex: 0 0 calc(50% - 1px); /* 2 per row with 2px gap */
     width: calc(50% - 1px); /* Fallback width */
@@ -139,12 +139,12 @@
     box-sizing: border-box; /* Include padding and border in width */
 }
 
-.bookmark-card:hover {
+.bookmark-file:hover {
     transform: translateY(-2px);
 }
 
 /* Remove margin-top from first bookmark - grid handles spacing */
-.bookmark-card[data-bookmark-index="0"] {
+.bookmark-file[data-bookmark-index="0"] {
     margin-top: 0;
 }
 
@@ -202,7 +202,7 @@
 
 /* Bookmark description */
 .bookmark-description {
-    display: none; /* Hidden to make cards cleaner and more compact */
+    display: none; /* Hidden to make files cleaner and more compact */
     font-size: 11px;
     color: #6b7280;
     line-height: 1.4;
@@ -299,13 +299,13 @@
     height: 12px;
 }
 
-/* Dark mode bookmark cards */
-.dark-mode .bookmark-card {
+/* Dark mode bookmark files */
+.dark-mode .bookmark-file {
     background: #374151;
     color: #f3f4f6;
 }
 
-.dark-mode .bookmark-card:hover {
+.dark-mode .bookmark-file:hover {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
@@ -344,7 +344,7 @@
 
 /* Responsive breakpoints */
 @media (max-width: 1600px) {
-    .bookmark-card {
+    .bookmark-file {
         flex: 0 0 calc(33.333% - 10px); /* Maintain 3 per row */
         width: calc(33.333% - 10px);
         max-width: calc(33.333% - 10px);
@@ -352,7 +352,7 @@
 }
 
 @media (max-width: 1200px) {
-    .bookmark-card {
+    .bookmark-file {
         flex: 0 0 calc(33.333% - 10px); /* Maintain 3 per row */
         width: calc(33.333% - 10px);
         max-width: calc(33.333% - 10px);
@@ -370,7 +370,7 @@
 }
 
 @media (max-width: 1000px) {
-    .bookmark-card {
+    .bookmark-file {
         flex: 0 0 calc(50% - 7.5px); /* 2 per row on smaller screens */
         width: calc(50% - 7.5px);
         max-width: calc(50% - 7.5px);

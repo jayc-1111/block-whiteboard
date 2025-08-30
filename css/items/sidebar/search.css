@@ -1,0 +1,96 @@
+/* ===================================
+   SEARCH STYLES
+   =================================== */
+
+/* Search bar container */
+.search-bar {
+    margin: 0 15px 15px;
+    position: relative;
+}
+
+/* Search input field */
+.search-input {
+    width: 100%;
+    background-color: #191919;
+    border: 1px solid #191919;
+    border-radius: 5px;
+    padding: 8px 10px 8px 30px;
+    color: #f8f8f2;
+    font-size: 13px;
+    outline: none;
+}
+
+.search-input:focus {
+    border-color: #89b4fa;
+}
+
+/* Search icon positioning and styling */
+.search-icon {
+    position: absolute;
+    left: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 14px;
+    height: 14px;
+    color: #f8f8f2;
+    filter: brightness(0) invert(1);
+}
+
+/* SVG search icon (alternative to emoji) - Uncomment and use if needed
+.search-icon.svg {
+    position: absolute;
+    left: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 14px;
+    height: 14px;
+    color: #6c7086;
+    stroke: #6c7086;
+    fill: none;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+/* Optional: Actual SVG search icon content
+.search-icon.svg::before {
+    content: '';
+    display: block;
+    mask: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3ccircle cx='11' cy='11' r='8'/%3e%3cpath d='m21 21-4.35-4.35'/%3e%3c/svg%3e") no-repeat center / contain;
+    background-color: #6c7086;
+    width: 14px;
+    height: 14px;
+}
+*/
+
+/* Light mode adjustments for search */
+.light-mode .search-input {
+    background-color: #ffffff;
+    border: 1px solid #cccccc;
+    color: #333333;
+}
+
+.light-mode .search-input:focus {
+    border-color: #0066cc;
+}
+
+.light-mode .search-icon {
+    color: #666666;
+    filter: none;
+}
+
+/* Dark mode adjustments (default state) */
+.dark-mode .search-input {
+    background-color: #191919;
+    border: 1px solid #191919;
+    color: #f8f8f2;
+}
+
+.dark-mode .search-input:focus {
+    border-color: #89b4fa;
+}
+
+.dark-mode .search-icon {
+    color: #ffffff;
+    filter: invert(56%) sepia(36%) saturate(3960%) hue-rotate(201deg) brightness(105%) contrast(101%);
+}

@@ -1,13 +1,13 @@
-/* Card slot container */
-.card-slot {
+/* File slot container */
+.file-slot {
     width: 100%;
     height: 100%;
     min-height: 87px;
     position: relative;
 }
 
-/* Card component */
-.card {
+/* File component */
+.file {
     background: #191919;
     border-radius: 4px;
     padding: 0;  /* Remove padding for full space */
@@ -25,17 +25,17 @@
     box-sizing: border-box;  /* Include borders in width calculation */
 }
 
-.card:hover {
+.file:hover {
     box-shadow: 0 3px 10px rgba(0, 0, 0, 0.5);
 }
 
-.card.dragging {
+.file.dragging {
     opacity: 0.5;
     cursor: grabbing;
 }
 
-/* Card hover overlay */
-.card-hover-overlay {
+/* File hover overlay */
+.file-hover-overlay {
     position: absolute;
     top: 0;
     left: 0;
@@ -53,24 +53,24 @@
     pointer-events: none;
 }
 
-.card:hover .card-hover-overlay {
+.file:hover .file-hover-overlay {
     pointer-events: auto;
     opacity: 1;
     visibility: visible;
 }
 
-.card.expanded .card-hover-overlay {
+.file.expanded .file-hover-overlay {
     display: none !important;
 }
 
-.card-hover-overlay svg {
+.file-hover-overlay svg {
     width: 24px;
     height: 24px;
     stroke: #fff;
 }
 
-/* Card title container */
-.card-title-container {
+/* File title container */
+.file-title-container {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -81,8 +81,8 @@
     max-width: 100%;
 }
 
-/* Card title */
-.card-title {
+/* File title */
+.file-title {
     font-size: 11px;
     font-weight: 700;
     margin: 0;  /* Remove margins */
@@ -99,16 +99,16 @@
     max-width: 100%;
 }
 
-/* Card title text span */
-.card-title span {
+/* File title text span */
+.file-title span {
     display: block;
     white-space: normal;  /* Allow text to wrap */
     word-wrap: break-word;
     width: 100%;
 }
 
-/* Card content */
-.card-content {
+/* File content */
+.file-content {
     font-size: 11px;
     color: #b0b0b0;
     line-height: 1.6;
@@ -123,8 +123,8 @@
     height: 100%;
 }
 
-/* Show editor in expanded card */
-.card.expanded .editor-container {
+/* Show editor in expanded file */
+.file.expanded .editor-container {
     display: block;
     background: white;
     border-radius: 4px;
@@ -133,7 +133,7 @@
 }
 
 /* Lexical editor styles */
-.card.expanded .lexical-editor {
+.file.expanded .lexical-editor {
     min-height: 100%;
     padding: 20px;
     outline: none;
@@ -145,13 +145,13 @@
     white-space: pre-wrap;
 }
 
-/* Hide editor container in collapsed cards */
-.card:not(.expanded) .editor-container {
+/* Hide editor container in collapsed files */
+.file:not(.expanded) .editor-container {
     display: none;
 }
 
-/* Expanded card styles */
-.card.expanded {
+/* Expanded file styles */
+.file.expanded {
     position: fixed !important;
     left: 50% !important;
     top: 15% !important;
@@ -161,7 +161,7 @@
     height: 85vh !important;
     max-height: none !important;
     overflow: hidden;
-    z-index: 999999 !important;
+    z-index: 1000001 !important;  /* Higher than toolbar z-index */
     box-shadow: 0 -10px 40px rgba(0,0,0,0.3) !important;
     background: #f3f4f6 !important;
     color: #000;
@@ -172,7 +172,25 @@
     animation: fadeIn 0.3s ease-out;
 }
 
-/* Fade in animation for expanded card */
+/* Expanded file next to open sidebar - maximizes real estate */
+body.sidebar-open .file.expanded {
+    left: 0 !important;
+    top: 0 !important;
+    transform: translateX(300px) !important;
+    width: calc(100vw - 300px) !important;
+    max-width: none !important;
+    height: 100vh !important;
+    max-height: 100vh !important;
+    border-radius: 0 !important;
+}
+
+/* Ensure sidebar-overlay covers full viewport when sidebar open */
+body.sidebar-open .expanded-file-overlay {
+    width: 100vw;
+    left: 0;
+}
+
+/* Fade in animation for expanded file */
 @keyframes fadeIn {
     from {
         opacity: 0;
@@ -182,8 +200,8 @@
     }
 }
 
-/* Expanded card content wrapper */
-.expanded-card-content {
+/* Expanded file content wrapper */
+.expanded-file-content {
     width: 100%;
     height: 100%;
     display: flex;
@@ -192,7 +210,7 @@
 }
 
 /* Button row at top */
-.expanded-card-buttons {
+.expanded-file-buttons {
     display: flex;
     justify-content: flex-end;
     padding: 0px 5px;
@@ -204,7 +222,7 @@
 }
 
 /* Header section */
-.expanded-card-header {
+.expanded-file-header {
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
@@ -226,7 +244,7 @@
     margin: 0;
 }
 
-.save-card-btn, .delete-card-btn {
+.save-file-btn, .delete-file-btn {
     padding: 5px 10px;
     border-radius: 4px;
     cursor: pointer;
@@ -241,21 +259,21 @@
     z-index: 10;
 }
 
-.save-card-btn {
+.save-file-btn {
     background: #2D2D2D;
     color: white;
 }
 
-.save-card-btn:hover {
+.save-file-btn:hover {
     background: #3b82f6;
 }
 
-.delete-card-btn {
+.delete-file-btn {
     background: #2D2D2D;
     color: white;
 }
 
-.delete-card-btn:hover {
+.delete-file-btn:hover {
     background: #ef4444;
 }
 
@@ -275,7 +293,7 @@
 }
 
 /* Main content area */
-.expanded-card-main {
+.expanded-file-main {
     flex: 1;
     display: flex;
     flex-direction: column;
@@ -301,7 +319,7 @@
 }
 
 /* Editor section in section */
-.card-section .editor-section {
+.file-section .editor-section {
     padding: 0;
 }
 
@@ -315,9 +333,9 @@
     min-height: 0;
 }
 
-/* Bookmark card - match updated demo structure - force specificity */
-.section-bookmarks .bookmark-card,
-.bookmark-card {
+/* Bookmark file - match updated demo structure - force specificity */
+.section-bookmarks .bookmark-file,
+.bookmark-file {
     width: 170px !important;
     aspect-ratio: 350 / 450;
     border-radius: 17px !important;
@@ -330,7 +348,7 @@
 }
 
 /* Blurred background from image */
-.bookmark-card::before {
+.bookmark-file::before {
     content: '';
     background-image: var(--bookmark-bg-image);
     background-size: cover;
@@ -343,45 +361,45 @@
 }
 
 /* Default gradient when no image */
-.bookmark-card.no-image::before {
+.bookmark-file.no-image::before {
     filter: none;
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
 }
 
 /* Default gradient for image overlay when no image */
-.bookmark-card.no-image .image-overlay {
+.bookmark-file.no-image .image-overlay {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
 }
 
 /* Different gradients for each overlay position when no image */
-.bookmark-card.no-image:nth-child(1) .image-overlay { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
-.bookmark-card.no-image:nth-child(2) .image-overlay { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); }
-.bookmark-card.no-image:nth-child(3) .image-overlay { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); }
-.bookmark-card.no-image:nth-child(4) .image-overlay { background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); }
-.bookmark-card.no-image:nth-child(5) .image-overlay { background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); }
-.bookmark-card.no-image:nth-child(6) .image-overlay { background: linear-gradient(135deg, #30cfd0 0%, #330867 100%); }
+.bookmark-file.no-image:nth-child(1) .image-overlay { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+.bookmark-file.no-image:nth-child(2) .image-overlay { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); }
+.bookmark-file.no-image:nth-child(3) .image-overlay { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); }
+.bookmark-file.no-image:nth-child(4) .image-overlay { background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); }
+.bookmark-file.no-image:nth-child(5) .image-overlay { background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); }
+.bookmark-file.no-image:nth-child(6) .image-overlay { background: linear-gradient(135deg, #30cfd0 0%, #330867 100%); }
 
 /* Different gradients for each position */
-.bookmark-card.no-image:nth-child(1)::before { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
-.bookmark-card.no-image:nth-child(2)::before { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); }
-.bookmark-card.no-image:nth-child(3)::before { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); }
-.bookmark-card.no-image:nth-child(4)::before { background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); }
-.bookmark-card.no-image:nth-child(5)::before { background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); }
-.bookmark-card.no-image:nth-child(6)::before { background: linear-gradient(135deg, #30cfd0 0%, #330867 100%); }
+.bookmark-file.no-image:nth-child(1)::before { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+.bookmark-file.no-image:nth-child(2)::before { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); }
+.bookmark-file.no-image:nth-child(3)::before { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); }
+.bookmark-file.no-image:nth-child(4)::before { background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); }
+.bookmark-file.no-image:nth-child(5)::before { background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); }
+.bookmark-file.no-image:nth-child(6)::before { background: linear-gradient(135deg, #30cfd0 0%, #330867 100%); }
 
-.bookmark-card:hover {
+.bookmark-file:hover {
     transform: translateY(-2px);
 }
 
 /* Image container structure */
-.bookmark-card .image-container {
+.bookmark-file .image-container {
     position: relative;
     flex: 0 0 70%;
     margin: 1.3%;
     margin-bottom: 1px;
 }
 
-.bookmark-card .image-overlay {
+.bookmark-file .image-overlay {
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
@@ -392,8 +410,8 @@
 }
 
 /* Delete and external link buttons */
-.bookmark-card .delete-button,
-.bookmark-card .external-link-button {
+.bookmark-file .delete-button,
+.bookmark-file .external-link-button {
     position: absolute;
     background: #000000;
     border: none;
@@ -408,14 +426,14 @@
     justify-content: center;
 }
 
-.bookmark-card .delete-button {
+.bookmark-file .delete-button {
     top: 10px;
     right: 10px;
     width: 25px;
     height: 25px;
 }
 
-.bookmark-card .external-link-button {
+.bookmark-file .external-link-button {
     top: 70%;
     left: 50%;
     transform: translate(-50%, -50%) scale(0.8);
@@ -424,29 +442,29 @@
     text-decoration: none;
 }
 
-.bookmark-card:hover .delete-button,
-.bookmark-card:hover .external-link-button {
+.bookmark-file:hover .delete-button,
+.bookmark-file:hover .external-link-button {
     opacity: 1;
 }
 
-.bookmark-card .delete-button svg {
+.bookmark-file .delete-button svg {
     width: 16px;
     height: 16px;
     display: block;
 }
 
-.bookmark-card .external-link-button svg {
+.bookmark-file .external-link-button svg {
     width: 24px;
     height: 24px;
 }
 
-.bookmark-card .delete-button:hover {
+.bookmark-file .delete-button:hover {
     background: #ff0000;
 }
 
 /* Up/Down buttons */
-.bookmark-card .up-button,
-.bookmark-card .down-button {
+.bookmark-file .up-button,
+.bookmark-file .down-button {
     position: absolute;
     width: 20px;
     height: 20px;
@@ -465,36 +483,36 @@
     z-index: 2;
 }
 
-.bookmark-card .up-button {
+.bookmark-file .up-button {
     bottom: 38px;
     right: 15px;
 }
 
-.bookmark-card .down-button {
+.bookmark-file .down-button {
     bottom: 15px;
     right: 15px;
 }
 
-.bookmark-card .up-button svg,
-.bookmark-card .down-button svg {
+.bookmark-file .up-button svg,
+.bookmark-file .down-button svg {
     width: 12px;
     height: 12px;
     display: block;
 }
 
-.bookmark-card .up-button:hover,
-.bookmark-card .down-button:hover {
+.bookmark-file .up-button:hover,
+.bookmark-file .down-button:hover {
     background: #000000;
 }
 
-.bookmark-card .up-button:disabled,
-.bookmark-card .down-button:disabled {
+.bookmark-file .up-button:disabled,
+.bookmark-file .down-button:disabled {
     opacity: 0;
     cursor: not-allowed;
 }
 
-.bookmark-card:hover .up-button,
-.bookmark-card:hover .down-button {
+.bookmark-file:hover .up-button,
+.bookmark-file:hover .down-button {
     opacity: 1;
 }
 
@@ -512,7 +530,7 @@
     opacity: 60%;
 }
 
-.bookmark-card-title {
+.bookmark-file-title {
     font-size: 10px;
     font-weight: 700;
     color: #707070;
@@ -530,8 +548,8 @@
     text-align: center;
 }
 
-/* Expanded card overlay */
-.expanded-card-overlay {
+/* Expanded file overlay */
+.expanded-file-overlay {
     position: fixed;
     top: 0;
     left: 0;
@@ -542,13 +560,13 @@
     cursor: pointer;
 }
 
-.card.expanded .content-wrapper {
+.file.expanded .content-wrapper {
     /* Remove old wrapper styles */
     display: none;
 }
 
-/* Close button for expanded cards */
-.card.expanded .close-btn {
+/* Close button for expanded files */
+.file.expanded .close-btn {
     position: absolute;
     top: 10px;
     right: 10px;
@@ -564,23 +582,23 @@
     z-index: 1000;
 }
 
-.card.expanded .close-btn:hover {
+.file.expanded .close-btn:hover {
     background: #e8e8e8;
 }
 
-.card.expanded .close-btn svg {
+.file.expanded .close-btn svg {
     width: 16px;
     height: 16px;
     stroke: #444;
 }
 
-/* Hide original title container when card is expanded */
-.card.expanded .card-title-container {
+/* Hide original title container when file is expanded */
+.file.expanded .file-title-container {
     display: none !important;
 }
 
-/* Expanded card title in header */
-.card.expanded .expanded-card-header .card-title {
+/* Expanded file title in header */
+.file.expanded .expanded-file-header .file-title {
     font-size: 48px !important;
     font-weight: 600 !important;
     color: #111827;
@@ -593,13 +611,13 @@
     outline: none;
 }
 
-/* Expanded card content */
-.card.expanded .card-content {
+/* Expanded file content */
+.file.expanded .file-content {
     display: none;  /* Hide content when expanded */
 }
 
 /* Editor container styling */
-.card.expanded .editor-container {
+.file.expanded .editor-container {
     height: 100%;
     display: flex;
     flex-direction: column;
@@ -609,23 +627,23 @@
 }
 
 /* Section container styling */
-.card.expanded .card-section {
+.file.expanded .file-section {
     display: flex;
     flex-direction: column;
-    background-color: #ffffff;  /* Match card background */
+    background-color: #ffffff;  /* Match file background */
     border-radius: 8px;
     border: 1px solid #ffffff;
     width: 100%;
 }
 
-.card.expanded .ql-container {
+.file.expanded .ql-container {
     flex: 1;
     min-height: 0;
     display: flex;
     flex-direction: column;
 }
 
-.card.expanded .ql-editor {
+.file.expanded .ql-editor {
     flex: 1;
     min-height: 0;
     overflow-y: auto;
@@ -663,30 +681,30 @@
     min-height: 13px;
 }
 
-/* Expanded card bullet styles */
-.card.expanded .bullet-item {
+/* Expanded file bullet styles */
+.file.expanded .bullet-item {
     padding: 4px 0;
 }
 
-.card.expanded .bullet-item::before {
+.file.expanded .bullet-item::before {
     font-size: 14px;
     color: #333333;
     margin-right: 10px;
 }
 
-.card.expanded .bullet-content {
+.file.expanded .bullet-content {
     font-size: 14px;
     color: #333333;
     padding: 2px 4px;
     min-height: 24px;
 }
 
-.card.expanded .bullet-item.indent-1 { padding-left: 30px; }
-.card.expanded .bullet-item.indent-2 { padding-left: 60px; }
-.card.expanded .bullet-item.indent-3 { padding-left: 90px; }
+.file.expanded .bullet-item.indent-1 { padding-left: 30px; }
+.file.expanded .bullet-item.indent-2 { padding-left: 60px; }
+.file.expanded .bullet-item.indent-3 { padding-left: 90px; }
 
 /* Button row styles */
-.card.expanded .expanded-card-buttons {
+.file.expanded .expanded-file-buttons {
     display: flex;
     justify-content: flex-end;
     background: #ffffff;
@@ -703,8 +721,8 @@
     padding-right: 9px;
 }
 
-.save-card-btn,
-.delete-card-btn,
+.save-file-btn,
+.delete-file-btn,
 .dark-mode-toggle {
     padding: 5px 10px;
     border: none;
@@ -721,12 +739,12 @@
 
 
 /* Hide delete button from original position */
-.card.expanded .Btn {
+.file.expanded .Btn {
     display: none;
 }
 
-/* Card section container */
-.card-section {
+/* File section container */
+.file-section {
     display: flex;
     flex-direction: column;
     margin-bottom: 20px;
@@ -804,13 +822,13 @@
 }
 
 /* Active section highlight */
-.card-section.active {
+.file-section.active {
     border-color: #5353ff;
     box-shadow: 0 0 0 2px rgba(83, 83, 255, 0.1);
 }
 
 /* Dark mode support */
-.dark-mode .card-section {
+.dark-mode .file-section {
     background: #2d3748;
     border-color: #4a5568;
 }
@@ -837,13 +855,13 @@
     background: #2d3748;
 }
 
-/* Dark mode bookmark cards */
-.dark-mode .bookmark-card {
+/* Dark mode bookmark files */
+.dark-mode .bookmark-file {
     background: #374151;
     color: #f3f4f6;
 }
 
-.dark-mode .bookmark-card:hover {
+.dark-mode .bookmark-file:hover {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
@@ -894,7 +912,7 @@
 
 /* Responsive breakpoints */
 @media (max-width: 1600px) {
-    .bookmark-card {
+    .bookmark-file {
         flex: 0 0 calc(33.333% - 10px); /* Maintain 3 per row */
         width: calc(33.333% - 10px);
         max-width: calc(33.333% - 10px);
@@ -902,7 +920,7 @@
 }
 
 @media (max-width: 1200px) {
-    .bookmark-card {
+    .bookmark-file {
         flex: 0 0 calc(33.333% - 10px); /* Maintain 3 per row */
         width: calc(33.333% - 10px);
         max-width: calc(33.333% - 10px);
@@ -920,7 +938,7 @@
 }
 
 @media (max-width: 1000px) {
-    .bookmark-card {
+    .bookmark-file {
         flex: 0 0 calc(50% - 7.5px); /* 2 per row on smaller screens */
         width: calc(50% - 7.5px);
         max-width: calc(50% - 7.5px);
