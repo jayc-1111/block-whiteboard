@@ -27,8 +27,8 @@
 
 /* Adjust toolbar when sidebar is open */
 body.sidebar-open #topBar {
-    left: 695px;
-    width: calc(100% - 640px);
+    left: 320px;
+    width: calc(100% - 320px);
 }
 
 /* Default dark theme */

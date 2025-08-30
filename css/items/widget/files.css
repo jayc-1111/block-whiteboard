@@ -26,7 +26,6 @@
 }
 
 .file:hover {
-    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.5);
 }
 
 .file.dragging {
@@ -162,7 +161,6 @@
     max-height: none !important;
     overflow: hidden;
     z-index: 1000001 !important;  /* Higher than toolbar z-index */
-    box-shadow: 0 -10px 40px rgba(0,0,0,0.3) !important;
     background: #f3f4f6 !important;
     color: #000;
     padding: 0 !important;
@@ -176,8 +174,8 @@
 body.sidebar-open .file.expanded {
     left: 0 !important;
     top: 0 !important;
-    transform: translateX(300px) !important;
-    width: calc(100vw - 300px) !important;
+    transform: translateX(270px) !important;
+    width: calc(100vw - 270px) !important;
     max-width: none !important;
     height: 100vh !important;
     max-height: 100vh !important;

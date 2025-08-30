@@ -1,0 +1,136 @@
+/*
+ ===================================
+ SIDEBAR SWITCHER STYLES
+ Dropdown component for switching between different sidebar views
+ ===================================
+*/
+
+/* View switching functionality */
+.view-section {
+    display: none;
+}
+
+.view-section.active {
+    display: block;
+}
+
+/* Files view - always visible initially */
+#files-view {
+    display: block;
+}
+
+/* Sidebar title container */
+.sidebar-title {
+    padding: 10px 15px 5px;
+    font-size: 12px;
+    color: #6c7086;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-family: 'Nunito', sans-serif;
+    font-weight: 600;
+}
+
+/* Dropdown selector - Main switcher component */
+.dropdown-selector {
+    width: 100%;
+    background-color: #131313;
+    border: 1px solid #2a2a2a;
+    border-radius: 6px;
+    padding: 8px 10px;
+    color: #f8f8f2;
+    font-size: 13px;
+    font-family: 'Nunito', sans-serif;
+    font-weight: 500;
+    outline: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    appearance: none; /* Remove default browser appearance */
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23bac2de' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6,9 12,15 18,9'/%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    background-size: 12px;
+    padding-right: 30px;
+}
+
+.dropdown-selector:hover {
+    border-color: #3a3a3a;
+    background-color: #1a1a1a;
+}
+
+.dropdown-selector:focus {
+    border-color: #89b4fa;
+    box-shadow: 0 0 0 2px rgba(137, 180, 250, 0.1);
+    background-color: #1a1a1a;
+}
+
+.dropdown-selector option {
+    background-color: #131313;
+    color: #f8f8f2;
+    padding: 8px;
+    font-family: 'Nunito', sans-serif;
+}
+
+/* Dark mode override for consistency */
+.dropdown-selector::-ms-expand {
+    display: none; /* Remove arrow in IE */
+}
+
+/* Light mode support */
+.light-mode .dropdown-selector {
+    background-color: #F5F7FB;
+    border-color: #d1d5db;
+    color: #374151;
+}
+
+.light-mode .dropdown-selector:hover {
+    background-color: #ECECEC;
+    border-color: #9ca3af;
+}
+
+.light-mode .dropdown-selector:focus {
+    border-color: #89b4fa;
+    background-color: #ECECEC;
+}
+
+.light-mode .dropdown-selector option {
+    background-color: #F5F7FB;
+    color: #374151;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .sidebar-title {
+        padding: 8px 12px 4px;
+    }
+
+    .dropdown-selector {
+        font-size: 12px;
+        padding: 6px 8px;
+        background-position: right 8px center;
+        padding-right: 24px;
+    }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+    .dropdown-selector {
+        border: 2px solid #bac2de;
+    }
+
+    .dropdown-selector:focus {
+        border-color: #89b4fa;
+        border-width: 2px;
+    }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+    .dropdown-selector {
+        transition: none;
+    }
+
+    .dropdown-selector:hover,
+    .dropdown-selector:focus {
+        transition: none;
+    }
+}

@@ -17,7 +17,7 @@
     left: 0;
     z-index: 1000001;
     height: 100vh;
-    width: 300px;
+    width: 270px;
     background-color: #131313;
     transition: transform 0.3s ease;
     display: flex;
@@ -27,7 +27,7 @@
 }
 
 #sidebarMenu:not(.open) {
-    transform: translateX(-300px);
+    transform: translateX(-270px);
 }
 
 #sidebarMenu.open {
@@ -38,7 +38,7 @@
     display: flex;
 }
 
-/* sidebar content - No padding */
+/* sidebar content - With 8px padding */
 .sidebar-content {
     display: none;
     flex-direction: column;
@@ -99,15 +99,7 @@
 .bookmarks-section {
     flex: 1;
     overflow-y: auto;
-    border-top: 1px solid #2a2a2a;
     margin-top: 15px;
-}
-
-.bookmarks-section h3 {
-    color: #ddd;
-    font-size: 0.9rem;
-    margin: 0 0 10px 0;
-    border-bottom: 1px solid #2a2a2a;
 }
 
 .bookmarks-list {
@@ -136,6 +128,7 @@
     width: 16px;
     height: 16px;
     flex-shrink: 0;
+    filter: invert(48%) sepia(59%) saturate(1539%) hue-rotate(203deg) brightness(108%) contrast(106%);
 }
 
 
@@ -162,6 +155,7 @@
     width: 18px;
     height: 18px;
     stroke: #ddd;
+    filter: invert(48%) sepia(59%) saturate(1539%) hue-rotate(203deg) brightness(108%) contrast(106%);
     flex-shrink: 0;
 }
 
@@ -249,6 +243,22 @@
     stroke: #7f7f7f;
 }
 
+.light-mode .bookmark-item svg {
+    filter: none;
+}
+
+.light-mode .sidebar-item svg {
+    filter: none;
+}
+
+#sidebarMenu svg.item-icon {
+    filter: invert(48%) sepia(59%) saturate(1539%) hue-rotate(203deg) brightness(108%) contrast(106%);
+}
+
+.light-mode #sidebarMenu svg.item-icon {
+    filter: none;
+}
+
 .light-mode .sidebar-item,
 .light-mode .sidebar-item:hover {
     color: #7f7f7f;
@@ -265,9 +275,9 @@
 
 /* Push effect for whiteboard */
 body.sidebar-open #whiteboard {
-    transform: translateX(300px);
+    transform: translateX(270px);
     transition: transform 0.3s ease;
-    width: calc(100% - 300px);
+    width: calc(100% - 270px);
 }
 
 #whiteboard {
