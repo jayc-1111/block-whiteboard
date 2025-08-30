@@ -9,7 +9,7 @@ function toggleCategory(category) {
 }
 
 // Category management
-function createCategory(title = 'New Category', x = null, y = null) {
+function createCategory(title = 'New Folder', x = null, y = null) {
     // Expose globally for file tree
     window.createCategory = createCategory;
     const canvas = document.getElementById('canvas');
