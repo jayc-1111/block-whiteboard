@@ -478,9 +478,9 @@ export const authUI = {
     
     addUserInfoToHamburger() {
         const attemptAddUserInfo = () => {
-            const hamburgerDropdown = document.querySelector('.hamburger-dropdown');
-            if (!hamburgerDropdown) {
-                Debug.auth.detail('Auth UI: Hamburger dropdown not found, retrying in 500ms...');
+            const hamburgerContent = document.querySelector('.hamburger-content .sidebar-content');
+            if (!hamburgerContent) {
+                Debug.auth.detail('Auth UI: Hamburger content not found, retrying in 500ms...');
                 setTimeout(attemptAddUserInfo, 500);
                 return;
             }
@@ -501,8 +501,14 @@ export const authUI = {
                 </div>
             `;
             
-            // Insert at the top of the hamburger dropdown
-            hamburgerDropdown.insertBefore(userInfoContainer, hamburgerDropdown.firstChild);
+            // Insert at the bottom of the sidebar content, above the settings section
+            const bookmarksSection = hamburgerContent.querySelector('.bookmarks-section');
+            if (bookmarksSection) {
+                hamburgerContent.insertBefore(userInfoContainer, bookmarksSection);
+            } else {
+                // Fallback: insert at the end
+                hamburgerContent.appendChild(userInfoContainer);
+            }
             
             Debug.auth.step('User info added to hamburger menu successfully');
             

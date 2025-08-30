@@ -315,8 +315,7 @@ body.frutiger-mode [id="topBar"] {
     color: #1a5490;
 }
 
-.frutiger-mode .board-dropdown .element:hover,
-.frutiger-mode .file-structure-list li:hover {
+.frutiger-mode .board-dropdown .element:hover {
     background: rgba(30, 144, 255, 0.1);
 }
 

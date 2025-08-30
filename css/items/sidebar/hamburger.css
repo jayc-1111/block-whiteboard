@@ -1,0 +1,463 @@
+/* ===================================
+   HAMBURGER MENU STYLES - NO PADDING
+   =================================== */
+
+/* Base reset - Single definition only */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Helvetica', 'Fira Code', 'Courier New', monospace;
+}
+
+/* Body - Single definition only */
+body {
+    background-color: #1e1e2e;
+    color: #f8f8f2;
+}
+
+/* Hamburger menu container - No padding */
+#hamburgerMenu {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1000001;
+    height: 100vh;
+    width: 60px;
+    background-color: #131313;
+    transition: width 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+}
+
+#hamburgerMenu.open {
+    width: 300px;
+}
+
+#hamburgerMenu.open .hamburger-content {
+    display: flex;
+}
+
+/* Hamburger content - No padding */
+.hamburger-content {
+    display: none;
+    flex-direction: column;
+    height: 100%;
+    overflow-y: auto;
+}
+
+/* Hamburger button - Single definition only */
+.hamburger-btn {
+    width: 48px;
+    height: 48px;
+    background: #131313;
+    border: 2px solid #1a1a1a;
+    border-radius: 12px;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    transition: all 0.3s ease;
+    margin: 10px;
+    align-self: flex-start;
+}
+
+.hamburger-btn:hover {
+    background: #3a3a3a;
+    border-color: #2a2a2a;
+}
+
+.hamburger-btn svg {
+    width: 24px;
+    height: 24px;
+    color: #fff;
+    transition: all 0.3s ease;
+}
+
+/* Sidebar layout - No vertical padding */
+.sidebar-content {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    gap: 0;
+}
+
+/* Search bar - Keep margin-left for icon, remove others */
+.search-bar {
+    margin: 0 0 15px 15px;
+    position: relative;
+}
+
+.search-input {
+    width: 100%;
+    background-color: #191919;
+    border: 1px solid #191919;
+    border-radius: 5px;
+    padding-left: 30px;  /* Keep for icon */
+    color: #f8f8f2;
+    font-size: 13px;
+    outline: none;
+}
+
+.search-input:focus {
+    border-color: #89b4fa;
+}
+
+.search-icon {
+    position: absolute;
+    left: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 14px;
+    height: 14px;
+    color: #ffffff;
+    filter: invert(56%) sepia(36%) saturate(3960%) hue-rotate(201deg) brightness(105%) contrast(101%);
+}
+
+/* File tree section - Clean definitions */
+.file-tree-section {
+    flex: 2;
+    overflow-y: auto;
+    margin: 10px 0;
+}
+
+.file-tree-section h3 {
+    color: #ddd;
+    font-size: 0.9rem;
+    margin: 0 0 10px 0;
+    border-bottom: 1px solid #2a2a2a;
+}
+
+/* Bookmarks section - No top padding */
+.bookmarks-section {
+    flex: 1;
+    overflow-y: auto;
+    border-top: 1px solid #2a2a2a;
+    margin-top: 15px;
+}
+
+.bookmarks-section h3 {
+    color: #ddd;
+    font-size: 0.9rem;
+    margin: 0 0 10px 0;
+    border-bottom: 1px solid #2a2a2a;
+}
+
+.bookmarks-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.bookmark-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    color: #9ca3af;
+    font-size: 0.8rem;
+}
+
+.bookmark-item:hover {
+    background: #2a2a2a;
+    color: #ddd;
+}
+
+.bookmark-item svg {
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+}
+
+/* File tree container - Single clean definition */
+.file-structure-dropdown {
+    visibility: hidden;
+    pointer-events: none;
+    font-family: 'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
+    font-size: 13px;
+    font-weight: 500;
+    position: relative;
+    opacity: 1;
+    display: block;
+    width: auto;
+    left: auto;
+    top: auto;
+    margin-top: 0;
+}
+
+/* Override for hamburger menu to show dropdown */
+#hamburgerMenu .file-structure-dropdown,
+.file-tree-section .file-structure-dropdown {
+    visibility: visible !important;
+    pointer-events: auto !important;
+}
+
+/* File structure list - Single definition */
+.file-structure-list {
+    list-style: none;
+    color: #f8f8f2;
+}
+
+/* File structure list items - No horizontal padding */
+.file-structure-list li {
+    color: #f8f8f2;
+    margin: 2px 0;
+    position: relative;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: background-color 0.2s ease;
+    font-size: 13px;
+}
+
+.file-structure-list li:hover {
+    background-color: rgba(137, 180, 250, 0.1);
+    color: #89b4fa;
+}
+
+/* File tree root - Single definition */
+.file-tree-root {
+    margin: 0;
+    list-style: none;
+}
+
+/* File tree items - Single definition */
+.tree-item {
+    margin: 2px 0;
+    position: relative;
+}
+
+/* Tree toggle button - No horizontal padding */
+.tree-toggle {
+    display: inline-flex;
+    align-items: center;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: background-color 0.2s ease;
+    width: 100%;
+}
+
+.tree-toggle.active {
+    background-color: rgba(137, 180, 250, 0.1);
+}
+
+.toggle-icon {
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    margin-right: 5px;
+    color: #bac2de;
+    transition: transform 0.2s ease;
+    filter: brightness(0) invert(1);
+}
+
+.tree-toggle.expanded .toggle-icon {
+    transform: rotate(90deg);
+}
+
+.tree-toggle:hover .toggle-icon,
+.toggle-icon:hover {
+    color: #89b4fa;
+}
+
+/* Item name - Single definition */
+.item-name {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    color: #bac2de;
+}
+
+.tree-toggle:hover .item-name {
+    color: #89b4fa;
+}
+
+/* File icons - Single definitions */
+.item-icon {
+    width: 14px;
+    height: 14px;
+    color: #ffffff;
+    filter: invert(56%) sepia(36%) saturate(3960%) hue-rotate(201deg) brightness(105%) contrast(101%);
+}
+
+.item-icon.folder { color: #f9e2af; }
+.item-icon.file { stroke: #ffffff; }
+.item-icon.file-js { color: #f9e2af; }
+.item-icon.file-html { color: #fab387; }
+.item-icon.file-css { color: #89b4fa; }
+.item-icon.file-json { color: #89dceb; }
+.item-icon.file-md { color: #cba6f7; }
+.item-icon.file-ts { color: #89b4fa; }
+.item-icon.file-img { color: #a6e3a1; }
+.item-icon.file-txt { color: #bac2de; }
+
+/* Nested list - Keep indentation padding */
+.nested {
+    display: none;
+    padding-left: 20px;  /* KEEP for hierarchy */
+    margin-top: 2px;
+    list-style-type: none;
+}
+
+.tree-toggle.expanded + .nested {
+    display: block;
+}
+
+/* Hamburger items - No horizontal padding */
+.hamburger-item {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    color: #ddd;
+    font-family: 'Nunito', sans-serif !important;
+    font-size: 0.80rem;
+    font-weight: 500;
+}
+
+.hamburger-item:hover {
+    background: #2a2a2a;
+}
+
+.hamburger-item svg {
+    width: 18px;
+    height: 18px;
+    stroke: #ddd;
+    flex-shrink: 0;
+}
+
+.hamburger-item span {
+    flex: 1;
+}
+
+/* Settings menu - No padding */
+#settingsItem .settings-menu {
+    position: absolute;
+    left: 100%;
+    bottom: 0;
+    background: #131313;
+    border-radius: 12px;
+    min-width: 200px;
+    z-index: 10000;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.2s, visibility 0.2s;
+}
+
+#settingsItem:hover .settings-menu {
+    opacity: 1;
+    visibility: visible;
+}
+
+.settings-option {
+    position: relative;
+    display: flex;
+    align-items: center;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    color: #ddd;
+    font-family: 'Nunito', sans-serif !important;
+    font-size: 0.80rem;
+    font-weight: 500;
+}
+
+.settings-option:hover {
+    background: #2a2a2a;
+}
+
+.settings-option.separator {
+    height: 1px;
+    background: #2a2a2a;
+    margin: 8px 0;
+    cursor: default;
+    width: 100%;
+}
+
+.bg-option {
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all 0.3s ease-out;
+    color: #7e8590;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.bg-option:hover {
+    background-color: #5353ff;
+    color: #ffffff;
+}
+
+.bg-option.active {
+    background: #3b82f6;
+    color: white;
+}
+
+/* Light mode adjustments - Clean definitions */
+.light-mode #hamburgerMenu .hamburger-btn {
+    background: #F5F7FB;
+    border: 1px solid #F5F7FB;
+}
+
+.light-mode #hamburgerMenu .hamburger-btn:hover {
+    background: #ECECEC;
+    border-color: #ECECEC;
+}
+
+.light-mode #hamburgerMenu .hamburger-btn svg,
+.light-mode .hamburger-item svg {
+    color: #7f7f7f;
+    stroke: #7f7f7f;
+}
+
+.light-mode .hamburger-item,
+.light-mode .hamburger-item:hover {
+    color: #7f7f7f;
+    background: transparent;
+}
+
+.light-mode .hamburger-item:hover {
+    background: #F5F7FB;
+}
+
+.light-mode .hamburger-separator {
+    background: #F5F7FB;
+}
+
+/* Push effect for whiteboard */
+body.sidebar-open #whiteboard {
+    transform: translateX(300px);
+    transition: transform 0.3s ease;
+    width: calc(100% - 300px);
+}
+
+#whiteboard {
+    transition: transform 0.3s ease, width 0.3s ease;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #1e1e2e;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #3b3b4d;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #4d4d63;
+}

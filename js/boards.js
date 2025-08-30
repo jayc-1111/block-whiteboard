@@ -162,12 +162,32 @@ async function saveCurrentBoard() {
                     }
                 }
                 
+                // Save sections data if it exists
+                let sections = [];
+                if (card.sections && Array.isArray(card.sections)) {
+                    sections = card.sections.map(section => ({
+                        id: section.id,
+                        title: section.title,
+                        content: section.content,
+                        bookmarks: section.bookmarks || []
+                    }));
+                    console.log(`💾 SAVE DEBUG: Card "${title}" has ${sections.length} sections to save`);
+                } else {
+                    console.log(`💾 SAVE DEBUG: Card "${title}" has no sections (card.sections: ${typeof card.sections})`);
+                }
+                
                 const cardData = {
                     id: card.dataset.cardId || card.id || null,
                     title: title,
                     content: content, // Now storing Quill HTML format
-                    bookmarks: bookmarks // Save bookmarks with protection
+                    bookmarks: bookmarks, // Save bookmarks with protection
+                    sections: sections // Save sections data
                 };
+                
+                if (sections.length > 0) {
+                    console.log(`💾 SAVE DEBUG: Saving ${sections.length} sections for card "${title}"`);
+                    sections.forEach((s, i) => console.log(`  Section ${i}: ${s.title} (${s.bookmarks?.length || 0} bookmarks)`));
+                }
                 
                 if (card.bookmarks && card.bookmarks.length > 0) {
                     console.log(`📦 SAVE: Saving card "${title}" with ${card.bookmarks.length} bookmarks`);
@@ -337,15 +357,21 @@ async function loadBoard(boardId) {
                         }
                     }
                     
-                    // Load cards with bookmarks
+                    // Load cards with bookmarks and sections
                     if (catData.cards) {
                         catData.cards.forEach(cardData => {
-                            // Pass bookmarks as fourth parameter
+                            // Pass bookmarks as fourth parameter and sections as fifth (if needed)
                             const card = addCardToCategory(catIndex, cardData.title, cardData.content, cardData.bookmarks);
                             // Restore card ID if it exists
                             if (card && cardData.id) {
                                 card.id = cardData.id;
                                 card.dataset.cardId = cardData.id;
+                            }
+                            
+                            // Restore sections if they exist
+                            if (card && cardData.sections && Array.isArray(cardData.sections)) {
+                                // Store sections data on the card element for later use
+                                card.sections = cardData.sections;
                             }
                         });
                     }

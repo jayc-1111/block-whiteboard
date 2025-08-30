@@ -527,14 +527,10 @@
 
 .light-mode .file-structure-list li {
     color: #5c5c5c !important;
-    padding: 10px 12px !important;
-    border-radius: 8px !important;
-    gap: 6px !important;
 }
 
-.light-mode .file-structure-list li:hover {
-    background: #E8EBF0 !important;
-    color: #5c5c5c !important;
+.light-mode .file-structure-list li.card-item {
+    color: #718096 !important;
 }
 
 .light-mode .file-structure-list li.card-item {

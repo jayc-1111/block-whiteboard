@@ -161,6 +161,31 @@
   - js/cards.js (lines 639-661 for handler, 665-703 for icon and restore, 234-350 for expand apply)
   - css/scripts/quill-overrides.css (lines 3-114 for dark mode styles)
 
+### 55. Replaced Butter.js with GSAP ScrollSmoother (8/27/2025)
+- **Problem**: Butter.js wasn't smoothing expanded cards, switched to GSAP ScrollSmoother
+- **Solution**: Implemented GSAP ScrollSmoother for smooth scrolling
+- **Changes**:
+  - Removed butter.js files and references
+  - Added GSAP CDN (gsap, ScrollTrigger, ScrollSmoother)
+  - Created ScrollSmoother structure (#smooth-wrapper, #smooth-content)
+  - Added init/cleanup functions
+- **Files**:
+  - `js/expanded-card-scroll-smoother.js` - ScrollSmoother module
+  - `css/scripts/expanded-card-scroll-smoother.css` - Styles
+  - `js/cards.js` - Updated expandCard/collapseCard
+  - `index.html` - GSAP CDN scripts
+- **Test**: Check console for "✅ GSAP ScrollSmoother initialized"
+
+### 58. Removed All Smooth Scrolling Except Lenis (8/27/2025)
+- **Decision**: Removed all smooth scrolling attempts for expanded cards
+- **Files Removed**:
+  - mrD-SmoothScroller 
+  - expanded-card-scroll-smoother
+  - expanded-card-smooth-scroll
+  - expanded-card-momentum-scroll
+- **Kept**: Lenis smooth scroll for main whiteboard
+- **Result**: Expanded cards use native browser scrolling
+
 ## Known Issues to Watch
 - Quill initialization timing can still be finicky with dynamic content
 - Element screenshot quality depends on html2canvas limitations (no cross-origin images)
@@ -225,6 +250,19 @@
   - `bookmark-destination-selector.js` - Lines 663-691 (timestamp fix & property check)
   - `cards.js` - Lines 720-800 (debug logging & date display fix)
 - **Testing**: Look for 🔍 DEBUG logs in console when adding bookmarks
+
+## Recent Issues Fixed (8/29/2025)
+
+### Settings Dropdown Hover Fix - Complete (8/29/2025)
+- **Problem**: Settings dropdown not displaying on hover despite previous positioning fix
+- **Root Cause**: Missing `position: absolute` in `.settings-menu` rule in dropdowns.css
+- **Solution**: Added `position: absolute` to enable proper positioning from hamburger.css
+- **Technical Details**: 
+  - hamburger.css provides `left: 100%; bottom: 0;` positioning
+  - dropdowns.css needed `position: absolute` for these rules to take effect
+  - Without position property, the left/bottom values were ignored
+- **Result**: Settings dropdown now appears properly on hover to the right of menu item
+- **Location**: `css/items/sidebar/dropdowns.css` - added position absolute to .settings-menu
 
 ## Recent Issues Fixed (8/8/2025)
 
@@ -1062,3 +1100,39 @@
   - All bookmark changes update both DOM and AppState
   - Modal bookmark additions now properly update AppState
   - Bookmarks persist through refresh because they're in AppState and Firebase
+
+### 59. Sections Not Saving with Lenis Scrolling (12/18/2024)
+- **Problem**: Card sections added via "Add Section" button not saving to Firebase when Lenis is reinitialized
+- **Root Causes**:
+  1. Sections stored only on card DOM element (`card.sections`), not properly passed to Firebase
+  2. `reinitializeModalLenis()` potentially losing section data when destroying/recreating Lenis
+  3. `addCardToCategory()` function not accepting sections parameter when loading from Firebase
+  4. Firebase sync service not passing sections when restoring cards
+- **Debugging Added**:
+  - Added comprehensive logging throughout section creation, save, and load flow
+  - Track section IDs and bookmarks at each stage
+  - Log when sections are backed up/restored during Lenis reinitialization
+- **Solution Implemented**:
+  1. **Fixed `addCardToCategory` signature**: Now accepts sections as 5th parameter
+  2. **Fixed Firebase loading**: `sync-service.js` now passes sections when creating cards from Firebase  
+  3. **Protected sections during Lenis reinit**: Added backup/restore of sections in `reinitializeModalLenis()`
+  4. **Added debug logging**: Track sections throughout save/load cycle
+- **Files Modified**:
+  - `js/cards.js`: 
+    - Updated `addCardToCategory` to accept and store sections from Firebase
+    - Enhanced `reinitializeModalLenis` to backup/restore sections
+    - Added debug logging for section tracking
+  - `js/boards.js`: Added debug logging for section saves
+  - `firebase/sync-service.js`: Updated to pass sections when loading cards
+- **How it works now**:
+  - Sections are stored on card element: `card.sections = sections || []`
+  - When saving, sections are included in board data
+  - When loading from Firebase, sections are passed through and restored
+  - Lenis reinitialization backs up sections before destroy and restores after
+  - All section operations update AppState for persistence
+- **Testing**:
+  - Create card with sections and bookmarks
+  - Save to Firebase (check console for "SAVE DEBUG" logs)
+  - Refresh page
+  - Check console for "LOAD DEBUG" logs showing sections restored
+  - Expand card - sections should appear with bookmarks intact

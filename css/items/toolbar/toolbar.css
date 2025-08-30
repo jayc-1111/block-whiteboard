@@ -17,6 +17,13 @@
     border-radius: 16px;
     width: calc(100% - 40px);
     max-width: 900px;
+    transition: all 0.3s ease;
+}
+
+/* Adjust toolbar when sidebar is open */
+body.sidebar-open #topBar {
+    left: 695px;
+    width: calc(100% - 640px);
 }
 
 /* Default dark theme */
@@ -418,7 +425,7 @@ body.with-background #topBar {
     border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
-.settings-container:hover .settings-menu,
+#settingsItem:hover .settings-menu,
 .settings-menu:hover {
     opacity: 1;
     visibility: visible;
@@ -549,13 +556,10 @@ body.with-background #topBar {
     font-size: 0.80rem;
     font-weight: 500;
     cursor: pointer;
-    transition: all 0.2s ease;
     border-radius: 8px;
     margin: 2px 0;
-}
-
-.file-structure-list li:hover {
-    background: #2a2a2a;
+    position: relative;
+    z-index: 1;
 }
 
 .file-structure-list li.category-item {

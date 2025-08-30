@@ -428,9 +428,23 @@ export const syncService = {
     addCardToCategory(catIndex, cardData) {
         try {
             if (typeof addCardToCategory === 'function') {
-                // Pass bookmarks as 4th parameter
-                const card = addCardToCategory(catIndex, cardData.title, cardData.content, cardData.bookmarks);
-                Debug.sync.detail(`Added card: "${cardData.title}" with ${cardData.bookmarks?.length || 0} bookmarks`);
+                // Pass bookmarks as 4th parameter and sections as 5th
+                console.log('💾 LOAD DEBUG: Loading card with sections', {
+                    title: cardData.title,
+                    hasSections: !!cardData.sections,
+                    sectionsCount: cardData.sections?.length || 0,
+                    sectionIds: cardData.sections?.map(s => s.id) || []
+                });
+                
+                const card = addCardToCategory(catIndex, cardData.title, cardData.content, cardData.bookmarks, cardData.sections);
+                Debug.sync.detail(`Added card: "${cardData.title}" with ${cardData.bookmarks?.length || 0} bookmarks and ${cardData.sections?.length || 0} sections`);
+                
+                if (cardData.sections?.length > 0) {
+                    console.log('💾 LOAD DEBUG: Card loaded with sections:', {
+                        cardTitle: cardData.title,
+                        sectionsLoaded: cardData.sections.length
+                    });
+                }
             } else {
                 Debug.sync.detail('addCardToCategory function not available');
             }
@@ -800,6 +814,11 @@ export const syncService = {
                         // Ensure bookmarks are preserved
                         if (!cardCopy.bookmarks) {
                             cardCopy.bookmarks = [];
+                        }
+                        
+                        // Ensure sections are preserved
+                        if (!cardCopy.sections) {
+                            cardCopy.sections = [];
                         }
                         return cardCopy;
                     });

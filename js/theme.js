@@ -1,5 +1,8 @@
 // Theme management
 
+// Current theme state
+let currentTheme = 'none';
+
 // Grid dot colors for each theme
 const gridDotColors = {
     none: 'rgba(233, 11, 11, 0.04)',      // Default dark theme
@@ -102,3 +105,43 @@ function setBackground(theme) {
     );
     if (activeOption) activeOption.classList.add('active');
 }
+
+// Theme module exports
+const Theme = {
+    // Get current theme
+    getCurrentTheme: function() {
+        return currentTheme;
+    },
+    
+    // Set theme
+    setTheme: function(theme) {
+        if (theme && typeof theme === 'string') {
+            currentTheme = theme;
+            setBackground(theme);
+            // Save to localStorage
+            localStorage.setItem('currentTheme', theme);
+            console.log(`Theme set to: ${theme}`);
+        } else {
+            console.error('Invalid theme provided:', theme);
+        }
+    },
+    
+    // Initialize theme (called when DOM is ready)
+    init: function() {
+        // Restore saved theme or use default
+        const savedTheme = localStorage.getItem('currentTheme');
+        if (savedTheme && savedTheme in gridDotColors) {
+            currentTheme = savedTheme;
+        } else {
+            currentTheme = 'none';
+        }
+        
+        // Apply the theme
+        setBackground(currentTheme);
+        
+        console.log(`Theme initialized: ${currentTheme}`);
+    }
+};
+
+// Export the Theme object
+window.Theme = Theme;

@@ -59,7 +59,17 @@ function addCard() {
     addCardToCategory(0);
 }
 
-function addCardToCategory(categoryOrIndex, title = 'New Card', content = null, bookmarks = null) {
+function addCardToCategory(categoryOrIndex, title = 'New Card', content = null, bookmarks = null, sections = null) {
+    console.log('🔨 ADD CARD DEBUG:', {
+        title: title,
+        hasContent: !!content,
+        hasBookmarks: !!bookmarks,
+        bookmarksCount: bookmarks?.length || 0,
+        hasSections: !!sections,
+        sectionsCount: sections?.length || 0,
+        sectionIds: sections?.map(s => s.id) || []
+    });
+    
     let category;
     
     // Support both category element and index
@@ -169,7 +179,18 @@ function addCardToCategory(categoryOrIndex, title = 'New Card', content = null, 
     // Store initial content on the card for later use
     card.initialContent = content;
     card.bookmarks = bookmarks || []; // Store bookmarks on card
-    card.sections = []; // Store sections on card
+    card.sections = sections || []; // Store sections on card (from Firebase)
+    
+    // Debug section restoration
+    if (sections && sections.length > 0) {
+        console.log(`📦 CARD: Restored card "${title}" with ${sections.length} sections:`);
+        sections.forEach((s, i) => {
+            console.log(`  📄 Section ${i}: ${s.title} (ID: ${s.id})`);
+            if (s.bookmarks && s.bookmarks.length > 0) {
+                console.log(`    🔖 Has ${s.bookmarks.length} bookmarks`);
+            }
+        });
+    }
     
     // Debug bookmark restoration
     if (bookmarks && bookmarks.length > 0) {
@@ -487,6 +508,14 @@ function expandCard(card) {
         if (card.darkModeEnabled) wrapper.classList.add('dark-mode');
         
         console.log('💚 EXPAND: Building button row...');
+        
+        // Restore sections from card data when expanding
+        if (card.sections && card.sections.length > 0) {
+            console.log('💚 EXPAND: Restoring sections from card data', {
+                sectionsCount: card.sections.length,
+                sectionIds: card.sections.map(s => s.id)
+            });
+        }
     // Create button row at top
     const buttonRow = document.createElement('div');
     buttonRow.className = 'expanded-card-buttons';
@@ -619,6 +648,7 @@ function expandCard(card) {
     // Create main content area with flex layout
     const mainContent = document.createElement('div');
     mainContent.className = 'expanded-card-main';
+    mainContent.setAttribute('data-lenis-prevent', '');
     if (card.darkModeEnabled) mainContent.classList.add('dark-mode');
     
     console.log('🔍 DEBUG: Checking for existing sections in DOM', { 
@@ -728,9 +758,15 @@ function expandCard(card) {
             sectionsInCard: card.sections?.length
         });
         
-        // Save to Firebase
+        // Save to Firebase before reinitializing Lenis
         if (window.syncService) {
-            window.syncService.saveAfterAction('section added');
+            window.syncService.saveAfterAction('section added').then(() => {
+                // Reinitialize modal Lenis to account for new content after save
+                reinitializeModalLenis(card);
+            });
+        } else {
+            // Reinitialize modal Lenis to account for new content
+            reinitializeModalLenis(card);
         }
     };
     
@@ -745,6 +781,40 @@ function expandCard(card) {
     wrapper.appendChild(mainContent);
     console.log('💚 EXPAND: Appending wrapper to card');
     card.appendChild(wrapper);
+
+    // Initialize Lenis smooth scroll specifically for this modal
+    const modalWrapper = card.querySelector('.expanded-card-main');
+    const modalContent = card.querySelector('.expanded-card-content');
+    if (modalWrapper && modalContent) {
+        // Ensure the wrapper has the correct CSS properties for scrolling
+        modalWrapper.style.overflow = 'auto';
+        modalWrapper.style.height = '100%';
+        
+        const modalLenis = new Lenis({
+            wrapper: modalWrapper,
+            content: modalContent,
+            lerp: 0.1,
+            duration: 1.2,
+            smoothWheel: true,
+            wheelMultiplier: 1,
+            touchMultiplier: 1.2,
+        });
+        
+        // Force an initial scroll update
+        modalLenis.resize();
+        
+        function rafModal(time) {
+            if (!modalWrapper.isConnected) return; // stop when modal closed
+            modalLenis.raf(time);
+            requestAnimationFrame(rafModal);
+        }
+        requestAnimationFrame(rafModal);
+        card.modalLenis = modalLenis;
+        
+        // Add classes to indicate smooth scrolling is active
+        modalWrapper.classList.add('lenis', 'lenis-smooth');
+    }
+
     console.log('💚 EXPAND: ✅ Card expansion complete!');
     console.log('💚 EXPAND: Final card structure:', {
         hasWrapper: !!card.querySelector('.expanded-card-content'),
@@ -1009,18 +1079,25 @@ function removeBookmark(expandedCard, bookmarkIndex, sectionElement) {
                     const bookmarkCard = createBookmarkCard('Example Bookmark', 'This is a sample bookmark description that shows how bookmarks will appear.', 'https://example.com', new Date(), null, 0, expandedCard, sectionElement);
                     bookmarksContainer.appendChild(bookmarkCard);
                 }
-            }
-            
-            // Save the updated bookmarks
-            if (window.syncService) {
-                const expandedBeforeSync = AppState.get('expandedCard');
-                console.log('🔧 SYNC DEBUG: Before sync - expandedCard:', expandedBeforeSync);
-                window.syncService.saveAfterAction('bookmark removed').then(() => {
-                    console.log('🔧 SYNC DEBUG: Sync complete - restoring expandedCard:', expandedBeforeSync);
-                    AppState.set('expandedCard', expandedBeforeSync);
-                }).catch(err => {
-                    console.error('🔧 SYNC DEBUG: Sync failed:', err);
-                });
+                
+                // Save the updated bookmarks before reinitializing Lenis
+                if (window.syncService) {
+                    const expandedBeforeSync = AppState.get('expandedCard');
+                    console.log('🔧 SYNC DEBUG: Before sync - expandedCard:', expandedBeforeSync);
+                    window.syncService.saveAfterAction('bookmark removed').then(() => {
+                        console.log('🔧 SYNC DEBUG: Sync complete - restoring expandedCard:', expandedBeforeSync);
+                        AppState.set('expandedCard', expandedBeforeSync);
+                        // Reinitialize modal Lenis to account for new content after save
+                        reinitializeModalLenis(expandedCard);
+                    }).catch(err => {
+                        console.error('🔧 SYNC DEBUG: Sync failed:', err);
+                        // Still reinitialize Lenis even if save fails
+                        reinitializeModalLenis(expandedCard);
+                    });
+                } else {
+                    // Reinitialize modal Lenis to account for new content
+                    reinitializeModalLenis(expandedCard);
+                }
             }
             
             // Show success notification
@@ -1110,37 +1187,45 @@ function reorderBookmark(expandedCard, fromIndex, toIndex, sectionElement) {
             );
             bookmarksContainer.appendChild(bookmarkCard);
         });
-    }
-
-    // Save the reordered bookmarks
-    if (window.syncService) {
-        console.log('🔧 SYNC DEBUG: Initiating saveAfterAction for bookmarks reordered.');
-        window.syncService.saveAfterAction('bookmarks reordered').then(() => {
-            console.log('🔧 SYNC DEBUG: Sync complete.');
-            
-            // Only attempt to restore expanded state if it was expanded before
-            if (wasExpanded) {
-                console.log('🔖 BOOKMARK: Card was expanded before sync, ensuring it remains expanded.');
+        
+        // Save the reordered bookmarks before reinitializing Lenis
+        if (window.syncService) {
+            console.log('🔧 SYNC DEBUG: Initiating saveAfterAction for bookmarks reordered.');
+            window.syncService.saveAfterAction('bookmarks reordered').then(() => {
+                console.log('🔧 SYNC DEBUG: Sync complete.');
                 
-                // Use requestAnimationFrame to ensure DOM is stable before re-expanding
-                requestAnimationFrame(() => {
-                    // Check if card is still in DOM and needs re-expansion
-                    if (document.body.contains(expandedCard) && !expandedCard.classList.contains('expanded')) {
-                        console.log('🔖 BOOKMARK: Re-expanding card after sync to maintain state.');
-                        expandCard(expandedCard);
-                        
-                        // Restore editor content after re-expansion
-                        if (cardContentToRestore && expandedCard.quillEditor) {
-                            console.log('🔖 BOOKMARK: Restoring Quill content after re-expansion.');
-                            expandedCard.quillEditor.root.innerHTML = cardContentToRestore.content;
-                            expandedCard.initialContent = cardContentToRestore;
+                // Only attempt to restore expanded state if it was expanded before
+                if (wasExpanded) {
+                    console.log('🔖 BOOKMARK: Card was expanded before sync, ensuring it remains expanded.');
+                    
+                    // Use requestAnimationFrame to ensure DOM is stable before re-expanding
+                    requestAnimationFrame(() => {
+                        // Check if card is still in DOM and needs re-expansion
+                        if (document.body.contains(expandedCard) && !expandedCard.classList.contains('expanded')) {
+                            console.log('🔖 BOOKMARK: Re-expanding card after sync to maintain state.');
+                            expandCard(expandedCard);
+                            
+                            // Restore editor content after re-expansion
+                            if (cardContentToRestore && expandedCard.quillEditor) {
+                                console.log('🔖 BOOKMARK: Restoring Quill content after re-expansion.');
+                                expandedCard.quillEditor.root.innerHTML = cardContentToRestore.content;
+                                expandedCard.initialContent = cardContentToRestore;
+                            }
                         }
-                    }
-                });
-            }
-        }).catch(err => {
-            console.error('🔧 SYNC DEBUG: Sync failed:', err);
-        });
+                    });
+                }
+                
+                // Reinitialize modal Lenis to account for new content after save
+                reinitializeModalLenis(expandedCard);
+            }).catch(err => {
+                console.error('🔧 SYNC DEBUG: Sync failed:', err);
+                // Still reinitialize Lenis even if save fails
+                reinitializeModalLenis(expandedCard);
+            });
+        } else {
+            // Reinitialize modal Lenis to account for new content
+            reinitializeModalLenis(expandedCard);
+        }
     }
 }
 
@@ -1348,6 +1433,12 @@ function collapseCard(card) {
         }
     }
     
+    // Destroy modal Lenis instance if exists
+    if (card.modalLenis) {
+        card.modalLenis.destroy();
+        card.modalLenis = null;
+    }
+
     // Clear original parent references
     card.originalParent = null;
     card.originalNextSibling = null;
@@ -1429,6 +1520,76 @@ function handleBulletKeydown(e) {
 function getCurrentIndent(li) {
     const match = li.className.match(/indent-(\d)/);
     return match ? parseInt(match[1]) : 0;
+}
+
+// Function to reinitialize modal Lenis for smooth scrolling
+function reinitializeModalLenis(card) {
+    console.log('🔄 LENIS DEBUG: reinitializeModalLenis called', {
+        cardId: card.id,
+        hasSections: !!card.sections,
+        sectionsCount: card.sections?.length || 0,
+        timestamp: new Date().toISOString()
+    });
+    
+    // CRITICAL: Store sections before destroying Lenis
+    const sectionsBackup = card.sections ? JSON.parse(JSON.stringify(card.sections)) : null;
+    console.log('🔄 LENIS DEBUG: Backed up sections', {
+        backedUp: !!sectionsBackup,
+        count: sectionsBackup?.length || 0
+    });
+    
+    // Destroy existing modal Lenis instance if it exists
+    if (card.modalLenis) {
+        card.modalLenis.destroy();
+        card.modalLenis = null;
+    }
+    
+    // CRITICAL: Restore sections after destroying Lenis
+    if (sectionsBackup && (!card.sections || card.sections.length === 0)) {
+        card.sections = sectionsBackup;
+        console.log('🔄 LENIS DEBUG: Restored sections after Lenis destroy', {
+            count: card.sections.length
+        });
+    }
+    
+    // Initialize new Lenis instance for the modal
+    const modalWrapper = card.querySelector('.expanded-card-main');
+    const modalContent = card.querySelector('.expanded-card-content');
+    
+    if (modalWrapper && modalContent) {
+        // Ensure the wrapper has the correct CSS properties for scrolling
+        modalWrapper.style.overflow = 'auto';
+        modalWrapper.style.height = '100%';
+        
+        const modalLenis = new Lenis({
+            wrapper: modalWrapper,
+            content: modalContent,
+            lerp: 0.1,
+            duration: 1.2,
+            smoothWheel: true,
+            wheelMultiplier: 1,
+            touchMultiplier: 1.2,
+        });
+        
+        // Force an initial scroll update
+        modalLenis.resize();
+        
+        function rafModal(time) {
+            if (!modalWrapper.isConnected) return; // stop when modal closed
+            modalLenis.raf(time);
+            requestAnimationFrame(rafModal);
+        }
+        requestAnimationFrame(rafModal);
+        card.modalLenis = modalLenis;
+        
+        // Add classes to indicate smooth scrolling is active
+        modalWrapper.classList.add('lenis', 'lenis-smooth');
+        
+        console.log('🔄 LENIS DEBUG: Lenis reinitialized', {
+            cardId: card.id,
+            sectionsAfter: card.sections?.length || 0
+        });
+    }
 }
 
 // Handle bookmark data from Firefox extension
@@ -1543,6 +1704,9 @@ window.handleBookmarkData = function(data) {
         );
         bookmarksSection.appendChild(bookmarkCard);
         console.log('🔖 BOOKMARK: Updated UI with new bookmark');
+        
+        // Reinitialize modal Lenis to account for new content
+        reinitializeModalLenis(expandedCard);
     }
     
 // Save to Firebase

@@ -35,12 +35,29 @@ html.lenis body {
     scroll-behavior: auto !important;
 }
 
-.lenis.lenis-smooth [data-lenis-prevent] {
+.lenis.lenis-stopped {
+    overflow: hidden;
+}
+
+/* Modal and expanded card scrollable areas - prevent Lenis interference */
+.card.expanded .expanded-card-main[data-lenis-prevent],
+.card.expanded .section-bookmarks[data-lenis-prevent],
+.card.expanded .editor-container[data-lenis-prevent],
+[data-lenis-prevent] {
     overscroll-behavior: contain;
 }
 
-.lenis.lenis-stopped {
-    overflow: hidden;
+/* Ensure modal content scrolls smoothly */
+.card.expanded .expanded-card-main {
+    scroll-behavior: smooth !important;
+}
+
+.card.expanded .section-bookmarks {
+    scroll-behavior: smooth !important;
+}
+
+.card.expanded .editor-container .ql-editor {
+    scroll-behavior: smooth !important;
 }
 
 /* Performance optimizations */

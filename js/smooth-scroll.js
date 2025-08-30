@@ -37,6 +37,49 @@ function initSmoothScroll() {
     lenisInitialized = true;
 }
 
+// Function to reinitialize Lenis for modals/expanded cards
+function reinitializeModalLenis(card) {
+    // Destroy existing modal Lenis instance if it exists
+    if (card.modalLenis) {
+        card.modalLenis.destroy();
+        card.modalLenis = null;
+    }
+    
+    // Initialize new Lenis instance for the modal
+    const modalWrapper = card.querySelector('.expanded-card-main');
+    const modalContent = card.querySelector('.expanded-card-content');
+    
+    if (modalWrapper && modalContent) {
+        // Ensure the wrapper has the correct CSS properties for scrolling
+        modalWrapper.style.overflow = 'auto';
+        modalWrapper.style.height = '100%';
+        
+        const modalLenis = new Lenis({
+            wrapper: modalWrapper,
+            content: modalContent,
+            lerp: 0.1,
+            duration: 1.2,
+            smoothWheel: true,
+            wheelMultiplier: 1,
+            touchMultiplier: 1.2,
+        });
+        
+        // Force an initial scroll update
+        modalLenis.resize();
+        
+        function rafModal(time) {
+            if (!modalWrapper.isConnected) return; // stop when modal closed
+            modalLenis.raf(time);
+            requestAnimationFrame(rafModal);
+        }
+        requestAnimationFrame(rafModal);
+        card.modalLenis = modalLenis;
+        
+        // Add classes to indicate smooth scrolling is active
+        modalWrapper.classList.add('lenis', 'lenis-smooth');
+    }
+}
+
 function enableArrowKeyScrolling() {
     document.addEventListener('keydown', (e) => {
         // Skip if typing in input fields
