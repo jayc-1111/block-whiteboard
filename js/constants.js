@@ -15,7 +15,7 @@ const CONSTANTS = {
     BASE_Z_INDEX: 100,
     EXPANDED_FILE_Z_INDEX: 20000,
     
-    // Category defaults
+    // Folder defaults
     INITIAL_FILE_SLOTS: 2,
     FILES_BEFORE_COLLAPSE: 3,
     

@@ -3,8 +3,8 @@
 // ============================================
 // MIGRATION GUIDE (Updated with new emojis)
 // ============================================
-// OLD: console.log('🔍 DEBUG: Found 3 categories');
-// NEW: Debug.detail('Board', 'Found 3 categories', { count: 3 });
+// OLD: console.log('🔍 DEBUG: Found 3 folders');
+// NEW: Debug.detail('Board', 'Found 3 folders', { count: 3 });
 //
 // OLD: console.log('1. Starting sync...');
 // NEW: Debug.sync.start();         // Shows: Sync: ⌛ Starting Sync...
@@ -35,7 +35,7 @@ class DebugSystem {
         // Important keywords for dev overlay filtering
         this.importantKeywords = [
             'Firebase', 'Saving', 'Saved', 'Error', 'Guest', 'Auth', 'Sync',
-            'Board', 'Canvas', 'Category', 'sync', 'load', 'update', 'failed'
+            'Board', 'Canvas', 'Folder', 'sync', 'load', 'update', 'failed'
         ];
     }
     
@@ -408,8 +408,8 @@ window.Debug.drawing = {
 //
 // BOARD OPERATIONS:
 // console.log('📊 Board comparison') → Debug.board.detail('Board comparison', data)
-// console.log('📁 Loading categories') → Debug.board.step('Loading categories')
-// console.log('📂 Created category') → Debug.board.step('Created category')
+// console.log('📁 Loading folders') → Debug.board.step('Loading folders')
+// console.log('📂 Created folder') → Debug.board.step('Created folder')
 // console.log('📄 Added file') → Debug.board.detail('Added file')
 // console.log('🏷️ Tagged as') → Debug.board.detail('Tagged', data)
 // console.log('🎯 Target found') → Debug.board.detail('Target', data)

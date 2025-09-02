@@ -78,7 +78,7 @@ function endSelection(e) {
 function selectItemsInRectangle(rect) {
     clearSelection();
     
-    const allItems = [...document.querySelectorAll('.category'), ...document.querySelectorAll('.super-header')];
+    const allItems = [...document.querySelectorAll('.folder'), ...document.querySelectorAll('.super-header')];
     
     allItems.forEach(item => {
         const itemRect = {
@@ -129,8 +129,8 @@ function deleteSelectedItems() {
         `Are you sure you want to remove ${itemCount} ${itemType}?`,
         () => {
             selectedItems.forEach(item => {
-                if (item.classList.contains('category')) {
-                    deleteCategory(item);
+                if (item.classList.contains('folder')) {
+                    deleteFolder(item);
                 } else if (item.classList.contains('super-header')) {
                     deleteSuperHeader(item);
                 }

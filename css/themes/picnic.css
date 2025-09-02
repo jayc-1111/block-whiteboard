@@ -32,7 +32,7 @@
 }
 
 /* Picnic mode adjustments */
-.picnic-mode .category {
+.picnic-mode .folder {
     background: rgba(0, 0, 0, 0.8);
     backdrop-filter: blur(3px);
     border: 1px solid rgba(255, 255, 255, 0.1);

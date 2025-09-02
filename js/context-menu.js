@@ -47,13 +47,13 @@ function showWhiteboardContextMenu(e) {
                     </svg>
                     <p class="label">Add Header</p>
                 </li>
-                <li class="element" data-action="add-category-here">
+                <li class="element" data-action="add-folder-here">
                     <svg xmlns="http://www.w3.org/2000/svg" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#7e8590" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
                         <line x1="12" y1="8" x2="12" y2="16"></line>
                         <line x1="8" y1="12" x2="16" y2="12"></line>
                     </svg>
-                    <p class="label">Add Category</p>
+                    <p class="label">Add Folder</p>
                 </li>
             </ul>
         `;
@@ -80,7 +80,7 @@ function setupContextMenu() {
             return; // Don't prevent default, let browser menu show
         }
         
-        const category = e.target.closest('.category');
+        const folder = e.target.closest('.folder');
         const superHeader = e.target.closest('.super-header');
         const canvasHeader = e.target.closest('.canvas-header');
         const file = e.target.closest('.file');
@@ -94,7 +94,7 @@ function setupContextMenu() {
         }
         
         // Check if there's an expanded file and we're clicking elsewhere - allow default menu
-        if (expandedFile && !category && !superHeader && !canvasHeader && !canvas) {
+        if (expandedFile && !folder && !superHeader && !canvasHeader && !canvas) {
             hideContextMenu();
             return; // Allow default browser context menu
         }
@@ -102,8 +102,8 @@ function setupContextMenu() {
         // For all other cases, prevent default and show our custom menu
         e.preventDefault();
         
-        if (category && !expandedFile) {
-            showContextMenu(e, category, 'element');
+        if (folder && !expandedFile) {
+            showContextMenu(e, folder, 'element');
         } else if (superHeader) {
             showContextMenu(e, superHeader, 'element');
         } else if (canvasHeader) {
@@ -135,13 +135,13 @@ function setupContextMenu() {
                 case 'duplicate': duplicateItem(); break;
                 case 'export': exportItem(); break;
                 case 'delete': deleteContextItem(); break;
-                case 'add-category-here': addCategoryAtPosition(); break;
+                case 'add-folder-here': addFolderAtPosition(); break;
                 case 'add-header-here': addSuperHeaderAtPosition(); break;
             }
         }
     });
     
-    const addCategoryAtPosition = () => {
+    const addFolderAtPosition = () => {
         const whiteboardMenu = document.getElementById('whiteboardContextMenu');
         if (!whiteboardMenu) return;
         
@@ -155,8 +155,8 @@ function setupContextMenu() {
         const canvasX = x - rect.left + whiteboard.scrollLeft;
         const canvasY = y - rect.top + whiteboard.scrollTop;
         
-        // Create category at position
-        createCategory('New Category', canvasX, canvasY);
+        // Create folder at position
+        createFolder('New Folder', canvasX, canvasY);
         whiteboardMenu.classList.remove('active');
     };
     
@@ -184,7 +184,7 @@ function setupContextMenu() {
     const renameItem = () => {
         if (!contextItem) return;
         
-        const titleElement = contextItem.querySelector('.category-title') || contextItem;
+        const titleElement = contextItem.querySelector('.folder-title') || contextItem;
         if (!titleElement) return;
         
         titleElement.focus();
@@ -201,7 +201,7 @@ function setupContextMenu() {
     const duplicateItem = () => {
         if (!contextItem) return;
         
-        const isCategory = contextItem.classList.contains('category');
+        const isFolder = contextItem.classList.contains('folder');
         const clone = contextItem.cloneNode(true);
         
         const x = parseInt(contextItem.style.left) + CONSTANTS.DUPLICATE_OFFSET;
@@ -210,35 +210,35 @@ function setupContextMenu() {
         clone.style.left = x + 'px';
         clone.style.top = y + 'px';
         
-        if (isCategory) {
-            clone.dataset.categoryId = categories.length;
+        if (isFolder) {
+            clone.dataset.folderId = folders.length;
             
-            const categoryTitle = clone.querySelector('.category-title');
-            if (categoryTitle) {
-                categoryTitle.textContent += ' (Copy)';
+            const folderTitle = clone.querySelector('.folder-title');
+            if (folderTitle) {
+                folderTitle.textContent += ' (Copy)';
             }
             
             const toggleBtn = clone.querySelector('.toggle-btn');
             toggleBtn.removeEventListener('click', toggleBtn._clickHandler);
-            toggleBtn.addEventListener('click', () => toggleCategory(clone));
+            toggleBtn.addEventListener('click', () => toggleFolder(clone));
             
             const addFileBtn = clone.querySelector('.add-file-btn');
             addFileBtn.removeEventListener('click', addFileBtn._clickHandler);
-            addFileBtn.addEventListener('click', () => addFileToCategory(categories.length));
+            addFileBtn.addEventListener('click', () => addFileToFolder(folders.length));
             
             const deleteBtn = clone.querySelector('.delete-btn');
             deleteBtn.removeEventListener('click', deleteBtn._clickHandler);
             deleteBtn.addEventListener('click', (e) => {
                 e.stopPropagation();
                 showConfirmDialog(
-                    'Remove Category',
-                    `Are you sure you want to remove "${categoryTitle.textContent}"?`,
-                    () => deleteCategory(clone)
+                    'Remove Folder',
+                    `Are you sure you want to remove "${folderTitle.textContent}"?`,
+                    () => deleteFolder(clone)
                 );
             });
             
-            const categoryHeader = clone.querySelector('.category-header');
-            categoryHeader.addEventListener('mousedown', startCategoryDrag);
+            const folderHeader = clone.querySelector('.folder-header');
+            folderHeader.addEventListener('mousedown', startFolderDrag);
             
             clone.addEventListener('mousedown', (e) => {
                 if (!e.shiftKey) clearSelection();
@@ -248,7 +248,7 @@ function setupContextMenu() {
             
             document.getElementById('grid').appendChild(clone);
             
-            categories.push({
+            folders.push({
                 element: clone,
                 files: []
             });
@@ -285,8 +285,8 @@ function setupContextMenu() {
         
         let exportData = {};
         
-        if (contextItem.classList.contains('category')) {
-            const categoryTitle = contextItem.querySelector('.category-title').textContent;
+        if (contextItem.classList.contains('folder')) {
+            const folderTitle = contextItem.querySelector('.folder-title').textContent;
             const files = [];
             
             contextItem.querySelectorAll('.file').forEach(file => {
@@ -298,8 +298,8 @@ function setupContextMenu() {
             });
             
             exportData = {
-                type: 'category',
-                title: categoryTitle,
+                type: 'folder',
+                title: folderTitle,
                 files: files,
                 position: {
                     left: contextItem.style.left,
@@ -320,8 +320,8 @@ function setupContextMenu() {
         const dataStr = JSON.stringify(exportData, null, CONSTANTS.EXPORT_INDENT_SPACES);
         const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
         
-        const exportName = contextItem.classList.contains('category') 
-            ? `category-${exportData.title}.json`
+        const exportName = contextItem.classList.contains('folder') 
+            ? `folder-${exportData.title}.json`
             : `header-${exportData.text}.json`;
         
         const linkElement = document.createElement('a');
@@ -335,11 +335,11 @@ function setupContextMenu() {
     const deleteContextItem = () => {
         if (!contextItem) return;
         
-        if (contextItem.classList.contains('category')) {
+        if (contextItem.classList.contains('folder')) {
             showConfirmDialog(
-                'Remove Category',
-                `Are you sure you want to remove "${contextItem.querySelector('.category-title').textContent}"?`,
-                () => deleteCategory(contextItem)
+                'Remove Folder',
+                `Are you sure you want to remove "${contextItem.querySelector('.folder-title').textContent}"?`,
+                () => deleteFolder(contextItem)
             );
         } else if (contextItem.classList.contains('canvas-header')) {
             showConfirmDialog(

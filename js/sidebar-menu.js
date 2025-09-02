@@ -223,10 +223,10 @@ function updateFileTree() {
 
     boards.forEach(board => {
         // Check board content
-        const categories = board.categories || [];
-        const fileCount = categories.reduce((sum, cat) => sum + (cat.files?.length || 0), 0);
+        const folders = board.folders || [];
+        const fileCount = folders.reduce((sum, cat) => sum + (cat.files?.length || 0), 0);
 
-        if (categories.length > 0) {
+        if (folders.length > 0) {
             const isExpanded = board.id === currentBoardId;
             html += `<li class="tree-item">
                 <div class="tree-toggle ${isExpanded ? 'expanded' : ''}">
@@ -245,7 +245,7 @@ function updateFileTree() {
                 </div>
                 <ul class="nested" style="display: ${isExpanded ? 'block' : 'none'};">`;
 
-            categories.forEach(cat => {
+            folders.forEach(cat => {
                 if (cat.files?.length > 0) {
                     html += `<li class="tree-item">
                         <div class="tree-toggle">
@@ -359,6 +359,162 @@ function updateFileTree() {
             });
         }
     });
+
+    // Start auto-refresh every 2 seconds if sidebar is open
+    const sidebarMenu = document.getElementById('sidebarMenu');
+    if (sidebarMenu && sidebarMenu.classList.contains('open')) {
+        // Clear any existing interval
+        if (window.fileTreeRefreshInterval) {
+            clearInterval(window.fileTreeRefreshInterval);
+        }
+
+        window.fileTreeRefreshInterval = setInterval(() => {
+            refreshFileTreeHTML();
+        }, 2000);
+    }
+}
+
+// Helper function for refreshing file tree HTML
+function refreshFileTreeHTML() {
+    const container = document.querySelector('.file-structure-list');
+    if (!container) return;
+
+    const latestBoards = AppState.get('boards') || [];
+    const latestCurrentBoardId = AppState.get('currentBoardId');
+
+    let html = '';
+
+    latestBoards.forEach(board => {
+        const folders = board.folders || [];
+        const fileCount = folders.reduce((sum, cat) => sum + (cat.files?.length || 0), 0);
+
+        if (folders.length > 0) {
+            const isExpanded = board.id === latestCurrentBoardId;
+            html += `<li class="tree-item">
+                <div class="tree-toggle ${isExpanded ? 'expanded' : ''}">
+                    <span class="toggle-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" class="icon icon-tabler icons-tabler-filled icon-tabler-caret-right">
+                            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                            <path d="M9 6c0 -.852 .986 -1.297 1.623 -.783l.084 .076l6 6a1 1 0 0 1 .083 1.32l-.083 .094l-6 6l-.094 .083l-.077 .054l-.096 .054l-.036 .017l-.067 .027l-.108 .032l-.053 .01l-.06 .01l-.057 .004l-.059 .002l-.059 -.002l-.058 -.005l-.06 -.009l-.052 -.01l-.108 -.032l-.067 -.027l-.132 -.07l-.09 -.065l-.081 -.073l-.083 -.094l-.054 -.077l-.054 -.096l-.017 -.036l-.027 -.067l-.032 -.108l-.01 -.053l-.01 -.06l-.004 -.057l-.002 -12.059z" />
+                        </svg>
+                    </span>
+                    <div class="item-name">
+                        <svg class="item-icon folder" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M5 19l2.757 -7.351a1 1 0 0 1 .936 -.649h12.307a1 1 0 0 1 .986 1.164l-.996 5.211a2 2 0 0 1 -1.964 1.625h-14.026a2 2 0 0 1 -2 -2v-11a2 2 0 0 1 2 -2h4l3 3h7a2 2 0 0 1 2 2v2" />
+                        </svg>
+                        <span>${board.name}</span>
+                    </div>
+                </div>
+                <ul class="nested" style="display: ${isExpanded ? 'block' : 'none'};">`;
+
+            folders.forEach(cat => {
+                if (cat.files?.length > 0) {
+                    html += `<li class="tree-item">
+                        <div class="tree-toggle">
+                            <span class="toggle-icon">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" class="icon icon-tabler icons-tabler-filled icon-tabler-caret-right">
+                                    <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                            <path d="M9 6c0 -.852 .986 -1.297 1.623 -.783l.084 .076l6 6a1 1 0 0 1 .083 1.32l-.083 .094l-6 6l-.094 .083l-.077 .054l-.096 .054l-.036 .017l-.067 .027l-.108 .032l-.053 .01l-.06 .01l-.057 .004l-.059 .002l-.059 -.002l-.058 -.005l-.06 -.009l-.052 -.01l-.108 -.032l-.067 -.027l-.132 -.07l-.09 -.065l-.081 -.073l-.083 -.094l-.054 -.077l-.054 -.096l-.017 -.036l-.027 -.067l-.032 -.108l-.01 -.053l-.01 -.06l-.004 -.057l-.002 -12.059z" />
+                                </svg>
+                            </span>
+                            <div class="item-name">
+                                <svg class="item-icon folder" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-folder-open">
+                                    <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                    <path d="M5 19l2.757 -7.351a1 1 0 0 1 .936 -.649h12.307a1 1 0 0 1 .986 1.164l-.996 5.211a2 2 0 0 1 -1.964 1.625h-14.026a2 2 0 0 1 -2 -2v-11a2 2 0 0 1 2 -2h4l3 3h7a2 2 0 0 1 2 2v2" />
+                                </svg>
+                                <span>${cat.title}</span>
+                            </div>
+                        </div>
+                        <ul class="nested">
+                            `;
+
+                    cat.files.forEach(file => {
+                        html += `<li class="tree-item">
+                            <div class="tree-toggle" onclick="openFile(${board.id}, '${cat.title}', '${file.title.replace(/'/g, "\\'")}')">
+                                <span class="toggle-icon"></span>
+                                <div class="item-name">
+                                    <svg class="item-icon file-js" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                                        <path d="M14 3v4a1 1 0 0 0 1 1h4"></path>
+                                        <path d="M17 21h-10a2 2 0 0 1 -2 -2v-14a2 2 0 0 1 2 -2h7l5 5v11a2 2 0 0 1 -2 2z"></path>
+                                    </svg>
+                                    <span>${file.title}</span>
+                                </div>
+                            </div>
+                        </li>`;
+                    });
+
+                    html += `</ul>
+                        </li>`;
+                }
+            });
+
+            html += '</ul></li>';
+        }
+    });
+
+    // Preserve expanded states
+    const expandedKeys = new Set();
+    document.querySelectorAll('.file-structure-list .tree-toggle.expanded').forEach(toggle => {
+        const path = [];
+        let current = toggle;
+        while (current && current.classList.contains('tree-toggle')) {
+            const name = current.querySelector('.item-name span')?.textContent.trim();
+            if (name) {
+                path.unshift(name);
+            }
+            const parentItem = current.closest('.tree-item')?.parentElement?.closest('.tree-item');
+            current = parentItem ? parentItem.querySelector('.tree-toggle') : null;
+        }
+        if (path.length > 0) {
+            expandedKeys.add(path.join('/'));
+        }
+    });
+
+    container.innerHTML = html || '<li class="tree-item"><span>No files yet</span></li>';
+
+    // Restore expanded states and add toggling
+    document.querySelectorAll('.file-structure-list .tree-toggle').forEach(toggle => {
+        const path = [];
+        let current = toggle;
+        const name = current.querySelector('.item-name span')?.textContent.trim();
+        if (name) {
+            path.unshift(name);
+        }
+
+        let parentItem = toggle.closest('.tree-item')?.parentElement?.closest('.tree-item');
+        while (parentItem) {
+            const parentToggle = parentItem.querySelector('.tree-toggle');
+            const parentName = parentToggle?.querySelector('.item-name span')?.textContent.trim();
+            if (parentName) {
+                path.unshift(parentName);
+            }
+            parentItem = parentToggle?.closest('.tree-item')?.parentElement?.closest('.tree-item');
+        }
+
+        const key = path.join('/');
+        if (expandedKeys.has(key)) {
+            toggle.classList.add('expanded');
+            const nested = toggle.nextElementSibling;
+            if (nested) nested.style.display = 'block';
+        }
+
+        if (!toggle.hasAttribute('data-has-listener')) {
+            toggle.setAttribute('data-has-listener', 'true');
+            toggle.addEventListener('click', function(e) {
+                e.stopPropagation();
+                this.classList.toggle('expanded');
+                const nested = this.nextElementSibling;
+                if (nested) {
+                    if (this.classList.contains('expanded')) {
+                        nested.style.display = 'block';
+                    } else {
+                        nested.style.display = 'none';
+                    }
+                }
+            });
+        }
+    });
 }
 
 // Filter file tree based on search term
@@ -397,7 +553,7 @@ function filterFileTree(searchTerm) {
 }
 
 // Open specific file
-window.openFile = function(boardId, categoryTitle, fileTitle) {
+window.openFile = function(boardId, folderTitle, fileTitle) {
     // Switch board if needed
     if (boardId !== AppState.get('currentBoardId')) {
         loadBoard(boardId);
@@ -405,10 +561,10 @@ window.openFile = function(boardId, categoryTitle, fileTitle) {
     
     // Find and expand file
     setTimeout(() => {
-        const categories = document.querySelectorAll('.category');
-        for (const cat of categories) {
-            const title = cat.querySelector('.category-title');
-            if (title?.textContent === categoryTitle) {
+        const folders = document.querySelectorAll('.folder');
+        for (const cat of folders) {
+            const title = cat.querySelector('.folder-title');
+            if (title?.textContent === folderTitle) {
                 const files = cat.querySelectorAll('.file');
                 for (const file of files) {
                     if (getFileTitleText(file) === fileTitle) {

@@ -14,6 +14,10 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <!-- Google Fonts - Nunito for toolbar -->
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Google Fonts - DM Serif Display for file titles -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Unna:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet">
     
     <!-- TipTap Editor -->
 
@@ -29,7 +33,7 @@
     <link rel="stylesheet" href="css/canvas/canvas.css">
     
     <!-- Widgets CSS -->
-    <link rel="stylesheet" href="css/items/widget/categories.css">
+    <link rel="stylesheet" href="css/items/widget/folders.css">
     <link rel="stylesheet" href="css/items/widget/files.css">
     <link rel="stylesheet" href="css/items/widget/file-title-icon.css">
     <link rel="stylesheet" href="css/items/widget/canvas-headers.css">
@@ -224,7 +228,7 @@
                 <div class="add-dropdown-menu">
                     <button class="dropdown-item" id="addWhiteboardBtn">New Whiteboard</button>
                     <button class="dropdown-item" id="addSuperHeaderBtn">Add Header</button>
-                    <button class="dropdown-item" id="addCategoryBtn">Add Category</button>
+                    <button class="dropdown-item" id="addFolderBtn">Add Folder</button>
                 </div>
             </div>
             <button id="drawingModeBtn" title="Toggle Drawing Mode">
@@ -320,7 +324,7 @@
                 </div>
                 <!-- Main content area -->
                 <div class="bookmarks-content">
-                    <h3 style="margin-top: 0; color: #111827;">Select a category to view bookmarks</h3>
+                    <h3 style="margin-top: 0; color: #111827;">Select a folder to view bookmarks</h3>
                     <p style="color: #6b7280;">Your bookmarks will appear here when you select a folder from the sidebar.</p>
                 </div>
             </div>
@@ -343,7 +347,7 @@
             </div>
             <div class="arrow-key-row">
                 <div class="arrow-key left" title="Add Whiteboard">←</div>
-                <div class="arrow-key down" title="Add Category">↓</div>
+                <div class="arrow-key down" title="Add Folder">↓</div>
                 <div class="arrow-key right" title="Save Whiteboard">→</div>
             </div>
         </div>
@@ -445,11 +449,11 @@
                 </div>
                 <div class="step">
                     <span class="step-number">2</span>
-                    <span>Select <strong>Add Category</strong> to create containers</span>
+                    <span>Select <strong>Add Folder</strong> to create containers</span>
                 </div>
                 <div class="step">
                     <span class="step-number">3</span>
-                    <span>Click the <strong>+</strong> button in categories to add files</span>
+                    <span>Click the <strong>+</strong> button in folders to add files</span>
                 </div>
             </div>
             <button class="btn-primary" onclick="closeOnboardingModal()">Get Started</button>
@@ -516,7 +520,7 @@
     <script src="js/dialogs.js"></script>
     <script src="js/grid-utils.js"></script>
     <script src="js/files.js"></script>
-    <script src="js/categories.js"></script>
+    <script src="js/folders.js"></script>
     <script src="js/drag-smoothing.js"></script>
     <script src="js/drag-drop.js"></script>
     <script src="js/selection.js"></script>

@@ -223,10 +223,30 @@ body.sidebar-open .expanded-file-overlay {
 .expanded-file-header {
     display: flex;
     justify-content: space-between;
-    align-items: flex-start;
+    align-items: center;
     padding: 8px;
     background: #ffffff;
     flex-shrink: 0;
+}
+
+/* Featured image container */
+.featured-image-container {
+    flex: 0 0 auto;
+    margin-right: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Featured image */
+.featured-image {
+    width: 60px;
+    height: 60px;
+    border-radius: 8px;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
 }
 
 /* Header spacer (25% width) */
@@ -597,8 +617,9 @@ body.sidebar-open .expanded-file-overlay {
 
 /* Expanded file title in header */
 .file.expanded .expanded-file-header .file-title {
+    font-family: 'DM Serif Display', serif !important;
     font-size: 48px !important;
-    font-weight: 600 !important;
+    font-weight: 400 !important;
     color: #111827;
     margin: 0;
     padding: 0;
@@ -607,6 +628,8 @@ body.sidebar-open .expanded-file-overlay {
     height: auto;
     display: block;
     outline: none;
+    caret-color: #969696; /* Ensure caret is visible */
+    min-width: 700px; /* Prevent text area from collapsing */
 }
 
 /* Expanded file content */

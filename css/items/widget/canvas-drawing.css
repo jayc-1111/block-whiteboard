@@ -4,7 +4,7 @@
     position: absolute;
     top: 0;
     left: 0;
-    z-index: 1; /* Behind categories but above grid */
+    z-index: 1; /* Behind folders but above grid */
     pointer-events: none;
     opacity: 0.8;
 }
@@ -14,7 +14,7 @@
 }
 
 /* Drawing mode indicator */
-.drawing-mode .category,
+.drawing-mode .folder,
 .drawing-mode .canvas-header {
     pointer-events: none;
     opacity: 0.6;

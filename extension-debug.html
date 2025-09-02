@@ -317,8 +317,8 @@
                 'handleBookmarkData',
                 'showBookmarkDestination',
                 'testExtensionBridge',
-                'addFileToCategory',
-                'addCategory',
+                'addFileToFolder',
+                'addFolder',
                 'expandFile',
                 'AppState',
                 'syncService'
@@ -352,13 +352,13 @@
             
             const canvas = document.getElementById('canvas');
             if (canvas) {
-                const categories = canvas.querySelectorAll('.category');
-                html += `Categories: ${categories.length}\n`;
+                const folders = canvas.querySelectorAll('.folder');
+                html += `Folders: ${folders.length}\n`;
                 
                 let totalFiles = 0;
-                categories.forEach((cat, idx) => {
+                folders.forEach((cat, idx) => {
                     const files = cat.querySelectorAll('.file');
-                    const title = cat.querySelector('.category-title')?.textContent || 'Untitled';
+                    const title = cat.querySelector('.folder-title')?.textContent || 'Untitled';
                     totalFiles += files.length;
                     html += `  [${idx + 1}] ${title}: ${files.length} files\n`;
                 });

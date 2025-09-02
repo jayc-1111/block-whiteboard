@@ -2,14 +2,16 @@
 function getFileTitleText(file) {
     const fileTitle = file.querySelector('.file-title');
     if (!fileTitle) return '';
-    
-    // If we have a titleTextElement (our span), use its textContent
-    if (fileTitle.titleTextElement) {
-        return fileTitle.titleTextElement.textContent;
+
+    // Use the text content based on placeholder logic
+    const textContent = fileTitle.textContent;
+    if (textContent && fileTitle.dataset.placeholder) {
+        // If content matches placeholder, return it as is
+        // Otherwise return the current text content
+        return textContent === fileTitle.dataset.placeholder && textContent.trim() === '' ? '' : textContent;
     }
-    
-    // Fallback to the file title's text content
-    return fileTitle.textContent;
+
+    return textContent;
 }
 
 // Helper function to get the next section number for a file
@@ -17,7 +19,7 @@ function getNewSectionNumber(file) {
     // Count existing sections with titles starting with "New Section"
     const existingSections = file.querySelectorAll('.section-title');
     let maxNumber = 0;
-    
+
     existingSections.forEach(section => {
         const text = section.textContent || section.dataset.placeholder;
         if (text && text.startsWith('New Section')) {
@@ -34,9 +36,53 @@ function getNewSectionNumber(file) {
             }
         }
     });
-    
+
     // Return the next number
     return maxNumber + 1;
+}
+
+// Helper function to generate unique numbered file name for a folder
+function getNewFileName(folder) {
+    const baseName = 'New File';
+
+    // Get all existing files in this folder
+    const existingFiles = folder.files || [];
+
+    // Extract titles from existing files and find numeric variants
+    let maxNumber = 0;
+
+    existingFiles.forEach(file => {
+        if (file.element) {
+            // Get title from DOM element
+            const fileTitle = file.element.querySelector('.file-title');
+            let title = '';
+            if (fileTitle) {
+                // Use the direct text content like the new implementation
+                title = fileTitle.textContent.trim();
+            }
+
+            if (title) {
+                if (title === baseName) {
+                    // Exact match - this is the first numbered file
+                    maxNumber = Math.max(maxNumber, 1);
+                } else {
+                    // Check for numbered variants like "New File 2", "New File 3", etc.
+                    const match = title.match(new RegExp(`^${baseName} (\\d+)$`));
+                    if (match) {
+                        const number = parseInt(match[1]);
+                        maxNumber = Math.max(maxNumber, number);
+                    }
+                }
+            }
+        }
+    });
+
+    // Return the appropriate file name
+    if (maxNumber === 0) {
+        return baseName; // First file: "New File"
+    } else {
+        return `${baseName} ${maxNumber + 1}`; // Subsequent files: "New File 2", etc.
+    }
 }
 
 // File management
@@ -52,14 +98,14 @@ function createFileSlot() {
 }
 
 function addFile() {
-    const categories = AppState.get('categories');
-    if (categories.length === 0) {
-        createCategory();
+    const folders = AppState.get('folders');
+    if (folders.length === 0) {
+        createFolder();
     }
-    addFileToCategory(0);
+    addFileToFolder(0);
 }
 
-function addFileToCategory(categoryOrIndex, title = 'New File', content = null, bookmarks = null, sections = null) {
+function addFileToFolder(folderOrIndex, title = 'New File', content = null, bookmarks = null, sections = null) {
     console.log('🔨 ADD FILE DEBUG:', {
         title: title,
         hasContent: !!content,
@@ -70,40 +116,47 @@ function addFileToCategory(categoryOrIndex, title = 'New File', content = null, 
         sectionIds: sections?.map(s => s.id) || []
     });
     
-    let category;
+    let folder;
     
-    // Support both category element and index
-    if (typeof categoryOrIndex === 'number') {
-        const categories = AppState.get('categories');
-        if (categoryOrIndex < 0 || categoryOrIndex >= categories.length) {
-            console.error('Invalid category index:', categoryOrIndex);
+    // Support both folder element and index
+    if (typeof folderOrIndex === 'number') {
+        const folders = AppState.get('folders');
+        if (folderOrIndex < 0 || folderOrIndex >= folders.length) {
+            console.error('Invalid folder index:', folderOrIndex);
             return null;
         }
-        category = categories[categoryOrIndex];
+        folder = folders[folderOrIndex];
     } else {
-        // Find category in AppState by element
-        const categories = AppState.get('categories');
-        category = categories.find(cat => cat.element === categoryOrIndex);
+        // Find folder in AppState by element
+        const folders = AppState.get('folders');
+        folder = folders.find(cat => cat.element === folderOrIndex);
     }
     
-    if (!category || !category.element) {
-        console.error('Category not found:', categoryOrIndex);
+    if (!folder || !folder.element) {
+        console.error('Folder not found:', folderOrIndex);
         return null;
     }
 
     const file = document.createElement('div');
     file.className = 'file';
     file.draggable = true;
-    
+
     // Generate unique ID for the file
     const fileId = `file-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
     file.id = fileId;
     file.dataset.fileId = fileId;
 
+    // Use numbered name if title is the default "New File"
+    let finalTitle = title;
+    if (title === 'New File') {
+        finalTitle = getNewFileName(folder);
+        console.log(`🔢 FILE: Generated numbered name: "${finalTitle}" for folder "${folder.element.querySelector('.folder-title')?.textContent}"`);
+    }
+
     // Create container for SVG and title
     const titleContainer = document.createElement('div');
     titleContainer.className = 'file-title-container';
-    
+
     // Create file icon SVG
     const fileIcon = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
     fileIcon.className = 'file-title-icon';
@@ -112,7 +165,7 @@ function addFileToCategory(categoryOrIndex, title = 'New File', content = null, 
     fileIcon.setAttribute('viewBox', '0 0 24 24');
     fileIcon.setAttribute('fill', 'currentColor');
     fileIcon.innerHTML = '<path fill-rule="evenodd" d="M9 2.221V7H4.221a2 2 0 0 1 .365-.5L8.5 2.586A2 2 0 0 1 9 2.22ZM11 2v5a2 2 0 0 1-2 2H4v11a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2h-7Z" clip-rule="evenodd"/>';
-    
+
     const fileTitle = document.createElement('div');
     fileTitle.className = 'file-title';
     fileTitle.contentEditable = true;
@@ -120,43 +173,32 @@ function addFileToCategory(categoryOrIndex, title = 'New File', content = null, 
     fileTitle.autocorrect = 'off';
     fileTitle.autocapitalize = 'off';
     fileTitle.spellcheck = false;
-    
-    // Create text span
-    const titleText = document.createElement('span');
-    titleText.textContent = title;
-    titleText.dataset.placeholder = title;
-    
-    // Add icon and text to container
-    titleContainer.appendChild(fileIcon);
-    fileTitle.appendChild(titleText);
-    titleContainer.appendChild(fileTitle);
-    
-    // Store reference to text element for later use
-    fileTitle.titleTextElement = titleText;
 
+    // Set placeholder directly on the editable element (like section titles)
+    fileTitle.textContent = finalTitle;
+    fileTitle.dataset.placeholder = finalTitle;
+
+    // Add icon and title to container
+    titleContainer.appendChild(fileIcon);
+    titleContainer.appendChild(fileTitle);
+
+    // No complex span wrapping - use simple placeholder system like section titles
     fileTitle.addEventListener('focus', function(e) {
         e.stopPropagation();
-        if (this.titleTextElement && this.titleTextElement.textContent === this.titleTextElement.dataset.placeholder) {
-            this.titleTextElement.textContent = '';
-        } else if (this.textContent === this.dataset.placeholder) {
+        if (this.textContent === this.dataset.placeholder) {
             this.textContent = '';
         }
     });
-    
+
     // Handle paste to strip formatting
     fileTitle.addEventListener('paste', function(e) {
         e.preventDefault();
         const text = (e.clipboardData || window.clipboardData).getData('text/plain');
-        if (this.titleTextElement) {
-            this.titleTextElement.textContent = text;
-        } else {
-            document.execCommand('insertText', false, text);
-        }
+        document.execCommand('insertText', false, text);
     });
+
     fileTitle.addEventListener('blur', function() {
-        if (this.titleTextElement && this.titleTextElement.textContent.trim() === '') {
-            this.titleTextElement.textContent = this.titleTextElement.dataset.placeholder;
-        } else if (this.textContent.trim() === '') {
+        if (this.textContent.trim() === '') {
             this.textContent = this.dataset.placeholder;
         }
         // Save after editing file title
@@ -198,13 +240,13 @@ function addFileToCategory(categoryOrIndex, title = 'New File', content = null, 
         bookmarks.forEach((b, i) => console.log(`  📌 Bookmark ${i}: ${b.title}`));
     }
     
-    // Store category reference for when file is expanded
-    if (category.element.id) {
-        file.dataset.categoryId = category.element.id;
+    // Store folder reference for when file is expanded
+    if (folder.element.id) {
+        file.dataset.folderId = folder.element.id;
     } else {
-        // Generate ID if category doesn't have one
-        category.element.id = `category-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-        file.dataset.categoryId = category.element.id;
+        // Generate ID if folder doesn't have one
+        folder.element.id = `folder-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+        file.dataset.folderId = folder.element.id;
     }
 
     file.appendChild(titleContainer);
@@ -238,14 +280,14 @@ function addFileToCategory(categoryOrIndex, title = 'New File', content = null, 
     file.addEventListener('dragstart', handleDragStart);
     file.addEventListener('dragend', handleDragEnd);
 
-    const grid = category.element.querySelector('.files-grid');
+    const grid = folder.element.querySelector('.files-grid');
     if (!grid) {
-        console.error('Files grid not found in category');
+        console.error('Files grid not found in folder');
         return;
     }
     const slots = grid.querySelectorAll('.file-slot');
     
-    console.log(`Adding file "${title}" to category "${category.element.querySelector('.category-title')?.textContent}"`);
+    console.log(`Adding file "${title}" to folder "${folder.element.querySelector('.folder-title')?.textContent}"`);
     console.log(`Files grid found:`, grid);
     console.log(`Available slots:`, slots.length);
     
@@ -267,28 +309,28 @@ function addFileToCategory(categoryOrIndex, title = 'New File', content = null, 
     }
     
     // Verify file placement
-    const filesInCategory = category.element.querySelectorAll('.file');
-    console.log(`Total files now in category DOM: ${filesInCategory.length}`);
-    filesInCategory.forEach((c, i) => {
+    const filesInFolder = folder.element.querySelectorAll('.file');
+    console.log(`Total files now in folder DOM: ${filesInFolder.length}`);
+    filesInFolder.forEach((c, i) => {
         const cTitle = c.querySelector('.file-title')?.textContent;
         console.log(`  File ${i}: "${cTitle}"`);
     });
 
-    // Track the file in the category with its ID
-    category.files.push(file);
+    // Track the file in the folder with its ID
+    folder.files.push(file);
     
     // Store file reference in AppState for bookmark persistence
     const boards = AppState.get('boards');
     const currentBoardId = AppState.get('currentBoardId');
     const board = boards.find(b => b.id === currentBoardId);
-    if (board && board.categories) {
-        const categoryIndex = AppState.get('categories').indexOf(category);
-        if (categoryIndex !== -1 && board.categories[categoryIndex]) {
-            const fileIndex = board.categories[categoryIndex].files.length - 1;
-            if (fileIndex >= 0 && board.categories[categoryIndex].files[fileIndex]) {
-                board.categories[categoryIndex].files[fileIndex].id = fileId;
-    if (!board.categories[categoryIndex].files[fileIndex].bookmarks) {
-        board.categories[categoryIndex].files[fileIndex].bookmarks = [];
+    if (board && board.folders) {
+        const folderIndex = AppState.get('folders').indexOf(folder);
+        if (folderIndex !== -1 && board.folders[folderIndex]) {
+            const fileIndex = board.folders[folderIndex].files.length - 1;
+            if (fileIndex >= 0 && board.folders[folderIndex].files[fileIndex]) {
+                board.folders[folderIndex].files[fileIndex].id = fileId;
+    if (!board.folders[folderIndex].files[fileIndex].bookmarks) {
+        board.folders[folderIndex].files[fileIndex].bookmarks = [];
     }
             }
         }
@@ -300,13 +342,13 @@ function addFileToCategory(categoryOrIndex, title = 'New File', content = null, 
     }
     
     // Show toggle button and collapse when 5+ files
-    const toggleBtn = category.element.querySelector('.toggle-btn');
-    if (category.files.length >= CONSTANTS.FILES_BEFORE_COLLAPSE) {
+    const toggleBtn = folder.element.querySelector('.toggle-btn');
+    if (folder.files.length >= CONSTANTS.FILES_BEFORE_COLLAPSE) {
         toggleBtn.style.display = 'inline-block';
         
         // Auto-collapse on 5th file
-        if (category.files.length === CONSTANTS.FILES_BEFORE_COLLAPSE) {
-            toggleCategory(category.element);
+        if (folder.files.length === CONSTANTS.FILES_BEFORE_COLLAPSE) {
+            toggleFolder(folder.element);
         }
     }
     
@@ -318,23 +360,23 @@ function deleteFile(file) {
     if (!file) return;
     
     const slot = file.parentElement;
-    const categoryElement = file.closest('.category');
+    const folderElement = file.closest('.folder');
     
-    if (categoryElement) {
-        const categories = AppState.get('categories');
-        const categoryIndex = parseInt(categoryElement.dataset.categoryId);
-        const category = categories[categoryIndex];
+    if (folderElement) {
+        const folders = AppState.get('folders');
+        const folderIndex = parseInt(folderElement.dataset.folderId);
+        const folder = folders[folderIndex];
         
-        if (category) {
-            // Remove file from category's files array
-            const fileIndex = category.files.indexOf(file);
+        if (folder) {
+            // Remove file from folder's files array
+            const fileIndex = folder.files.indexOf(file);
             if (fileIndex > -1) {
-                category.files.splice(fileIndex, 1);
+                folder.files.splice(fileIndex, 1);
             }
             
             // Check if toggle button should be hidden
-            const toggleBtn = categoryElement.querySelector('.toggle-btn');
-            if (category.files.length < CONSTANTS.FILES_BEFORE_COLLAPSE) {
+            const toggleBtn = folderElement.querySelector('.toggle-btn');
+            if (folder.files.length < CONSTANTS.FILES_BEFORE_COLLAPSE) {
                 toggleBtn.style.display = 'none';
             }
             
@@ -347,9 +389,9 @@ function deleteFile(file) {
     
     file.remove();
     
-    const category = slot?.closest('.category');
-    if (category) {
-        updateCategoryToggle(category);
+    const folder = slot?.closest('.folder');
+    if (folder) {
+        updateFolderToggle(folder);
     }
 }
 
@@ -389,21 +431,21 @@ function expandFile(file) {
     const board = boards.find(b => b.id === currentBoardId);
     let fileLocation = null;
     
-    if (board && board.categories) {
+    if (board && board.folders) {
         // Find this file in the board structure
         const fileTitle = file.querySelector('.file-title')?.textContent;
         const fileId = file.dataset.fileId || file.id;
         
         console.log('🔍 DEBUG: Looking for file in AppState', { fileId, fileTitle });
         
-        for (let catIndex = 0; catIndex < board.categories.length; catIndex++) {
-            const category = board.categories[catIndex];
-            if (category.files) {
-                for (let fileIndex = 0; fileIndex < category.files.length; fileIndex++) {
-                    const savedFile = category.files[fileIndex];
+        for (let catIndex = 0; catIndex < board.folders.length; catIndex++) {
+            const folder = board.folders[catIndex];
+            if (folder.files) {
+                for (let fileIndex = 0; fileIndex < folder.files.length; fileIndex++) {
+                    const savedFile = folder.files[fileIndex];
                     // Match by ID first, then by title as fallback
                     if ((savedFile.id && savedFile.id === fileId) || savedFile.title === fileTitle) {
-                        fileLocation = { categoryIndex: catIndex, fileIndex: fileIndex };
+                        fileLocation = { folderIndex: catIndex, fileIndex: fileIndex };
                         console.log('🔍 DEBUG: Found file in AppState', { fileLocation });
                         
                         // Restore bookmarks from AppState if missing on DOM
@@ -631,21 +673,58 @@ function expandFile(file) {
     buttonContainer.appendChild(deleteBtn);
     buttonRow.appendChild(buttonContainer);
     
-    // Create header section with title
-    const header = document.createElement('div');
-    header.className = 'expanded-file-header';
-    if (file.darkModeEnabled) header.classList.add('dark-mode');
-    
-    // Move title to header
-    const fileTitle = file.querySelector('.file-title');
-    if (fileTitle) {
-        // Ensure autocorrect is disabled on expanded title as well
-        fileTitle.autocomplete = 'off';
-        fileTitle.autocorrect = 'off';
-        fileTitle.autocapitalize = 'off';
-        fileTitle.spellcheck = false;
-        header.appendChild(fileTitle);
-    }
+        // Create header section with title and featured image
+        const header = document.createElement('div');
+        header.className = 'expanded-file-header';
+        if (file.darkModeEnabled) header.classList.add('dark-mode');
+        
+        // Create featured image container
+        const featuredImageContainer = document.createElement('div');
+        featuredImageContainer.className = 'featured-image-container';
+        
+        // Check if file has bookmarks and extract first image
+        let firstBookmarkImage = null;
+        if (file.sections && file.sections.length > 0) {
+            // Look through sections for the first bookmark with an image
+            for (const section of file.sections) {
+                if (section.bookmarks && section.bookmarks.length > 0) {
+                    const firstBookmarkWithImage = section.bookmarks.find(bookmark => 
+                        bookmark.screenshot || bookmark.image
+                    );
+                    if (firstBookmarkWithImage) {
+                        firstBookmarkImage = firstBookmarkWithImage.screenshot || firstBookmarkWithImage.image;
+                        break;
+                    }
+                }
+            }
+        }
+        
+        // Create featured image element if we found one
+        if (firstBookmarkImage) {
+            const featuredImage = document.createElement('div');
+            featuredImage.className = 'featured-image';
+            featuredImage.style.backgroundImage = `url('${firstBookmarkImage}')`;
+            featuredImageContainer.appendChild(featuredImage);
+        }
+        
+        // Create a container for the title and image to align them properly
+        const headerContent = document.createElement('div');
+        headerContent.className = 'header-content';
+        headerContent.style.display = 'flex';
+        headerContent.style.alignItems = 'center';
+        
+        // Move title to header
+        const fileTitle = file.querySelector('.file-title');
+        if (fileTitle) {
+            // Ensure autocorrect is disabled on expanded title as well
+            fileTitle.autocomplete = 'off';
+            fileTitle.autocorrect = 'off';
+            fileTitle.autocapitalize = 'off';
+            fileTitle.spellcheck = false;
+            headerContent.appendChild(featuredImageContainer);
+            headerContent.appendChild(fileTitle);
+            header.appendChild(headerContent);
+        }
     
     // Add empty spacer div (25% width)
     const spacer = document.createElement('div');
@@ -962,9 +1041,78 @@ function expandFile(file) {
         
         const fileTitle = document.createElement('h3');
         fileTitle.className = 'bookmark-file-title';
+        fileTitle.contentEditable = true;
+        fileTitle.autocomplete = 'off';
+        fileTitle.autocorrect = 'off';
+        fileTitle.autocapitalize = 'off';
+        fileTitle.spellcheck = false;
         fileTitle.textContent = title;
         fileTitle.title = title; // Tooltip for long titles
-        
+
+        // Add event listeners to handle focus/blur behavior similar to other editable titles
+        fileTitle.addEventListener('focus', function(e) {
+            e.stopPropagation();
+            if (this.dataset.placeholder && this.textContent === this.dataset.placeholder) {
+                this.textContent = '';
+            }
+        });
+
+        fileTitle.addEventListener('blur', function(e) {
+            e.stopPropagation();
+            if (this.textContent.trim() === '') {
+                this.textContent = this.dataset.placeholder || title;
+            }
+            // Update the bookmark data with the new title
+            const bookmarkIndex = this.closest('.bookmark-file').dataset.bookmarkIndex;
+            if (bookmarkIndex !== undefined && sectionElement && sectionElement.sectionData) {
+                const bookmarks = sectionElement.sectionData.bookmarks;
+                if (bookmarks && bookmarks[bookmarkIndex]) {
+                    const newTitle = this.textContent.trim();
+                    bookmarks[bookmarkIndex].title = newTitle;
+                    this.title = newTitle; // Update tooltip
+                    console.log(`📝 BOOKMARK: Updated title to "${newTitle}"`);
+
+                    // Update AppState
+                    if (expandedFile.appStateLocation) {
+                        const boards = AppState.get('boards');
+                        const currentBoardId = AppState.get('currentBoardId');
+                        const board = boards.find(b => b.id === currentBoardId);
+
+                        if (board && board.folders) {
+                            const { folderIndex, fileIndex } = expandedFile.appStateLocation;
+                            if (board.folders[folderIndex] && board.folders[folderIndex].files[fileIndex]) {
+                                if (!board.folders[folderIndex].files[fileIndex].sections) {
+                                    board.folders[folderIndex].files[fileIndex].sections = [];
+                                }
+
+                                const sectionIndex = board.folders[folderIndex].files[fileIndex].sections.findIndex(s => s.id === sectionElement.sectionData.id);
+                                if (sectionIndex !== -1) {
+                                    board.folders[folderIndex].files[fileIndex].sections[sectionIndex].bookmarks = [...bookmarks];
+                                }
+
+                                AppState.set('boards', boards);
+                                console.log('📝 BOOKMARK: Updated AppState with new bookmark title');
+                            }
+                        }
+                    }
+
+                    // Save to Firebase
+                    if (window.syncService) {
+                        window.syncService.saveAfterAction('bookmark title edited');
+                    }
+                }
+            }
+        });
+
+        // Prevent event bubbling that might interfere with caret
+        fileTitle.addEventListener('mousedown', (e) => {
+            e.stopPropagation();
+        });
+
+        fileTitle.addEventListener('keydown', (e) => {
+            e.stopPropagation(); // Prevent other keyboard handlers from interfering
+        });
+
         const dateAdded = document.createElement('p');
         dateAdded.className = 'bookmark-date-added';
         // Format date consistently
@@ -1034,17 +1182,17 @@ function removeBookmark(expandedFile, bookmarkIndex, sectionElement) {
                 const currentBoardId = AppState.get('currentBoardId');
                 const board = boards.find(b => b.id === currentBoardId);
                 
-                if (board && board.categories) {
-                    const { categoryIndex, fileIndex } = expandedFile.appStateLocation;
-                    if (board.categories[categoryIndex] && board.categories[categoryIndex].files[fileIndex]) {
+                if (board && board.folders) {
+                    const { folderIndex, fileIndex } = expandedFile.appStateLocation;
+                    if (board.folders[folderIndex] && board.folders[folderIndex].files[fileIndex]) {
                         // Find and update the specific section
-                        if (!board.categories[categoryIndex].files[fileIndex].sections) {
-                            board.categories[categoryIndex].files[fileIndex].sections = [];
+                        if (!board.folders[folderIndex].files[fileIndex].sections) {
+                            board.folders[folderIndex].files[fileIndex].sections = [];
                         }
                         
-                        const sectionIndex = board.categories[categoryIndex].files[fileIndex].sections.findIndex(s => s.id === sectionData.id);
+                        const sectionIndex = board.folders[folderIndex].files[fileIndex].sections.findIndex(s => s.id === sectionData.id);
                         if (sectionIndex !== -1) {
-                            board.categories[categoryIndex].files[fileIndex].sections[sectionIndex].bookmarks = [...bookmarks];
+                            board.folders[folderIndex].files[fileIndex].sections[sectionIndex].bookmarks = [...bookmarks];
                         }
                         
                         AppState.set('boards', boards);
@@ -1156,17 +1304,17 @@ function reorderBookmark(expandedFile, fromIndex, toIndex, sectionElement) {
         const currentBoardId = AppState.get('currentBoardId');
         const board = boards.find(b => b.id === currentBoardId);
         
-        if (board && board.categories) {
-            const { categoryIndex, fileIndex } = expandedFile.appStateLocation;
-            if (board.categories[categoryIndex] && board.categories[categoryIndex].files[fileIndex]) {
+        if (board && board.folders) {
+            const { folderIndex, fileIndex } = expandedFile.appStateLocation;
+            if (board.folders[folderIndex] && board.folders[folderIndex].files[fileIndex]) {
                 // Find and update the specific section
-                if (!board.categories[categoryIndex].files[fileIndex].sections) {
-                    board.categories[categoryIndex].files[fileIndex].sections = [];
+                if (!board.folders[folderIndex].files[fileIndex].sections) {
+                    board.folders[folderIndex].files[fileIndex].sections = [];
                 }
                 
-                const sectionIndex = board.categories[categoryIndex].files[fileIndex].sections.findIndex(s => s.id === sectionData.id);
+                const sectionIndex = board.folders[folderIndex].files[fileIndex].sections.findIndex(s => s.id === sectionData.id);
                 if (sectionIndex !== -1) {
-                    board.categories[categoryIndex].files[fileIndex].sections[sectionIndex].bookmarks = [...bookmarks];
+                    board.folders[folderIndex].files[fileIndex].sections[sectionIndex].bookmarks = [...bookmarks];
                 }
                 
                 AppState.set('boards', boards);
@@ -1263,28 +1411,28 @@ function collapseFile(file) {
         const currentBoardId = AppState.get('currentBoardId');
         const board = boards.find(b => b.id === currentBoardId);
         
-        if (board && board.categories) {
-            const { categoryIndex, fileIndex } = file.appStateLocation;
-            if (board.categories[categoryIndex] && board.categories[categoryIndex].files[fileIndex]) {
+        if (board && board.folders) {
+            const { folderIndex, fileIndex } = file.appStateLocation;
+            if (board.folders[folderIndex] && board.folders[folderIndex].files[fileIndex]) {
                 // Initialize sections array if it doesn't exist
-                if (!board.categories[categoryIndex].files[fileIndex].sections) {
-                    board.categories[categoryIndex].files[fileIndex].sections = [];
+                if (!board.folders[folderIndex].files[fileIndex].sections) {
+                    board.folders[folderIndex].files[fileIndex].sections = [];
                     console.log('🔍 DEBUG: Initialized sections array in AppState');
                 }
                 
                 console.log('🔍 DEBUG: Before updating board sections', {
-                    boardSectionsCount: board.categories[categoryIndex].files[fileIndex].sections.length,
-                    sectionIds: board.categories[categoryIndex].files[fileIndex].sections.map(s => s.id)
+                    boardSectionsCount: board.folders[folderIndex].files[fileIndex].sections.length,
+                    sectionIds: board.folders[folderIndex].files[fileIndex].sections.map(s => s.id)
                 });
                 
                 // Update sections in board data
                 file.sections.forEach(sectionData => {
                     console.log('🔍 DEBUG: Processing section for board save', { sectionId: sectionData.id });
                     // Find existing section or add new one
-                    const sectionIndex = board.categories[categoryIndex].files[fileIndex].sections.findIndex(s => s.id === sectionData.id);
+                    const sectionIndex = board.folders[folderIndex].files[fileIndex].sections.findIndex(s => s.id === sectionData.id);
                     if (sectionIndex !== -1) {
                         // Update existing section
-                        board.categories[categoryIndex].files[fileIndex].sections[sectionIndex] = {
+                        board.folders[folderIndex].files[fileIndex].sections[sectionIndex] = {
                             id: sectionData.id,
                             title: sectionData.title,
                             content: sectionData.content,
@@ -1293,7 +1441,7 @@ function collapseFile(file) {
                         console.log('🔍 DEBUG: Updated existing section in board data', { sectionId: sectionData.id });
                     } else {
                         // Add new section
-                        board.categories[categoryIndex].files[fileIndex].sections.push({
+                        board.folders[folderIndex].files[fileIndex].sections.push({
                             id: sectionData.id,
                             title: sectionData.title,
                             content: sectionData.content,
@@ -1304,13 +1452,13 @@ function collapseFile(file) {
                 });
                 
                 console.log('🔍 DEBUG: After updating board sections', {
-                    boardSectionsCount: board.categories[categoryIndex].files[fileIndex].sections.length,
-                    sectionIds: board.categories[categoryIndex].files[fileIndex].sections.map(s => s.id)
+                    boardSectionsCount: board.folders[folderIndex].files[fileIndex].sections.length,
+                    sectionIds: board.folders[folderIndex].files[fileIndex].sections.map(s => s.id)
                 });
                 
                 AppState.set('boards', boards);
                 console.log('🔖 SECTION: Saved sections to AppState before collapse', {
-                    totalBoardSections: board.categories[categoryIndex].files[fileIndex].sections.length
+                    totalBoardSections: board.folders[folderIndex].files[fileIndex].sections.length
                 });
             }
         }
@@ -1407,15 +1555,15 @@ function collapseFile(file) {
         } catch (error) {
             console.error('Error restoring file position:', error);
             // Find a safe place for the file
-            const categories = document.querySelectorAll('.category');
-            if (categories.length > 0) {
-                const firstCategoryGrid = categories[0].querySelector('.files-grid');
-                const emptySlot = firstCategoryGrid.querySelector('.file-slot:empty');
+            const folders = document.querySelectorAll('.folder');
+            if (folders.length > 0) {
+                const firstFolderGrid = folders[0].querySelector('.files-grid');
+                const emptySlot = firstFolderGrid.querySelector('.file-slot:empty');
                 if (emptySlot) {
                     emptySlot.appendChild(file);
                 } else {
                     const newSlot = createFileSlot();
-                    firstCategoryGrid.appendChild(newSlot);
+                    firstFolderGrid.appendChild(newSlot);
                     newSlot.appendChild(file);
                 }
             }
@@ -1426,15 +1574,15 @@ function collapseFile(file) {
         if (emptySlot) {
             emptySlot.appendChild(file);
         } else {
-            // Create new slot in first category
-            const firstCategory = document.querySelector('.category');
-            if (firstCategory) {
-                const grid = firstCategory.querySelector('.files-grid');
+            // Create new slot in first folder
+            const firstFolder = document.querySelector('.folder');
+            if (firstFolder) {
+                const grid = firstFolder.querySelector('.files-grid');
                 const newSlot = createFileSlot();
                 grid.appendChild(newSlot);
                 newSlot.appendChild(file);
             } else {
-                // No categories exist - remove file from DOM
+                // No folders exist - remove file from DOM
                 file.remove();
             }
         }
@@ -1661,19 +1809,19 @@ window.handleBookmarkData = function(data) {
         const currentBoardId = AppState.get('currentBoardId');
         const board = boards.find(b => b.id === currentBoardId);
         
-        if (board && board.categories) {
-            const { categoryIndex, fileIndex } = expandedFile.appStateLocation;
-            if (board.categories[categoryIndex] && board.categories[categoryIndex].files[fileIndex]) {
+        if (board && board.folders) {
+            const { folderIndex, fileIndex } = expandedFile.appStateLocation;
+            if (board.folders[folderIndex] && board.folders[folderIndex].files[fileIndex]) {
                 // Find the section in the board data
-                if (!board.categories[categoryIndex].files[fileIndex].sections) {
-                    board.categories[categoryIndex].files[fileIndex].sections = [];
+                if (!board.folders[folderIndex].files[fileIndex].sections) {
+                    board.folders[folderIndex].files[fileIndex].sections = [];
                 }
                 
-                const sectionIndex = board.categories[categoryIndex].files[fileIndex].sections.findIndex(s => s.id === sectionData.id);
+                const sectionIndex = board.folders[folderIndex].files[fileIndex].sections.findIndex(s => s.id === sectionData.id);
                 if (sectionIndex !== -1) {
-                    board.categories[categoryIndex].files[fileIndex].sections[sectionIndex].bookmarks = [...sectionData.bookmarks];
+                    board.folders[folderIndex].files[fileIndex].sections[sectionIndex].bookmarks = [...sectionData.bookmarks];
                 } else {
-                    board.categories[categoryIndex].files[fileIndex].sections.push({
+                    board.folders[folderIndex].files[fileIndex].sections.push({
                         id: sectionData.id,
                         title: sectionData.title,
                         content: sectionData.content,
@@ -1749,8 +1897,8 @@ window.addEventListener('message', function(event) {
 
 // Expose functions globally for file tree integration
 window.expandFile = expandFile;
-window.addFileToCategory = addFileToCategory;
-// window.createCategory is exposed in categories.js
+window.addFileToFolder = addFileToFolder;
+// window.createFolder is exposed in folders.js
 
 // Debug injection for extension
 window.extensionDebug = true;
@@ -1871,26 +2019,26 @@ function createSection(file, bookmarks = [], existingSectionId = null) {
         const currentBoardId = AppState.get('currentBoardId');
         const board = boards.find(b => b.id === currentBoardId);
         
-        if (board && board.categories) {
-            const { categoryIndex, fileIndex } = file.appStateLocation;
-            if (board.categories[categoryIndex] && board.categories[categoryIndex].files[fileIndex]) {
+        if (board && board.folders) {
+            const { folderIndex, fileIndex } = file.appStateLocation;
+            if (board.folders[folderIndex] && board.folders[folderIndex].files[fileIndex]) {
                 // Initialize sections array if it doesn't exist
-                if (!board.categories[categoryIndex].files[fileIndex].sections) {
-                    board.categories[categoryIndex].files[fileIndex].sections = [];
+                if (!board.folders[folderIndex].files[fileIndex].sections) {
+                    board.folders[folderIndex].files[fileIndex].sections = [];
                 }
                 
                 console.log('🔍 DEBUG: Board sections before processing', { 
-                    boardSectionsCount: board.categories[categoryIndex].files[fileIndex].sections.length,
-                    sectionIds: board.categories[categoryIndex].files[fileIndex].sections.map(s => s.id)
+                    boardSectionsCount: board.folders[folderIndex].files[fileIndex].sections.length,
+                    sectionIds: board.folders[folderIndex].files[fileIndex].sections.map(s => s.id)
                 });
                 
                 // Check if section with this ID already exists in board data
-                const boardSectionIndex = board.categories[categoryIndex].files[fileIndex].sections.findIndex(s => s.id === sectionData.id);
+                const boardSectionIndex = board.folders[folderIndex].files[fileIndex].sections.findIndex(s => s.id === sectionData.id);
                 console.log('🔍 DEBUG: Checking for existing section in board data', { boardSectionIndex });
                 
                 if (boardSectionIndex === -1) {
                     // Add the new section to the board data
-                    board.categories[categoryIndex].files[fileIndex].sections.push({
+                    board.folders[folderIndex].files[fileIndex].sections.push({
                         id: sectionData.id,
                         title: sectionData.title,
                         content: null,
@@ -1899,7 +2047,7 @@ function createSection(file, bookmarks = [], existingSectionId = null) {
                     console.log('🔍 DEBUG: Added new section to board data', { sectionId: sectionData.id });
                 } else {
                     // Update existing section in board data
-                    board.categories[categoryIndex].files[fileIndex].sections[boardSectionIndex] = {
+                    board.folders[folderIndex].files[fileIndex].sections[boardSectionIndex] = {
                         id: sectionData.id,
                         title: sectionData.title,
                         content: null,
@@ -1913,7 +2061,7 @@ function createSection(file, bookmarks = [], existingSectionId = null) {
                 
                 AppState.set('boards', boards);
                 console.log('🔖 SECTION: Updated AppState with section', {
-                    totalBoardSections: board.categories[categoryIndex].files[fileIndex].sections.length
+                    totalBoardSections: board.folders[folderIndex].files[fileIndex].sections.length
                 });
             }
         }
@@ -1956,24 +2104,24 @@ function createSection(file, bookmarks = [], existingSectionId = null) {
             const currentBoardId = AppState.get('currentBoardId');
             const board = boards.find(b => b.id === currentBoardId);
             
-            if (board && board.categories) {
-                const { categoryIndex, fileIndex } = file.appStateLocation;
-                if (board.categories[categoryIndex] && board.categories[categoryIndex].files[fileIndex]) {
+            if (board && board.folders) {
+                const { folderIndex, fileIndex } = file.appStateLocation;
+                if (board.folders[folderIndex] && board.folders[folderIndex].files[fileIndex]) {
                     // Find and update this section in the board data
-                    if (!board.categories[categoryIndex].files[fileIndex].sections) {
-                        board.categories[categoryIndex].files[fileIndex].sections = [];
+                    if (!board.folders[folderIndex].files[fileIndex].sections) {
+                        board.folders[folderIndex].files[fileIndex].sections = [];
                     }
                     
                     // Update or add section
-                    const sectionIndex = board.categories[categoryIndex].files[fileIndex].sections.findIndex(s => s.id === sectionData.id);
+                    const sectionIndex = board.folders[folderIndex].files[fileIndex].sections.findIndex(s => s.id === sectionData.id);
                     if (sectionIndex !== -1) {
-                        board.categories[categoryIndex].files[fileIndex].sections[sectionIndex].title = this.textContent;
+                        board.folders[folderIndex].files[fileIndex].sections[sectionIndex].title = this.textContent;
                         console.log('🔍 DEBUG: Updated section title in board data', { 
                             sectionId: sectionData.id, 
                             newTitle: this.textContent 
                         });
                     } else {
-                        board.categories[categoryIndex].files[fileIndex].sections.push({
+                        board.folders[folderIndex].files[fileIndex].sections.push({
                             id: sectionData.id,
                             title: this.textContent,
                             content: null,
@@ -2112,20 +2260,20 @@ async function initializeEditorJS(file, container = null) {
                 const currentBoardId = AppState.get('currentBoardId');
                 const board = boards.find(b => b.id === currentBoardId);
                 
-                if (board && board.categories) {
-                    const { categoryIndex, fileIndex } = file.appStateLocation;
-                    if (board.categories[categoryIndex] && board.categories[categoryIndex].files[fileIndex]) {
-                        if (!board.categories[categoryIndex].files[fileIndex].sections) {
-                            board.categories[categoryIndex].files[fileIndex].sections = [];
+                if (board && board.folders) {
+                    const { folderIndex, fileIndex } = file.appStateLocation;
+                    if (board.folders[folderIndex] && board.folders[folderIndex].files[fileIndex]) {
+                        if (!board.folders[folderIndex].files[fileIndex].sections) {
+                            board.folders[folderIndex].files[fileIndex].sections = [];
                         }
                         
-                        const sectionIndex = board.categories[categoryIndex].files[fileIndex].sections.findIndex(s => s.id === section.sectionData.id);
+                        const sectionIndex = board.folders[folderIndex].files[fileIndex].sections.findIndex(s => s.id === section.sectionData.id);
                         if (sectionIndex !== -1) {
-                            board.categories[categoryIndex].files[fileIndex].sections[sectionIndex].content = {
+                            board.folders[folderIndex].files[fileIndex].sections[sectionIndex].content = {
                                 content: quill.root.innerHTML
                             };
                         } else {
-                            board.categories[categoryIndex].files[fileIndex].sections.push({
+                            board.folders[folderIndex].files[fileIndex].sections.push({
                                 id: section.sectionData.id,
                                 title: section.sectionData.title,
                                 content: {

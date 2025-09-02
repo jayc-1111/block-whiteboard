@@ -336,16 +336,16 @@ export const dbService = {
             isGuest: currentUser.isAnonymous,
             boardId: boardData.id,
             boardName: boardData.name,
-            hasCategories: boardData.categories?.length > 0,
+            hasFolders: boardData.folders?.length > 0,
             hasHeaders: boardData.canvasHeaders?.length > 0,
-            categoryCount: boardData.categories?.length || 0,
+            folderCount: boardData.folders?.length || 0,
             headerCount: boardData.canvasHeaders?.length || 0
         });
 
         try {
             // Additional validation - don't save empty boards
             const hasContent = (
-                (boardData.categories && boardData.categories.length > 0) ||
+                (boardData.folders && boardData.folders.length > 0) ||
                 (boardData.canvasHeaders && boardData.canvasHeaders.length > 0) ||
                 (boardData.drawingPaths && boardData.drawingPaths.length > 0)
             );
@@ -368,7 +368,7 @@ export const dbService = {
             // Log the actual data being saved (truncated for large objects)
             const dataPreview = {
                 ...saveData,
-                categories: saveData.categories?.map(cat => ({
+                folders: saveData.folders?.map(cat => ({
                     title: cat.title,
                     fileCount: cat.files?.length || 0
                 })) || [],

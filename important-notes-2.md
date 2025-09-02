@@ -127,11 +127,11 @@
 ---
 
 ### 2025-08-17: Light Theme Toolbar & sidebar Menu Styling (FIXED)
-**Problem:** Light theme toolbar and sidebar menu had inconsistent styling compared to categories and files.
+**Problem:** Light theme toolbar and sidebar menu had inconsistent styling compared to folders and files.
 
 **Solution:** Updated light theme to use consistent white background styling:
 - Toolbar & sidebar menu: #FFFFFF background with 2px solid #ffffff border
-- All text: #5c5c5c color (matching categories/files)
+- All text: #5c5c5c color (matching folders/files)
 - Hover states: #E8EBF0 background
 - Removed box shadows for clean, minimal look
 - Board selector & auth button updated to match
@@ -139,7 +139,7 @@
 **Files Modified:**
 - `css/themes/light.css` - Added comprehensive toolbar and sidebar menu styles
 
-**Result:** Toolbar and sidebar menu now have the same clean white styling as categories and files.
+**Result:** Toolbar and sidebar menu now have the same clean white styling as folders and files.
 
 ---
 
@@ -170,13 +170,13 @@
 
 **Color Scheme:**
 - Primary Background (#F5F7FB): Canvas and files
-- Secondary Background (#FFF): Categories, toolbars, modals
+- Secondary Background (#FFF): Folders, toolbars, modals
 - Text colors: #1A202C (primary), #4A5568 (secondary), #718096 (tertiary)
 - Border: #E2E8F0
 
 **Implementation:** Complete light theme covering all UI elements including:
 - Canvas and grid with subtle dot pattern
-- Categories and files with proper contrast
+- Folders and files with proper contrast
 - Toolbar and buttons
 - Expanded files and sections
 - Bookmarks and editor
@@ -256,15 +256,15 @@
 **Change:** Removed all CSS variables and replaced them with direct values in their respective files.
 
 **Variables replaced:**
-- `#131313` for category background (categories.css, files.css)
-- `12px` for border-radius (categories.css)
-- `0px` for padding (categories.css)
+- `#131313` for folder background (folders.css, files.css)
+- `12px` for border-radius (folders.css)
+- `0px` for padding (folders.css)
 - `#191919` for canvas background (canvas.css)
 - `rgba(255,255,255,0.035)` for grid dots (canvas.css)
 - `2px` for dot size, `27px` for grid spacing (canvas.css)
 
 **Files Modified:**
-- `css/items/widget/categories.css` - Replaced category variables
+- `css/items/widget/folders.css` - Replaced folder variables
 - `css/items/widget/files.css` - Replaced background variable
 - `css/canvas/canvas.css` - Replaced canvas/grid variables
 - `css/base/classes.css` - Replaced toolbar button and grid variables
@@ -275,23 +275,23 @@
 ---
 
 ### 2025-08-16: File Edge-to-Edge Padding Fix (FIXED)
-**Problem:** Files had unwanted padding/spacing within categories, preventing them from filling edge-to-edge.
+**Problem:** Files had unwanted padding/spacing within folders, preventing them from filling edge-to-edge.
 
 **Root Cause:** Two CSS properties were creating spacing:
-1. `--category-base-padding: 18px` in `variables.css` - Added 18px padding around entire category container
-2. `gap: 5px` in `.files-grid` class in `categories.css` - Added 5px gap between files
+1. `--folder-base-padding: 18px` in `variables.css` - Added 18px padding around entire folder container
+2. `gap: 5px` in `.files-grid` class in `folders.css` - Added 5px gap between files
 
 **Solution:** 
-1. Changed `--category-base-padding` from `18px` to `0px` in `css/base/variables.css`
-2. Changed `.files-grid` gap from `5px` to `0` in `css/items/widget/categories.css`  
-3. Added `padding: 0 18px` and `margin-top: 18px` to `.category-header` to maintain header spacing
-4. Added `padding: 8px 18px 18px 18px` to `.category-bottom` to maintain bottom spacing
+1. Changed `--folder-base-padding` from `18px` to `0px` in `css/base/variables.css`
+2. Changed `.files-grid` gap from `5px` to `0` in `css/items/widget/folders.css`  
+3. Added `padding: 0 18px` and `margin-top: 18px` to `.folder-header` to maintain header spacing
+4. Added `padding: 8px 18px 18px 18px` to `.folder-bottom` to maintain bottom spacing
 
 **Files Modified:**
-- `css/base/variables.css` - Set category padding to 0
-- `css/items/widget/categories.css` - Removed grid gap, adjusted header/bottom padding
+- `css/base/variables.css` - Set folder padding to 0
+- `css/items/widget/folders.css` - Removed grid gap, adjusted header/bottom padding
 
-**Result:** Files now fill completely edge-to-edge within categories and touch each other without gaps.
+**Result:** Files now fill completely edge-to-edge within folders and touch each other without gaps.
 
 ---
 
@@ -456,7 +456,7 @@ After making changes to section/bookmark handling:
 ## Remember
 
 - **Always test the third expansion** - This is where bugs often appear
-- **Check nested data** - Bookmarks inside sections inside files inside categories
+- **Check nested data** - Bookmarks inside sections inside files inside folders
 - **Use proper debugging** - Console logs with emojis help track flow
 - **Save incrementally** - Don't wait for perfect solution, save working progress
 

@@ -28,13 +28,13 @@ function initializeBoard() {
         return;
     }
     
-    if (currentBoard.categories && currentBoard.categories.length > 0) {
+    if (currentBoard.folders && currentBoard.folders.length > 0) {
         Debug.board.detail('Board has existing content - skipping initialization');
         return;
     }
     
     // Reset the first board
-    boards[0].categories = [];
+    boards[0].folders = [];
     boards[0].canvasHeaders = [];
     AppState.set('boards', boards);
     
@@ -63,26 +63,26 @@ async function saveCurrentBoard() {
     }
     
     // Reset board data
-    board.categories = [];
+    board.folders = [];
     board.canvasHeaders = [];
     board.drawingPaths = [];
     
-    // Save categories from DOM
+    // Save folders from DOM
     const canvas = document.getElementById('canvas');
     Debug.board.start('Saving current board state');
     Debug.board.detail(`Canvas element: ${canvas ? 'found' : 'NOT FOUND'}`);
     if (canvas) {
-        const categoryElements = canvas.querySelectorAll('.category');
-        Debug.board.step(`Categories found: ${categoryElements.length}`);
+        const folderElements = canvas.querySelectorAll('.folder');
+        Debug.board.step(`Folders found: ${folderElements.length}`);
         
-        for (const cat of categoryElements) {
-            const categoryTitle = cat.querySelector('.category-title');
-            if (!categoryTitle) continue;
+        for (const cat of folderElements) {
+            const folderTitle = cat.querySelector('.folder-title');
+            if (!folderTitle) continue;
             
-            Debug.board.detail(`Processing category: "${categoryTitle.textContent}"`);
+            Debug.board.detail(`Processing folder: "${folderTitle.textContent}"`);
             
-            const categoryData = {
-                title: categoryTitle.textContent,
+            const folderData = {
+                title: folderTitle.textContent,
                 position: {
                     left: cat.style.left,
                     top: cat.style.top
@@ -102,7 +102,7 @@ async function saveCurrentBoard() {
                 if (fileInSlot) {
                     allFiles.push(fileInSlot);
                 } else if (expandedFile && 
-                          expandedFile.dataset.categoryId === cat.id && 
+                          expandedFile.dataset.folderId === cat.id && 
                           expandedFile.originalSlotIndex === slotIndex) {
                     // This slot's file is currently expanded
                     allFiles.push(expandedFile);
@@ -146,9 +146,9 @@ async function saveCurrentBoard() {
                     try {
                         const lastGood = JSON.parse(window.syncService.lastKnownGoodState);
                         const lastBoard = lastGood.find(b => b.id === currentBoardId);
-                        if (lastBoard?.categories) {
+                        if (lastBoard?.folders) {
                             // Try to find this file's bookmarks from last known good state
-                            for (const lastCat of lastBoard.categories) {
+                            for (const lastCat of lastBoard.folders) {
                                 const lastFile = lastCat.files?.find(c => c.title === title);
                                 if (lastFile?.bookmarks?.length > 0) {
                                     console.warn(`📦 SAVE: Recovering ${lastFile.bookmarks.length} bookmarks for file "${title}" from last known good state`);
@@ -199,14 +199,14 @@ async function saveCurrentBoard() {
             
             // Wait for all files to be processed
             const fileResults = await Promise.all(filePromises);
-            categoryData.files = fileResults.filter(file => file !== null);
+            folderData.files = fileResults.filter(file => file !== null);
             
-            Debug.board.detail(`Files saved for category "${categoryData.title}": ${categoryData.files.length}`);
-            categoryData.files.forEach((file, index) => {
+            Debug.board.detail(`Files saved for folder "${folderData.title}": ${folderData.files.length}`);
+            folderData.files.forEach((file, index) => {
                 Debug.board.detail(`  Saved file ${index}: "${file.title}"`);
             });
             
-            board.categories.push(categoryData);
+            board.folders.push(folderData);
         }
         
         // Save canvas headers from DOM
@@ -313,7 +313,7 @@ async function loadBoard(boardId) {
     }
     // Clear canvas content
     canvas.innerHTML = '';
-    AppState.set('categories', []);
+    AppState.set('folders', []);
     
     // Find and load the target board
     const boards = AppState.get('boards');
@@ -333,19 +333,19 @@ async function loadBoard(boardId) {
         board = AppState.get('boards').find(b => b.id === boardId);
     }
     
-    // Load categories
-    if (board.categories && board.categories.length > 0) {
-        board.categories.forEach(catData => {
-            const catIndex = createCategory(
+    // Load folders
+    if (board.folders && board.folders.length > 0) {
+        board.folders.forEach(catData => {
+            const catIndex = createFolder(
                 catData.title, 
                 parseInt(catData.position.left) || 0, 
                 parseInt(catData.position.top) || 0
             );
             
-            const categories = AppState.get('categories');
-            const category = categories[catIndex];
-            if (category && category.element) {
-                const grid = category.element.querySelector('.files-grid');
+            const folders = AppState.get('folders');
+            const folder = folders[catIndex];
+            if (folder && folder.element) {
+                const grid = folder.element.querySelector('.files-grid');
                 if (grid) {
                     grid.innerHTML = '';
                     
@@ -361,7 +361,7 @@ async function loadBoard(boardId) {
                     if (catData.files) {
                         catData.files.forEach(fileData => {
                             // Pass bookmarks as fourth parameter and sections as fifth (if needed)
-                            const file = addFileToCategory(catIndex, fileData.title, fileData.content, fileData.bookmarks);
+                            const file = addFileToFolder(catIndex, fileData.title, fileData.content, fileData.bookmarks);
                             // Restore file ID if it exists
                             if (file && fileData.id) {
                                 file.id = fileData.id;
@@ -444,7 +444,7 @@ function showOnboardingIfEmpty() {
     const currentBoard = boards.find(b => b.id === currentBoardId);
     
     if (currentBoard && 
-        (!currentBoard.categories || currentBoard.categories.length === 0) &&
+        (!currentBoard.folders || currentBoard.folders.length === 0) &&
         (!currentBoard.canvasHeaders || currentBoard.canvasHeaders.length === 0) &&
         !currentBoard.onboardingShown) {
         
@@ -491,7 +491,7 @@ function addWhiteboard() {
     const newBoard = {
         id: boards.length,
         name: `${CONSTANTS.DEFAULT_BOARD_NAME} ${boards.length + 1}`,
-        categories: [],
+        folders: [],
         canvasHeaders: []
     };
     

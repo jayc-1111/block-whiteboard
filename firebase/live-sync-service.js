@@ -1,6 +1,6 @@
 /**
  * MARKED FOR REMOVAL: Live sync feature is disabled
- * Live sync was causing duplicate categories and UI issues
+ * Live sync was causing duplicate folders and UI issues
  * Safe to delete - feature is disabled via window.LIVE_SYNC_DISABLED = true
  */
 
@@ -288,12 +288,12 @@ export const liveSyncService = {
     calculateContentWeight(board) {
         let weight = 0;
         
-        // Categories weight
-        if (board.categories) {
-            weight += board.categories.length * 100; // Each category worth 100 points
+        // Folders weight
+        if (board.folders) {
+            weight += board.folders.length * 100; // Each folder worth 100 points
             
             // Files weight
-            board.categories.forEach(cat => {
+            board.folders.forEach(cat => {
                 if (cat.files) {
                     weight += cat.files.length * 50; // Each file worth 50 points
                     
@@ -393,8 +393,8 @@ export const liveSyncService = {
                 timestamp: serverTimestamp(),
                 createdAt: new Date().toISOString(),
                 contentWeight: this.calculateContentWeight(currentBoard),
-                categoriesCount: currentBoard.categories?.length || 0,
-                filesCount: currentBoard.categories?.reduce((sum, cat) => sum + (cat.files?.length || 0), 0) || 0
+                foldersCount: currentBoard.folders?.length || 0,
+                filesCount: currentBoard.folders?.reduce((sum, cat) => sum + (cat.files?.length || 0), 0) || 0
             };
             
             const backupsRef = collection(window.db, 'users', user.uid, 'backups');
@@ -449,7 +449,7 @@ export const liveSyncService = {
                     timestamp: data.timestamp?.toDate() || new Date(data.createdAt),
                     createdAt: data.createdAt,
                     contentWeight: data.contentWeight || 0,
-                    categoriesCount: data.categoriesCount || 0,
+                    foldersCount: data.foldersCount || 0,
                     filesCount: data.filesCount || 0
                 });
             });
@@ -595,10 +595,10 @@ export const liveSyncService = {
         
         try {
             // CRITICAL: Check if remote board has actual content
-            const hasCategories = board.categories && board.categories.length > 0;
+            const hasFolders = board.folders && board.folders.length > 0;
             const hasCanvasHeaders = board.canvasHeaders && board.canvasHeaders.length > 0;
             
-            if (!hasCategories && !hasCanvasHeaders) {
+            if (!hasFolders && !hasCanvasHeaders) {
                 Debug.liveSync.detail('Remote board is empty - skipping to prevent data loss');
                 return;
             }
@@ -684,12 +684,12 @@ export const liveSyncService = {
             const expandedFile = AppState.get('expandedFile');
             
             canvas.innerHTML = '';
-            AppState.set('categories', []);
+            AppState.set('folders', []);
             
-            // Apply categories
-            if (board.categories) {
-                board.categories.forEach((catData, index) => {
-                    this.createCategoryFromRemoteData(catData, index);
+            // Apply folders
+            if (board.folders) {
+                board.folders.forEach((catData, index) => {
+                    this.createFolderFromRemoteData(catData, index);
                 });
             }
             
@@ -722,32 +722,32 @@ export const liveSyncService = {
         }
     },
     
-    // Create category from remote data with live sync considerations
-    createCategoryFromRemoteData(catData, index) {
+    // Create folder from remote data with live sync considerations
+    createFolderFromRemoteData(catData, index) {
         try {
             let catIndex;
             
-            if (typeof createCategory === 'function') {
-                catIndex = createCategory(
+            if (typeof createFolder === 'function') {
+                catIndex = createFolder(
                     catData.title,
                     parseInt(catData.position.left) || (100 + index * 220),
                     parseInt(catData.position.top) || 100
                 );
             } else {
-                catIndex = this.createCategoryManually(catData, index);
+                catIndex = this.createFolderManually(catData, index);
             }
             
             // Add files
             if (catData.files) {
                 catData.files.forEach((fileData) => {
-                    if (typeof addFileToCategory === 'function') {
-                        addFileToCategory(catIndex, fileData.title, fileData.content);
+                    if (typeof addFileToFolder === 'function') {
+                        addFileToFolder(catIndex, fileData.title, fileData.content);
                     }
                 });
             }
             
         } catch (error) {
-            Debug.liveSync.stepError('Failed to create category from remote data', error);
+            Debug.liveSync.stepError('Failed to create folder from remote data', error);
         }
     },
     
@@ -779,8 +779,8 @@ export const liveSyncService = {
     
     // Setup specific change listeners for targeted events
     setupSpecificChangeListeners() {
-        // 1. Category position changes
-        this.monitorCategoryPositions();
+        // 1. Folder position changes
+        this.monitorFolderPositions();
         
         // 2. Quill editor changes
         this.monitorQuillChanges();
@@ -792,8 +792,8 @@ export const liveSyncService = {
         this.monitorElementChanges();
     },
     
-    // Monitor category position changes specifically
-    monitorCategoryPositions() {
+    // Monitor folder position changes specifically
+    monitorFolderPositions() {
         const canvas = document.getElementById('canvas');
         if (!canvas) return;
         
@@ -807,9 +807,9 @@ export const liveSyncService = {
             mutations.forEach(mutation => {
                 if (mutation.type === 'attributes' && mutation.attributeName === 'style') {
                     const target = mutation.target;
-                    if (target.classList.contains('category') || target.classList.contains('super-header')) {
+                    if (target.classList.contains('folder') || target.classList.contains('super-header')) {
                         hasPositionChange = true;
-                        Debug.liveSync.detail('Position change detected', { type: target.classList.contains('category') ? 'category' : 'super-header' });
+                        Debug.liveSync.detail('Position change detected', { type: target.classList.contains('folder') ? 'folder' : 'super-header' });
                     }
                 }
             });
@@ -886,7 +886,7 @@ export const liveSyncService = {
                     // Check if meaningful elements were added/removed
                     const meaningfulNodes = [...mutation.addedNodes, ...mutation.removedNodes].filter(node => 
                         node.nodeType === Node.ELEMENT_NODE && 
-                        (node.classList.contains('category') || 
+                        (node.classList.contains('folder') || 
                          node.classList.contains('super-header') ||
                          node.classList.contains('file'))
                     );
@@ -949,8 +949,8 @@ export const liveSyncService = {
         document.addEventListener('touchend', handleDragEnd);
         
         // Monitor AppState changes for drag operations ending
-        AppState.onChange('currentCategory', (category) => {
-            if (!category) handleDragEnd(); // Category drag ended
+        AppState.onChange('currentFolder', (folder) => {
+            if (!folder) handleDragEnd(); // Folder drag ended
         });
         
         AppState.onChange('currentSuperHeader', (header) => {
@@ -966,7 +966,7 @@ export const liveSyncService = {
     isUserCurrentlyDragging() {
         // Check AppState for drag operations
         const draggedFile = AppState.get('draggedFile');
-        const currentCategory = AppState.get('currentCategory');
+        const currentFolder = AppState.get('currentFolder');
         const currentSuperHeader = AppState.get('currentSuperHeader');
         const isDraggingMultiple = AppState.get('isDraggingMultiple');
         const isSelecting = AppState.get('isSelecting');
@@ -979,7 +979,7 @@ export const liveSyncService = {
         // Check for elements being dragged
         const draggedElement = document.querySelector('.being-dragged, .dragging, .selected');
         
-        const isDragging = !!(draggedFile || currentCategory || currentSuperHeader || 
+        const isDragging = !!(draggedFile || currentFolder || currentSuperHeader || 
                              isDraggingMultiple || isSelecting || hasMouseDown || 
                              draggedElement);
         
@@ -1115,7 +1115,7 @@ export const liveSyncService = {
             const b2 = boards2[i];
             
             if (b1.name !== b2.name || 
-                b1.categories?.length !== b2.categories?.length ||
+                b1.folders?.length !== b2.folders?.length ||
                 b1.canvasHeaders?.length !== b2.canvasHeaders?.length) {
                 return false;
             }
@@ -1133,16 +1133,16 @@ export const liveSyncService = {
             return false;
         }
         
-        // Compare categories
-        if (board1.categories?.length !== board2.categories?.length) {
+        // Compare folders
+        if (board1.folders?.length !== board2.folders?.length) {
             return false;
         }
         
-        // Deep compare categories
-        if (board1.categories) {
-            for (let i = 0; i < board1.categories.length; i++) {
-                const cat1 = board1.categories[i];
-                const cat2 = board2.categories[i];
+        // Deep compare folders
+        if (board1.folders) {
+            for (let i = 0; i < board1.folders.length; i++) {
+                const cat1 = board1.folders[i];
+                const cat2 = board2.folders[i];
                 
                 if (cat1.title !== cat2.title ||
                     cat1.position?.left !== cat2.position?.left ||
@@ -1281,10 +1281,10 @@ export const liveSyncService = {
     fallbackDeserializeBoard(board) {
         const deserialized = { ...board };
         
-        // Deserialize categories with their files
-        if (deserialized.categories) {
-            deserialized.categories = deserialized.categories.map(category => {
-                const catCopy = { ...category };
+        // Deserialize folders with their files
+        if (deserialized.folders) {
+            deserialized.folders = deserialized.folders.map(folder => {
+                const catCopy = { ...folder };
                 // Deserialize file content (Quill Delta objects)
                 if (catCopy.files) {
                     catCopy.files = catCopy.files.map(file => {
@@ -1308,35 +1308,35 @@ export const liveSyncService = {
         return deserialized;
     },
     
-    // Manual category creation (with fallback if sync service not ready)
-    createCategoryManually(catData, index) {
-        if (window.syncService && window.syncService.createCategoryManually) {
-            return window.syncService.createCategoryManually(catData, index);
+    // Manual folder creation (with fallback if sync service not ready)
+    createFolderManually(catData, index) {
+        if (window.syncService && window.syncService.createFolderManually) {
+            return window.syncService.createFolderManually(catData, index);
         } else {
-            // Fallback manual category creation
-            Debug.liveSync.detail('syncService not available, using fallback category creation');
-            return this.fallbackCreateCategory(catData, index);
+            // Fallback manual folder creation
+            Debug.liveSync.detail('syncService not available, using fallback folder creation');
+            return this.fallbackCreateFolder(catData, index);
         }
     },
     
-    // Fallback category creation
-    fallbackCreateCategory(catData, index) {
+    // Fallback folder creation
+    fallbackCreateFolder(catData, index) {
         const canvas = document.getElementById('canvas');
         if (!canvas) return -1;
         
-        const categoryDiv = document.createElement('div');
-        categoryDiv.className = 'category';
-        categoryDiv.style.position = 'absolute';
-        categoryDiv.style.left = catData.position.left || (100 + index * 220) + 'px';
-        categoryDiv.style.top = catData.position.top || '100px';
-        categoryDiv.style.background = 'rgba(255, 255, 255, 0.1)';
-        categoryDiv.style.border = '1px solid rgba(255, 255, 255, 0.2)';
-        categoryDiv.style.borderRadius = '8px';
-        categoryDiv.style.padding = '16px';
-        categoryDiv.style.minWidth = '200px';
+        const folderDiv = document.createElement('div');
+        folderDiv.className = 'folder';
+        folderDiv.style.position = 'absolute';
+        folderDiv.style.left = catData.position.left || (100 + index * 220) + 'px';
+        folderDiv.style.top = catData.position.top || '100px';
+        folderDiv.style.background = 'rgba(255, 255, 255, 0.1)';
+        folderDiv.style.border = '1px solid rgba(255, 255, 255, 0.2)';
+        folderDiv.style.borderRadius = '8px';
+        folderDiv.style.padding = '16px';
+        folderDiv.style.minWidth = '200px';
         
         const titleDiv = document.createElement('div');
-        titleDiv.className = 'category-title';
+        titleDiv.className = 'folder-title';
         titleDiv.textContent = catData.title;
         titleDiv.style.fontWeight = 'bold';
         titleDiv.style.marginBottom = '12px';
@@ -1348,11 +1348,11 @@ export const liveSyncService = {
         filesGrid.style.flexDirection = 'column';
         filesGrid.style.gap = '8px';
         
-        categoryDiv.appendChild(titleDiv);
-        categoryDiv.appendChild(filesGrid);
-        canvas.appendChild(categoryDiv);
+        folderDiv.appendChild(titleDiv);
+        folderDiv.appendChild(filesGrid);
+        canvas.appendChild(folderDiv);
         
-        Debug.liveSync.detail(`Fallback created category: "${catData.title}"`);
+        Debug.liveSync.detail(`Fallback created folder: "${catData.title}"`);
         return index;
     }
 };

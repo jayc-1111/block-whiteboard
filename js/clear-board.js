@@ -2,14 +2,14 @@
 function clearBoard() {
     console.log('Clearing board...');
     
-    // Clear all categories
-    const categories = AppState.get('categories') || [];
-    categories.forEach(category => {
-        if (category.element) {
-            category.element.remove();
+    // Clear all folders
+    const folders = AppState.get('folders') || [];
+    folders.forEach(folder => {
+        if (folder.element) {
+            folder.element.remove();
         }
     });
-    AppState.set('categories', []);
+    AppState.set('folders', []);
     
     // Clear all canvas headers
     const canvasHeaders = document.querySelectorAll('.canvas-header');
@@ -26,7 +26,7 @@ function clearBoard() {
     const currentBoard = boards.find(b => b.id === currentBoardId);
     
     if (currentBoard) {
-        currentBoard.categories = [];
+        currentBoard.folders = [];
         currentBoard.canvasHeaders = [];
         currentBoard.drawings = [];
         AppState.set('boards', boards);

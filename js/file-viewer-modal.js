@@ -25,10 +25,10 @@ function initializeFileViewer() {
     const boards = AppState.get('boards') || [];
     console.log('📁 FILE VIEWER: Found boards:', boards.length);
     boards.forEach((board, i) => {
-        console.log(`  Board ${i}: "${board.name}" - Categories: ${board.categories?.length || 0}`);
-        if (board.categories) {
-            board.categories.forEach((cat, j) => {
-                console.log(`    Category ${j}: "${cat.title}" - Files: ${cat.files?.length || 0}`);
+        console.log(`  Board ${i}: "${board.name}" - Folders: ${board.folders?.length || 0}`);
+        if (board.folders) {
+            board.folders.forEach((cat, j) => {
+                console.log(`    Folder ${j}: "${cat.title}" - Files: ${cat.files?.length || 0}`);
                 if (cat.files) {
                     cat.files.forEach((file, k) => {
                         console.log(`      File ${k}: "${file.title}"`);
@@ -42,18 +42,18 @@ function initializeFileViewer() {
     fileViewerData.allFiles = [];
     
     boards.forEach(board => {
-        if (board.categories && board.categories.length > 0) {
-            board.categories.forEach(category => {
-                if (category.files && category.files.length > 0) {
-                    category.files.forEach(file => {
+        if (board.folders && board.folders.length > 0) {
+            board.folders.forEach(folder => {
+                if (folder.files && folder.files.length > 0) {
+                    folder.files.forEach(file => {
                         // Create file entry for each file
                         fileViewerData.allFiles.push({
-                            id: `${board.id}-${category.title}-${file.title}`,
+                            id: `${board.id}-${folder.title}-${file.title}`,
                             title: file.title,
                             content: file.content,
                             boardId: board.id,
                             boardName: board.name,
-                            categoryTitle: category.title,
+                            folderTitle: folder.title,
                             type: 'file',
                             lastModified: file.lastModified || new Date().toISOString(),
                             size: calculateFileSize(file),
@@ -126,9 +126,9 @@ function renderFileViewer() {
                 <line x1="8" y1="12" x2="16" y2="12"/>
             </svg>
             <h3>No Files Yet</h3>
-            <p>Create categories and add files to get started</p>
-            <button class="file-viewer-create-btn" onclick="closeFileViewerModal(); document.getElementById('addCategoryBtn').click();">
-                Create Category
+            <p>Create folders and add files to get started</p>
+            <button class="file-viewer-create-btn" onclick="closeFileViewerModal(); document.getElementById('addFolderBtn').click();">
+                Create Folder
             </button>
         `;
         fileList.appendChild(emptyState);
@@ -195,7 +195,7 @@ function createFileFile(file) {
     
     const meta = document.createElement('div');
     meta.className = 'file-viewer-meta';
-    meta.textContent = `${file.boardName} • ${file.categoryTitle} • ${file.size}`;
+    meta.textContent = `${file.boardName} • ${file.folderTitle} • ${file.size}`;
     info.appendChild(meta);
     
     file.appendChild(info);
@@ -264,11 +264,11 @@ function openFile(file) {
     setTimeout(() => {
         const canvas = document.getElementById('canvas');
         if (canvas) {
-            const categories = canvas.querySelectorAll('.category');
-            categories.forEach(category => {
-                const categoryTitle = category.querySelector('.category-title');
-                if (categoryTitle && categoryTitle.textContent === file.categoryTitle) {
-                    const files = category.querySelectorAll('.file');
+            const folders = canvas.querySelectorAll('.folder');
+            folders.forEach(folder => {
+                const folderTitle = folder.querySelector('.folder-title');
+                if (folderTitle && folderTitle.textContent === file.folderTitle) {
+                    const files = folder.querySelectorAll('.file');
                     files.forEach(file => {
                         const fileTitle = file.querySelector('.file-title');
                         if (fileTitle && fileTitle.textContent === file.title) {
@@ -294,13 +294,13 @@ function deleteFile(file) {
         const boards = AppState.get('boards') || [];
         const board = boards.find(b => b.id === file.boardId);
         
-        if (board && board.categories) {
+        if (board && board.folders) {
             // Find and remove the file from the board data
-            board.categories.forEach(category => {
-                if (category.title === file.categoryTitle && category.files) {
-                    const fileIndex = category.files.findIndex(file => file.title === file.title);
+            board.folders.forEach(folder => {
+                if (folder.title === file.folderTitle && folder.files) {
+                    const fileIndex = folder.files.findIndex(file => file.title === file.title);
                     if (fileIndex !== -1) {
-                        category.files.splice(fileIndex, 1);
+                        folder.files.splice(fileIndex, 1);
                     }
                 }
             });

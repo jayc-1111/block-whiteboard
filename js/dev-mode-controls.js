@@ -2,14 +2,45 @@
 function toggleDevMode() {
     const currentDevMode = AppState.get('isDevMode');
     const newDevMode = !currentDevMode;
-    
+
     Debug.ui.info('DevMode', `Dev Mode: ${currentDevMode ? 'OFF' : 'ON'}`);
-    
+
     AppState.set('isDevMode', newDevMode);
-    
+
     // Update global variable for compatibility
     window.isDevMode = newDevMode;
-    
+
+    // Handle live sync during dev mode toggle
+    if (newDevMode) {
+        // Disable live sync when entering dev mode
+        window.LIVE_SYNC_DISABLED = true;
+
+        // Stop active live sync listeners if service is running
+        if (window.liveSyncService && window.liveSyncService.stopLiveSync) {
+            Debug.ui.info('DevMode', 'Stopping live sync service for dev mode');
+            window.liveSyncService.stopLiveSync();
+        }
+
+        // Update dev overlay to show live sync status
+        if (window.setDevInfo) {
+            window.setDevInfo('liveSync', 'Disabled in Dev Mode');
+        }
+    } else {
+        // Re-enable live sync when exiting dev mode
+        window.LIVE_SYNC_DISABLED = false;
+
+        // Restart live sync if service exists
+        if (window.liveSyncService && window.liveSyncService.init) {
+            Debug.ui.info('DevMode', 'Re-enabling live sync service after dev mode exit');
+            window.liveSyncService.init();
+
+            // Update dev overlay to show live sync status (will be updated by service when started)
+            if (window.setDevInfo) {
+                window.setDevInfo('liveSync', false); // Will be set to true by service when ready
+            }
+        }
+    }
+
     // Toggle dev overlay visibility
     if (window.toggleDevOverlay) {
         window.toggleDevOverlay(newDevMode);
@@ -77,7 +108,7 @@ function updateDevBoardInfo() {
     window.setDevInfo('boardName', currentBoard?.name || 'Unknown');
     window.setDevInfo('boardId', currentBoardId);
     window.setDevInfo('totalBoards', boards.length);
-    window.setDevInfo('categoriesCount', currentBoard?.categories?.length || 0);
+    window.setDevInfo('foldersCount', currentBoard?.folders?.length || 0);
 }
 
 function toggleGridSnap() {

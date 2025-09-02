@@ -31,7 +31,7 @@
 
 /* Apply to specific elements */
 .custom-font-headers {
-    .category-title,
+    .folder-title,
     .canvas-header,
     .file-title {
         font-family: 'Claire Sans', 'Inter', sans-serif !important;

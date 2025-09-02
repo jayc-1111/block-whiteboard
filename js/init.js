@@ -55,8 +55,8 @@ function setupKeyboardShortcuts() {
                         addCanvasHeader();
                         break;
                     case 'ArrowDown':
-                        // Third button: Add Category
-                        createCategory();
+                        // Third button: Add Folder
+                        createFolder();
                         break;
                     case 'ArrowRight':
                         // Fourth button: Manual Save
@@ -72,8 +72,8 @@ function setupKeyboardShortcuts() {
         const selectedItems = AppState.get('selectedItems');
         if (e.key === 'Delete' && selectedItems.length > 0) {
             selectedItems.forEach(item => {
-                if (item.classList.contains('category')) {
-                    deleteCategory(item);
+                if (item.classList.contains('folder')) {
+                    deleteFolder(item);
                 } else if (item.classList.contains('canvas-header')) {
                     item.remove();
                 }
@@ -134,7 +134,7 @@ function setupEventBindings() {
     // Toolbar buttons in dropdown
     const addWhiteboardBtn = document.getElementById('addWhiteboardBtn');
     const addSuperHeaderBtn = document.getElementById('addSuperHeaderBtn');
-    const addCategoryBtn = document.getElementById('addCategoryBtn');
+    const addFolderBtn = document.getElementById('addFolderBtn');
     const saveWhiteboardBtn = document.getElementById('saveWhiteboardBtn');
     
     Debug.init.step('Binding toolbar buttons');
@@ -150,8 +150,8 @@ function setupEventBindings() {
     if (addSuperHeaderBtn) {
         addSuperHeaderBtn.addEventListener('click', () => addCanvasHeader());
     }
-    if (addCategoryBtn) {
-        addCategoryBtn.addEventListener('click', () => createCategory());
+    if (addFolderBtn) {
+        addFolderBtn.addEventListener('click', () => createFolder());
     }
     if (saveWhiteboardBtn) {
         saveWhiteboardBtn.addEventListener('click', manualSaveWhiteboard);
@@ -273,11 +273,11 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Prevent text selection while dragging
     document.addEventListener('selectstart', (e) => {
-        const currentCategory = AppState.get('currentCategory');
+        const currentFolder = AppState.get('currentFolder');
         const currentSuperHeader = AppState.get('currentSuperHeader');
         const isDraggingMultiple = AppState.get('isDraggingMultiple');
         const isSelecting = AppState.get('isSelecting');
-        if (currentCategory || currentSuperHeader || isDraggingMultiple || isSelecting) {
+        if (currentFolder || currentSuperHeader || isDraggingMultiple || isSelecting) {
             e.preventDefault();
         }
     });

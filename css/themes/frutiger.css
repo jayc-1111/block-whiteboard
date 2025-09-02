@@ -30,8 +30,8 @@
     z-index: -1;
 }
 
-/* Glassy categories with frosted effect */
-.frutiger-mode .category {
+/* Glassy folders with frosted effect */
+.frutiger-mode .folder {
     background: rgba(255, 255, 255, 0.3);
     backdrop-filter: blur(90px) saturate(140%) brightness(1);
     -webkit-backdrop-filter: blur(10px) saturate(140%) brightness(1);
@@ -44,7 +44,7 @@
     will-change: transform;
 }
 
-.frutiger-mode .category:hover {
+.frutiger-mode .folder:hover {
     background: rgba(255, 255, 255, 0.35);
     border-color: rgba(255, 255, 255, 0.7);
     box-shadow: 
@@ -52,7 +52,7 @@
         inset 0 2px 3px rgba(255, 255, 255, 0.8);
 }
 
-.frutiger-mode .category-title {
+.frutiger-mode .folder-title {
     color: #1a5490;
     text-shadow: 0 1px 0 rgba(255, 255, 255, 0.8);
 }
@@ -183,8 +183,8 @@ body.frutiger-mode [id="topBar"] {
     color: white !important;
 }
 
-/* Category header buttons */
-.frutiger-mode .category-header button {
+/* Folder header buttons */
+.frutiger-mode .folder-header button {
     background: rgba(255, 255, 255, 0.3);
     backdrop-filter: blur(2px);
     -webkit-backdrop-filter: blur(2px);
@@ -193,7 +193,7 @@ body.frutiger-mode [id="topBar"] {
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-.frutiger-mode .category-header button:hover {
+.frutiger-mode .folder-header button:hover {
     background: rgba(255, 255, 255, 0.5);
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 }

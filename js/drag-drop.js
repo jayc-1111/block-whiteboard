@@ -1,9 +1,9 @@
 // Drag and drop functionality
-function startCategoryDrag(e) {
+function startFolderDrag(e) {
     if (e.button !== 0) return;
     
-    const category = e.currentTarget.parentElement;
-    if (!category) return;
+    const folder = e.currentTarget.parentElement;
+    if (!folder) return;
     
     // Set dragging flag in sync service
     if (window.syncService) {
@@ -11,11 +11,11 @@ function startCategoryDrag(e) {
     }
     
     const selectedItems = AppState.get('selectedItems');
-    if (selectedItems.includes(category) && selectedItems.length > 1) {
+    if (selectedItems.includes(folder) && selectedItems.length > 1) {
         startMultiDrag(e);
     } else {
-        AppState.set('currentCategory', category);
-        category.classList.add('dragging');
+        AppState.set('currentFolder', folder);
+        folder.classList.add('dragging');
         
         const whiteboard = document.getElementById('whiteboard');
         const grid = document.getElementById('grid');
@@ -23,8 +23,8 @@ function startCategoryDrag(e) {
         const gridRect = grid.getBoundingClientRect();
         
         // Get current position - handle cases where style values might be empty
-        const currentLeft = parseFloat(category.style.left) || 0;
-        const currentTop = parseFloat(category.style.top) || 0;
+        const currentLeft = parseFloat(folder.style.left) || 0;
+        const currentTop = parseFloat(folder.style.top) || 0;
         
         const offset = { x: 0, y: 0 };
         offset.x = e.clientX - gridRect.left + whiteboard.scrollLeft - currentLeft;
@@ -32,14 +32,14 @@ function startCategoryDrag(e) {
         
         AppState.set('offset', offset);
         
-        document.addEventListener('mousemove', dragCategory);
-        document.addEventListener('mouseup', stopCategoryDrag);
+        document.addEventListener('mousemove', dragFolder);
+        document.addEventListener('mouseup', stopFolderDrag);
     }
 }
 
-function dragCategory(e) {
-    const currentCategory = AppState.get('currentCategory');
-    if (!currentCategory) return;
+function dragFolder(e) {
+    const currentFolder = AppState.get('currentFolder');
+    if (!currentFolder) return;
     
     const grid = document.getElementById('grid');
     const whiteboard = document.getElementById('whiteboard');
@@ -62,27 +62,27 @@ function dragCategory(e) {
     }
     
     // Use drag smoothing
-    DragSmoothing.start(currentCategory, x, y);
+    DragSmoothing.start(currentFolder, x, y);
     
-    const categoryRect = currentCategory.getBoundingClientRect();
-    updateGridSize(x, y, categoryRect.width, categoryRect.height);
+    const folderRect = currentFolder.getBoundingClientRect();
+    updateGridSize(x, y, folderRect.width, folderRect.height);
 }
 
-function stopCategoryDrag() {
-    const currentCategory = AppState.get('currentCategory');
-    if (currentCategory) {
-        currentCategory.classList.remove('dragging');
-        DragSmoothing.stop(currentCategory);
-        AppState.set('currentCategory', null);
+function stopFolderDrag() {
+    const currentFolder = AppState.get('currentFolder');
+    if (currentFolder) {
+        currentFolder.classList.remove('dragging');
+        DragSmoothing.stop(currentFolder);
+        AppState.set('currentFolder', null);
         
-        // Save after category drag completes
+        // Save after folder drag completes
         if (window.syncService) {
             window.syncService.isDragging = false;
-            window.syncService.saveAfterAction('category moved');
+            window.syncService.saveAfterAction('folder moved');
         }
     }
-    document.removeEventListener('mousemove', dragCategory);
-    document.removeEventListener('mouseup', stopCategoryDrag);
+    document.removeEventListener('mousemove', dragFolder);
+    document.removeEventListener('mouseup', stopFolderDrag);
 }
 
 // Super header drag is now handled directly in super-headers.js
@@ -178,9 +178,9 @@ function handleDrop(e) {
     const draggedFile = AppState.get('draggedFile');
     if (!draggedFile) return;
 
-    // Get the source and destination categories
-    const sourceCategory = draggedFile.closest('.category');
-    const destCategory = slot.closest('.category');
+    // Get the source and destination folders
+    const sourceFolder = draggedFile.closest('.folder');
+    const destFolder = slot.closest('.folder');
     
     // Swap files if slot is occupied
     if (slot.hasChildNodes() && slot.firstChild !== draggedFile) {
@@ -188,9 +188,9 @@ function handleDrop(e) {
         const draggedSlot = draggedFile.parentNode;
         draggedSlot.appendChild(existingFile);
         
-        // Update the swapped file's category reference
-        if (sourceCategory && existingFile) {
-            existingFile.dataset.categoryId = sourceCategory.id;
+        // Update the swapped file's folder reference
+        if (sourceFolder && existingFile) {
+            existingFile.dataset.folderId = sourceFolder.id;
         }
     }
 
@@ -199,33 +199,33 @@ function handleDrop(e) {
         slot.appendChild(draggedFile);
     }
     
-    // Update the dragged file's category reference
-    if (destCategory && draggedFile) {
-        draggedFile.dataset.categoryId = destCategory.id;
+    // Update the dragged file's folder reference
+    if (destFolder && draggedFile) {
+        draggedFile.dataset.folderId = destFolder.id;
     }
     
-    // Update AppState categories arrays
-    const categories = AppState.get('categories');
-    if (categories && sourceCategory && destCategory) {
-        // Find source category in AppState
-        const sourceCat = categories.find(c => c.element.id === sourceCategory.id);
-        // Find destination category in AppState
-        const destCat = categories.find(c => c.element.id === destCategory.id);
+    // Update AppState folders arrays
+    const folders = AppState.get('folders');
+    if (folders && sourceFolder && destFolder) {
+        // Find source folder in AppState
+        const sourceCat = folders.find(c => c.element.id === sourceFolder.id);
+        // Find destination folder in AppState
+        const destCat = folders.find(c => c.element.id === destFolder.id);
         
         if (sourceCat && destCat) {
-            // Remove file from source category's files array
+            // Remove file from source folder's files array
             const fileIndex = sourceCat.files.indexOf(draggedFile);
             if (fileIndex > -1) {
                 sourceCat.files.splice(fileIndex, 1);
             }
             
-            // Add file to destination category's files array if not already there
+            // Add file to destination folder's files array if not already there
             if (!destCat.files.includes(draggedFile)) {
                 destCat.files.push(draggedFile);
             }
             
             // Update AppState
-            AppState.set('categories', categories);
+            AppState.set('folders', folders);
         }
     }
 }

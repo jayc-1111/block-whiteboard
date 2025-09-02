@@ -16,7 +16,7 @@
 /* Smooth transitions for elements during scroll */
 .file,
 .super-header,
-.category-wrapper {
+.folder-wrapper {
     transition: none; /* Prevent conflicts with scroll animations */
 }
 

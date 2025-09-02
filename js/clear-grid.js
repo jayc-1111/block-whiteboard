@@ -14,12 +14,12 @@ function clearGrid() {
     }
 }
 
-// Clear grid and reset AppState categories
+// Clear grid and reset AppState folders
 function clearGridAndState() {
     clearGrid();
     
-    // Reset categories in AppState
-    AppState.set('categories', []);
+    // Reset folders in AppState
+    AppState.set('folders', []);
     
     // Clear any selected items
     AppState.set('selectedItems', []);
@@ -32,11 +32,11 @@ function gridHasContent() {
     const canvas = document.getElementById('canvas');
     if (!canvas) return false;
     
-    const categories = canvas.querySelectorAll('.category');
+    const folders = canvas.querySelectorAll('.folder');
     const headers = canvas.querySelectorAll('.canvas-header');
     const drawingAreas = canvas.querySelectorAll('.drawing-area');
     
-    return categories.length > 0 || headers.length > 0 || drawingAreas.length > 0;
+    return folders.length > 0 || headers.length > 0 || drawingAreas.length > 0;
 }
 
 // Make functions globally available

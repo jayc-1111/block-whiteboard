@@ -34,7 +34,7 @@ This document lists all files that have been marked for removal. Each file has b
 
 ### 5. live-sync-service.js
 - **Reason**: Live sync feature is disabled
-- **Issue**: Was causing duplicate categories and UI issues
+- **Issue**: Was causing duplicate folders and UI issues
 - **Status**: Disabled via `window.LIVE_SYNC_DISABLED = true`
 - **Path**: `firebase/live-sync-service.js`
 
@@ -107,6 +107,6 @@ rm css/dev-mode/live-sync.css
 ## Notes
 
 - All development utilities have been marked but not deleted yet
-- Live sync was causing duplicate category issues and has been disabled
+- Live sync was causing duplicate folder issues and has been disabled
 - The core functionality (auth, sync, boards) remains intact
 - No production features are affected by these removals

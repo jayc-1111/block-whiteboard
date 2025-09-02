@@ -44,7 +44,7 @@
 }
 
 .file.expanded .ql-editor {
-    background: #ffffff !important;  /* Match category background */
+    background: #ffffff !important;  /* Match folder background */
     color: #2D2D2D !important;  /* Dark text color */
     caret-color: #2D2D2D;
 }

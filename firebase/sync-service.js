@@ -155,21 +155,21 @@ export const syncService = {
         
         // Count content
         const localContent = {
-            categories: localBoard.categories?.length || 0,
-            files: localBoard.categories?.reduce((sum, cat) => sum + (cat.files?.length || 0), 0) || 0,
+            folders: localBoard.folders?.length || 0,
+            files: localBoard.folders?.reduce((sum, cat) => sum + (cat.files?.length || 0), 0) || 0,
             headers: localBoard.canvasHeaders?.length || 0,
             drawingPaths: localBoard.drawingPaths?.length || 0
         };
         
         const firebaseContent = {
-            categories: firebaseBoard.categories?.length || 0,
-            files: firebaseBoard.categories?.reduce((sum, cat) => sum + (cat.files?.length || 0), 0) || 0,
+            folders: firebaseBoard.folders?.length || 0,
+            files: firebaseBoard.folders?.reduce((sum, cat) => sum + (cat.files?.length || 0), 0) || 0,
             headers: firebaseBoard.canvasHeaders?.length || 0,
             drawingPaths: firebaseBoard.drawingPaths?.length || 0
         };
         
-        const localTotal = localContent.categories + localContent.files + localContent.headers;
-        const firebaseTotal = firebaseContent.categories + firebaseContent.files + firebaseContent.headers;
+        const localTotal = localContent.folders + localContent.files + localContent.headers;
+        const firebaseTotal = firebaseContent.folders + firebaseContent.files + firebaseContent.headers;
         
         Debug.sync.detail('Board comparison', {
             local: { time: new Date(localTime).toLocaleString(), content: localTotal },
@@ -214,7 +214,7 @@ export const syncService = {
                     Debug.sync.detail('Board from Firebase', {
                         id: board.id,
                         name: board.name,
-                        categoriesCount: board.categories?.length || 0,
+                        foldersCount: board.folders?.length || 0,
                         canvasHeadersCount: board.canvasHeaders?.length || 0,
                         hasCanvasHeaders: !!board.canvasHeaders
                     });
@@ -263,7 +263,7 @@ export const syncService = {
             }
             
             // Store board data before clearing
-            const boardCategories = board.categories || [];
+            const boardFolders = board.folders || [];
             const boardHeaders = board.canvasHeaders || [];
             const boardDrawingPaths = board.drawingPaths || [];
             
@@ -273,32 +273,32 @@ export const syncService = {
             } else {
                 // Fallback
                 if (canvas) canvas.innerHTML = '';
-                AppState.set('categories', []);
+                AppState.set('folders', []);
             }
             
             // Restore board data to AppState after clearing
             const boards = AppState.get('boards');
             const currentBoard = boards.find(b => b.id === board.id);
             if (currentBoard) {
-                currentBoard.categories = boardCategories;
+                currentBoard.folders = boardFolders;
                 currentBoard.canvasHeaders = boardHeaders;
                 currentBoard.drawingPaths = boardDrawingPaths;
                 AppState.set('boards', boards);
             }
             
-            // Load canvas headers FIRST to ensure they're in AppState before categories trigger saves
+            // Load canvas headers FIRST to ensure they're in AppState before folders trigger saves
             if (boardHeaders.length > 0) {
                 Debug.sync.step(`Loading ${boardHeaders.length} canvas headers`);
                 Debug.sync.detail('Header data', boardHeaders);
                 
-                // Add headers to board state immediately WITHOUT losing categories
+                // Add headers to board state immediately WITHOUT losing folders
                 const boards = AppState.get('boards');
                 const currentBoard = boards.find(b => b.id === board.id);
                 if (currentBoard) {
                     // Preserve existing data and only update headers
                     currentBoard.canvasHeaders = boardHeaders;
-                    // Make sure categories are preserved from the stored variable
-                    currentBoard.categories = boardCategories;
+                    // Make sure folders are preserved from the stored variable
+                    currentBoard.folders = boardFolders;
                     currentBoard.drawingPaths = boardDrawingPaths;
                     AppState.set('boards', boards);
                 }
@@ -335,26 +335,26 @@ export const syncService = {
                 Debug.sync.step('No canvas headers to load');
             }
             
-            // Load categories AFTER headers are in AppState
-            if (boardCategories && boardCategories.length > 0) {
-                Debug.sync.step(`Loading ${boardCategories.length} categories`);
-                Debug.sync.detail('Category data', boardCategories);
+            // Load folders AFTER headers are in AppState
+            if (boardFolders && boardFolders.length > 0) {
+                Debug.sync.step(`Loading ${boardFolders.length} folders`);
+                Debug.sync.detail('Folder data', boardFolders);
                 
-                // Add staggered delay when creating multiple categories
-                boardCategories.forEach((catData, index) => {
+                // Add staggered delay when creating multiple folders
+                boardFolders.forEach((catData, index) => {
                     setTimeout(() => {
-                        this.createCategoryFromData(catData, index);
-                    }, index * 200); // 200ms delay between each category
+                        this.createFolderFromData(catData, index);
+                    }, index * 200); // 200ms delay between each folder
                 });
             } else {
-                Debug.sync.step('No categories to load');
-                Debug.sync.detail('Board categories check', {
-                    boardParam: boardCategories,
-                    appStateBoard: AppState.get('boards').find(b => b.id === board.id)?.categories
+                Debug.sync.step('No folders to load');
+                Debug.sync.detail('Board folders check', {
+                    boardParam: boardFolders,
+                    appStateBoard: AppState.get('boards').find(b => b.id === board.id)?.folders
                 });
             }
             
-            // Load drawing paths AFTER categories and headers
+            // Load drawing paths AFTER folders and headers
             if (boardDrawingPaths && boardDrawingPaths.length > 0) {
                 Debug.sync.step(`Loading ${boardDrawingPaths.length} drawing paths`);
                 Debug.sync.detail('Drawing paths data', boardDrawingPaths);
@@ -394,40 +394,40 @@ export const syncService = {
         }
     },
     
-    // Create category from Firebase data
-    createCategoryFromData(catData, index) {
+    // Create folder from Firebase data
+    createFolderFromData(catData, index) {
         try {
             let catIndex;
             
-            if (typeof createCategory === 'function') {
-                catIndex = createCategory(
+            if (typeof createFolder === 'function') {
+                catIndex = createFolder(
                     catData.title,
                     parseInt(catData.position.left) || (100 + index * 220),
                     parseInt(catData.position.top) || 100
                 );
-                Debug.sync.detail(`Created category: "${catData.title}"`);
+                Debug.sync.detail(`Created folder: "${catData.title}"`);
             } else {
-                catIndex = this.createCategoryManually(catData, index);
+                catIndex = this.createFolderManually(catData, index);
             }
             
-            // Add files to the category with staggered delay
+            // Add files to the folder with staggered delay
             if (catData.files && catData.files.length > 0) {
                 catData.files.forEach((fileData, fileIndex) => {
                     setTimeout(() => {
-                        this.addFileToCategory(catIndex, fileData);
+                        this.addFileToFolder(catIndex, fileData);
                     }, (fileIndex + 1) * 150); // 150ms delay between files
                 });
             }
             
         } catch (error) {
-            Debug.sync.stepError(`Failed to create category "${catData.title}"`, error);
+            Debug.sync.stepError(`Failed to create folder "${catData.title}"`, error);
         }
     },
     
-    // Add file to category
-    addFileToCategory(catIndex, fileData) {
+    // Add file to folder
+    addFileToFolder(catIndex, fileData) {
         try {
-            if (typeof addFileToCategory === 'function') {
+            if (typeof addFileToFolder === 'function') {
                 // Pass bookmarks as 4th parameter and sections as 5th
                 console.log('💾 LOAD DEBUG: Loading file with sections', {
                     title: fileData.title,
@@ -436,7 +436,7 @@ export const syncService = {
                     sectionIds: fileData.sections?.map(s => s.id) || []
                 });
                 
-                const file = addFileToCategory(catIndex, fileData.title, fileData.content, fileData.bookmarks, fileData.sections);
+                const file = addFileToFolder(catIndex, fileData.title, fileData.content, fileData.bookmarks, fileData.sections);
                 Debug.sync.detail(`Added file: "${fileData.title}" with ${fileData.bookmarks?.length || 0} bookmarks and ${fileData.sections?.length || 0} sections`);
                 
                 if (fileData.sections?.length > 0) {
@@ -446,36 +446,36 @@ export const syncService = {
                     });
                 }
             } else {
-                Debug.sync.detail('addFileToCategory function not available');
+                Debug.sync.detail('addFileToFolder function not available');
             }
         } catch (error) {
             Debug.sync.stepError(`Failed to add file "${fileData.title}"`, error);
         }
     },
     
-    // Manual category creation (fallback)
-    createCategoryManually(catData, index) {
+    // Manual folder creation (fallback)
+    createFolderManually(catData, index) {
         const canvas = document.getElementById('canvas');
         if (!canvas) return -1;
         
-        const categoryDiv = document.createElement('div');
-        categoryDiv.className = 'category';
-        categoryDiv.style.position = 'absolute';
-        categoryDiv.style.left = catData.position.left || (100 + index * 220) + 'px';
-        categoryDiv.style.top = catData.position.top || '100px';
+        const folderDiv = document.createElement('div');
+        folderDiv.className = 'folder';
+        folderDiv.style.position = 'absolute';
+        folderDiv.style.left = catData.position.left || (100 + index * 220) + 'px';
+        folderDiv.style.top = catData.position.top || '100px';
         
         const titleDiv = document.createElement('div');
-        titleDiv.className = 'category-title';
+        titleDiv.className = 'folder-title';
         titleDiv.textContent = catData.title;
         
         const filesGrid = document.createElement('div');
         filesGrid.className = 'files-grid';
         
-        categoryDiv.appendChild(titleDiv);
-        categoryDiv.appendChild(filesGrid);
-        canvas.appendChild(categoryDiv);
+        folderDiv.appendChild(titleDiv);
+        folderDiv.appendChild(filesGrid);
+        canvas.appendChild(folderDiv);
         
-        Debug.sync.detail(`Manually created category: "${catData.title}"`);
+        Debug.sync.detail(`Manually created folder: "${catData.title}"`);
         return index;
     },
     
@@ -594,20 +594,20 @@ export const syncService = {
             Debug.sync.detail('Board data before save', {
                 boardId: board?.id,
                 boardName: board?.name,
-                categoriesCount: board?.categories?.length || 0,
+                foldersCount: board?.folders?.length || 0,
                 canvasHeadersCount: board?.canvasHeaders?.length || 0
             });
             
             if (board) {
                 // Check if board is empty to prevent data loss
-                const hasCategories = board.categories && board.categories.length > 0;
+                const hasFolders = board.folders && board.folders.length > 0;
                 const hasHeaders = board.canvasHeaders && board.canvasHeaders.length > 0;
                 const hasDrawings = board.drawingPaths && board.drawingPaths.length > 0;
                 
-                // Check if board has bookmarks even if categories appear empty
+                // Check if board has bookmarks even if folders appear empty
                 let totalBookmarks = 0;
-                if (board.categories) {
-                    board.categories.forEach(cat => {
+                if (board.folders) {
+                    board.folders.forEach(cat => {
                         if (cat.files) {
                             cat.files.forEach(file => {
                                 if (file.bookmarks && Array.isArray(file.bookmarks)) {
@@ -618,16 +618,16 @@ export const syncService = {
                     });
                 }
                 
-                if (!hasCategories && !hasHeaders && !hasDrawings) {
+                if (!hasFolders && !hasHeaders && !hasDrawings) {
                     console.log('[SYNC DEBUG] Skipping save - board is empty:', {
-                        categories: board.categories?.length || 0,
+                        folders: board.folders?.length || 0,
                         headers: board.canvasHeaders?.length || 0,
                         drawings: board.drawingPaths?.length || 0,
                         bookmarks: totalBookmarks
                     });
                     Debug.sync.step('Skipping save - board is empty');
                     Debug.sync.detail('Empty board check', {
-                        categories: board.categories?.length || 0,
+                        folders: board.folders?.length || 0,
                         headers: board.canvasHeaders?.length || 0,
                         drawings: board.drawingPaths?.length || 0,
                         bookmarks: totalBookmarks
@@ -720,7 +720,7 @@ export const syncService = {
                         boardId: board.id,
                         boardName: board.name,
                         timestamp: new Date().toISOString(),
-                        hasCategories: board.categories?.length > 0,
+                        hasFolders: board.folders?.length > 0,
                         hasHeaders: board.canvasHeaders?.length > 0,
                         hasDrawings: board.drawingPaths?.length > 0,
                         totalBookmarks: this.countBookmarks(board)
@@ -732,7 +732,7 @@ export const syncService = {
                         boardId: board.id,
                         boardName: board.name,
                         timestamp: new Date().toISOString(),
-                        hasCategories: board.categories?.length > 0,
+                        hasFolders: board.folders?.length > 0,
                         hasHeaders: board.canvasHeaders?.length > 0,
                         hasDrawings: board.drawingPaths?.length > 0,
                         totalBookmarks: this.countBookmarks(board)
@@ -794,10 +794,10 @@ export const syncService = {
         // Add dev mode status
         serialized.isDevMode = AppState.get('isDevMode');
         
-        // Serialize categories with their files
-        if (serialized.categories) {
-            serialized.categories = serialized.categories.map(category => {
-                const catCopy = { ...category };
+        // Serialize folders with their files
+        if (serialized.folders) {
+            serialized.folders = serialized.folders.map(folder => {
+                const catCopy = { ...folder };
                 // Serialize file content (Quill Delta objects)
                 if (catCopy.files) {
                     catCopy.files = catCopy.files.map(file => {
@@ -844,7 +844,7 @@ export const syncService = {
     // Deserialize board data from Firebase
     deserializeBoardFromFirebase(board) {
         Debug.sync.detail('Deserializing board', {
-            categoriesBeforeDeser: board.categories?.length || 0,
+            foldersBeforeDeser: board.folders?.length || 0,
             headersBeforeDeser: board.canvasHeaders?.length || 0
         });
         
@@ -859,10 +859,10 @@ export const syncService = {
             }
         }
         
-        // Deserialize categories with their files
-        if (deserialized.categories) {
-            deserialized.categories = deserialized.categories.map(category => {
-                const catCopy = { ...category };
+        // Deserialize folders with their files
+        if (deserialized.folders) {
+            deserialized.folders = deserialized.folders.map(folder => {
+                const catCopy = { ...folder };
                 // Deserialize file content (Quill Delta objects)
                 if (catCopy.files) {
                     catCopy.files = catCopy.files.map(file => {
@@ -900,7 +900,7 @@ export const syncService = {
         // Headers don't need special deserialization like files do
         
         Debug.sync.detail('Deserialized board result', {
-            categoriesAfterDeser: deserialized.categories?.length || 0,
+            foldersAfterDeser: deserialized.folders?.length || 0,
             headersAfterDeser: deserialized.canvasHeaders?.length || 0
         });
         
@@ -1008,10 +1008,10 @@ export const syncService = {
         }
         
         // Validate bookmark data structure
-        if (board.categories) {
-            for (const category of board.categories) {
-                if (category.files) {
-                    for (const file of category.files) {
+        if (board.folders) {
+            for (const folder of board.folders) {
+                if (folder.files) {
+                    for (const file of folder.files) {
                         if (file.bookmarks && Array.isArray(file.bookmarks)) {
                             for (const bookmark of file.bookmarks) {
                                 // Check for required bookmark fields
@@ -1099,7 +1099,7 @@ export const syncService = {
                     recommendations.push('Long descriptions detected');
                 }
                 if (analysis.totalFiles > 20) {
-                    recommendations.push('Too many files - consider splitting into multiple categories');
+                    recommendations.push('Too many files - consider splitting into multiple folders');
                 }
                 
                 if (recommendations.length > 0) {
@@ -1123,32 +1123,32 @@ export const syncService = {
         const analysis = {
             totalBookmarks: 0,
             totalFiles: 0,
-            totalCategories: 0,
+            totalFolders: 0,
             largestBookmarkSize: 0,
             largestBookmarkTitle: '',
             largeDescriptions: 0,
             largeImages: 0,
-            sizeByCategory: {},
+            sizeByFolder: {},
             bookmarkSizes: []
         };
         
-        if (board.categories) {
-            analysis.totalCategories = board.categories.length;
+        if (board.folders) {
+            analysis.totalFolders = board.folders.length;
             
-            board.categories.forEach(category => {
-                let categorySize = 0;
+            board.folders.forEach(folder => {
+                let folderSize = 0;
                 
-                if (category.files) {
-                    analysis.totalFiles += category.files.length;
+                if (folder.files) {
+                    analysis.totalFiles += folder.files.length;
                     
-                    category.files.forEach(file => {
+                    folder.files.forEach(file => {
                         if (file.bookmarks && Array.isArray(file.bookmarks)) {
                             file.bookmarks.forEach(bookmark => {
                                 analysis.totalBookmarks++;
                                 
                                 const bookmarkSize = JSON.stringify(bookmark).length;
                                 analysis.bookmarkSizes.push(bookmarkSize);
-                                categorySize += bookmarkSize;
+                                folderSize += bookmarkSize;
                                 
                                 if (bookmarkSize > analysis.largestBookmarkSize) {
                                     analysis.largestBookmarkSize = bookmarkSize;
@@ -1168,7 +1168,7 @@ export const syncService = {
                     });
                 }
                 
-                analysis.sizeByCategory[category.title || 'Untitled'] = categorySize;
+                analysis.sizeByFolder[folder.title || 'Untitled'] = folderSize;
             });
         }
         
@@ -1177,7 +1177,7 @@ export const syncService = {
     
     // Enhanced compression and cleanup for bookmark data before saving
     async cleanBookmarkData(board) {
-        if (!board.categories) return board;
+        if (!board.folders) return board;
         
         let cleaned = false;
         let totalSizeBefore = 0;
@@ -1190,9 +1190,9 @@ export const syncService = {
             console.error('[SYNC ERROR] Could not calculate initial board size:', e);
         }
         
-        for (const category of board.categories) {
-            if (category.files) {
-                for (const file of category.files) {
+        for (const folder of board.folders) {
+            if (folder.files) {
+                for (const file of folder.files) {
                     if (file.bookmarks && Array.isArray(file.bookmarks)) {
                         // Filter out invalid bookmarks
                         const validBookmarks = file.bookmarks.filter(bookmark => {
@@ -1223,9 +1223,9 @@ export const syncService = {
         }
         
         // Process async compression for all bookmarks
-        for (const category of board.categories) {
-            if (category.files) {
-                for (const file of category.files) {
+        for (const folder of board.folders) {
+            if (folder.files) {
+                for (const file of folder.files) {
                     if (file.bookmarks && Array.isArray(file.bookmarks)) {
                         for (const bookmark of file.bookmarks) {
                             // 1. Compress screenshots - reduce to 100KB max
@@ -1435,8 +1435,8 @@ export const syncService = {
     // Count total bookmarks in a board
     countBookmarks(board) {
         let count = 0;
-        if (board.categories) {
-            board.categories.forEach(cat => {
+        if (board.folders) {
+            board.folders.forEach(cat => {
                 if (cat.files) {
                     cat.files.forEach(file => {
                         if (file.bookmarks && Array.isArray(file.bookmarks)) {
@@ -1455,7 +1455,7 @@ export const syncService = {
         if (boards && boards.length > 0) {
             // Only store if state has content
             const hasContent = boards.some(board => 
-                (board.categories && board.categories.length > 0) ||
+                (board.folders && board.folders.length > 0) ||
                 (board.canvasHeaders && board.canvasHeaders.length > 0)
             );
             
@@ -1572,7 +1572,7 @@ export const syncService = {
         AppState.set('boards', [{
             id: 0,
             name: 'Board 1',
-            categories: [],
+            folders: [],
             canvasHeaders: []
         }]);
         AppState.set('currentBoardId', 0);

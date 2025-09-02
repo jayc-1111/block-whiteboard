@@ -1,56 +1,56 @@
-// Toggle category collapse/expand
-function toggleCategory(category) {
-    category.classList.toggle('collapsed');
+// Toggle folder collapse/expand
+function toggleFolder(folder) {
+    folder.classList.toggle('collapsed');
     
     // Save state after toggling
     if (window.syncService) {
-        window.syncService.saveAfterAction('category toggled');
+        window.syncService.saveAfterAction('folder toggled');
     }
 }
 
-// Category management
-function createCategory(title = 'New Folder', x = null, y = null) {
+// Folder management
+function createFolder(title = 'New Folder', x = null, y = null) {
     // Expose globally for file tree
-    window.createCategory = createCategory;
+    window.createFolder = createFolder;
     const canvas = document.getElementById('canvas');
     if (!canvas) {
         console.error('Canvas element not found');
         return -1;
     }
     
-    const category = document.createElement('div');
-    category.className = 'category';
-    const categories = AppState.get('categories');
-    category.dataset.categoryId = categories.length;
-    category.style.left = (x || Math.random() * 600 + 100) + 'px';
-    category.style.top = (y || Math.random() * 400 + 100) + 'px';
-    category.style.zIndex = AppState.getNextZIndex();
+    const folder = document.createElement('div');
+    folder.className = 'folder';
+    const folders = AppState.get('folders');
+    folder.dataset.folderId = folders.length;
+    folder.style.left = (x || Math.random() * 600 + 100) + 'px';
+    folder.style.top = (y || Math.random() * 400 + 100) + 'px';
+    folder.style.zIndex = AppState.getNextZIndex();
 
-    const categoryHeader = document.createElement('div');
-    categoryHeader.className = 'category-header';
+    const folderHeader = document.createElement('div');
+    folderHeader.className = 'folder-header';
 
-    const categoryTitle = document.createElement('div');
-    categoryTitle.className = 'category-title';
-    categoryTitle.contentEditable = true;
-    categoryTitle.textContent = title;
-    categoryTitle.dataset.placeholder = title;
-    categoryTitle.autocomplete = 'off';
-    categoryTitle.autocorrect = 'off';
-    categoryTitle.autocapitalize = 'off';
-    categoryTitle.spellcheck = false;
+    const folderTitle = document.createElement('div');
+    folderTitle.className = 'folder-title';
+    folderTitle.contentEditable = true;
+    folderTitle.textContent = title;
+    folderTitle.dataset.placeholder = title;
+    folderTitle.autocomplete = 'off';
+    folderTitle.autocorrect = 'off';
+    folderTitle.autocapitalize = 'off';
+    folderTitle.spellcheck = false;
 
-    categoryTitle.addEventListener('focus', function() {
+    folderTitle.addEventListener('focus', function() {
         if (this.textContent === this.dataset.placeholder) {
             this.textContent = '';
         }
     });
-    categoryTitle.addEventListener('blur', function() {
+    folderTitle.addEventListener('blur', function() {
         if (this.textContent.trim() === '') {
             this.textContent = this.dataset.placeholder;
         }
-        // Save after editing category title
+        // Save after editing folder title
         if (window.syncService) {
-            window.syncService.saveAfterAction('category title edited');
+            window.syncService.saveAfterAction('folder title edited');
         }
     });
 
@@ -60,7 +60,7 @@ function createCategory(title = 'New Folder', x = null, y = null) {
         <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m16 14-4-4-4 4"/>
     </svg>`;
     toggleBtn.style.display = 'inline-block';
-    toggleBtn.addEventListener('click', () => toggleCategory(category));
+    toggleBtn.addEventListener('click', () => toggleFolder(folder));
 
     const addFileBtn = document.createElement('button');
     addFileBtn.className = 'add-file-btn';
@@ -68,8 +68,8 @@ function createCategory(title = 'New Folder', x = null, y = null) {
         <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14m-7 7V5"/>
     </svg>`;
     addFileBtn.style.display = 'inline-block';
-    const categoryIndex = categories.length;
-    addFileBtn.addEventListener('click', () => addFileToCategory(categoryIndex));
+    const folderIndex = folders.length;
+    addFileBtn.addEventListener('click', () => addFileToFolder(folderIndex));
 
     const deleteBtn = document.createElement('button');
     deleteBtn.className = 'delete-btn';
@@ -91,9 +91,9 @@ function createCategory(title = 'New Folder', x = null, y = null) {
     deleteBtn.addEventListener('click', (e) => {
         e.stopPropagation();
         showConfirmDialog(
-            'Remove Category',
-            `Are you sure you want to remove "${categoryTitle.textContent}"?`,
-            () => deleteCategory(category)
+            'Remove Folder',
+            `Are you sure you want to remove "${folderTitle.textContent}"?`,
+            () => deleteFolder(folder)
         );
     });
 
@@ -103,8 +103,8 @@ function createCategory(title = 'New Folder', x = null, y = null) {
     headerButtons.appendChild(addFileBtn);
     headerButtons.appendChild(deleteBtn);
     
-    categoryHeader.appendChild(categoryTitle);
-    categoryHeader.appendChild(headerButtons);
+    folderHeader.appendChild(folderTitle);
+    folderHeader.appendChild(headerButtons);
 
     const filesGrid = document.createElement('div');
     filesGrid.className = 'files-grid';
@@ -127,71 +127,71 @@ function createCategory(title = 'New Folder', x = null, y = null) {
 
     // Create bottom section for toggle button
     const bottomSection = document.createElement('div');
-    bottomSection.className = 'category-bottom';
+    bottomSection.className = 'folder-bottom';
     bottomSection.appendChild(toggleBtn);
 
-    category.appendChild(categoryHeader);
-    category.appendChild(filesGrid);
-    category.appendChild(bottomSection);
+    folder.appendChild(folderHeader);
+    folder.appendChild(filesGrid);
+    folder.appendChild(bottomSection);
     // Note: expandSpaceBtn is kept but hidden - may be used in future
 
-    categoryHeader.addEventListener('mousedown', startCategoryDrag);
+    folderHeader.addEventListener('mousedown', startFolderDrag);
     
-    category.addEventListener('mousedown', (e) => {
+    folder.addEventListener('mousedown', (e) => {
         if (!e.shiftKey) clearSelection();
-        category.style.zIndex = AppState.getNextZIndex();
+        folder.style.zIndex = AppState.getNextZIndex();
     });
 
-    canvas.appendChild(category);
+    canvas.appendChild(folder);
 
-    const updatedCategories = [...categories, {
-        element: category,
+    const updatedFolders = [...folders, {
+        element: folder,
         files: []
     }];
-    AppState.set('categories', updatedCategories);
+    AppState.set('folders', updatedFolders);
     
-    // Save after creating category
+    // Save after creating folder
     if (window.syncService) {
-        window.syncService.saveAfterAction('category created');
+        window.syncService.saveAfterAction('folder created');
     }
 
-    return updatedCategories.length - 1;
+    return updatedFolders.length - 1;
 }
 
-function deleteCategory(category) {
-    const categories = AppState.get('categories');
-    const categoryIndex = parseInt(category.dataset.categoryId);
+function deleteFolder(folder) {
+    const folders = AppState.get('folders');
+    const folderIndex = parseInt(folder.dataset.folderId);
     
-    if (categoryIndex >= 0 && categoryIndex < categories.length) {
-        categories.splice(categoryIndex, 1);
+    if (folderIndex >= 0 && folderIndex < folders.length) {
+        folders.splice(folderIndex, 1);
         
-        categories.forEach((cat, index) => {
-            cat.element.dataset.categoryId = index;
+        folders.forEach((cat, index) => {
+            cat.element.dataset.folderId = index;
         });
         
-        AppState.set('categories', categories);
+        AppState.set('folders', folders);
         
-        // Save after deleting category
+        // Save after deleting folder
         if (window.syncService) {
-            window.syncService.saveAfterAction('category deleted');
+            window.syncService.saveAfterAction('folder deleted');
         }
     }
     
-    category.remove();
+    folder.remove();
 }
 
-function toggleCategory(category) {
-    const toggleBtn = category.querySelector('.toggle-btn');
+function toggleFolder(folder) {
+    const toggleBtn = folder.querySelector('.toggle-btn');
     
-    if (category.classList.contains('collapsed')) {
+    if (folder.classList.contains('collapsed')) {
         // Expand
-        category.classList.remove('collapsed');
+        folder.classList.remove('collapsed');
         toggleBtn.innerHTML = `<svg class="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
             <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m16 14-4-4-4 4"/>
         </svg>`;
     } else {
         // Collapse
-        category.classList.add('collapsed');
+        folder.classList.add('collapsed');
         toggleBtn.innerHTML = `<svg class="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
             <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m8 10 4 4 4-4"/>
         </svg>`;
@@ -199,16 +199,16 @@ function toggleCategory(category) {
     
     // Save state after toggling
     if (window.syncService) {
-        window.syncService.saveAfterAction('category toggled');
+        window.syncService.saveAfterAction('folder toggled');
     }
 }
 
-function startCategoryDrag(e) {
-    const category = e.target.closest('.category');
-    if (!category || e.target.classList.contains('delete-btn') || 
+function startFolderDrag(e) {
+    const folder = e.target.closest('.folder');
+    if (!folder || e.target.classList.contains('delete-btn') || 
         e.target.classList.contains('add-file-btn') || 
         e.target.classList.contains('toggle-btn') ||
-        e.target.classList.contains('category-title')) {
+        e.target.classList.contains('folder-title')) {
         return;
     }
     
@@ -219,26 +219,26 @@ function startCategoryDrag(e) {
     
     const isDraggingMultiple = AppState.get('isDraggingMultiple');
     const selectedItems = AppState.get('selectedItems');
-    if (isDraggingMultiple || (selectedItems.length > 1 && selectedItems.includes(category))) {
+    if (isDraggingMultiple || (selectedItems.length > 1 && selectedItems.includes(folder))) {
         startMultipleDrag(e);
         return;
     }
     
     const offset = {
-        x: e.clientX - category.getBoundingClientRect().left,
-        y: e.clientY - category.getBoundingClientRect().top
+        x: e.clientX - folder.getBoundingClientRect().left,
+        y: e.clientY - folder.getBoundingClientRect().top
     };
-    AppState.set('currentCategory', category);
+    AppState.set('currentFolder', folder);
     AppState.set('offset', offset);
     
-    document.addEventListener('mousemove', dragCategory);
-    document.addEventListener('mouseup', stopDragCategory);
+    document.addEventListener('mousemove', dragFolder);
+    document.addEventListener('mouseup', stopDragFolder);
 }
 
-function dragCategory(e) {
-    const currentCategory = AppState.get('currentCategory');
+function dragFolder(e) {
+    const currentFolder = AppState.get('currentFolder');
     const offset = AppState.get('offset');
-    if (!currentCategory) return;
+    if (!currentFolder) return;
     
     const whiteboard = document.getElementById('whiteboard');
     const rect = whiteboard.getBoundingClientRect();
@@ -251,21 +251,21 @@ function dragCategory(e) {
         y = Math.round(y / GRID_SIZE) * GRID_SIZE;
     }
     
-    currentCategory.style.left = x + 'px';
-    currentCategory.style.top = y + 'px';
+    currentFolder.style.left = x + 'px';
+    currentFolder.style.top = y + 'px';
     
-    updateCanvasSize(x, y, 350, currentCategory.offsetHeight);
+    updateCanvasSize(x, y, 350, currentFolder.offsetHeight);
 }
 
-function stopDragCategory() {
-    AppState.set('currentCategory', null);
-    document.removeEventListener('mousemove', dragCategory);
-    document.removeEventListener('mouseup', stopDragCategory);
+function stopDragFolder() {
+    AppState.set('currentFolder', null);
+    document.removeEventListener('mousemove', dragFolder);
+    document.removeEventListener('mouseup', stopDragFolder);
     
     // Unset dragging flag and save after drag completes
     if (window.syncService) {
         window.syncService.isDragging = false;
-        window.syncService.saveAfterAction('category drag');
+        window.syncService.saveAfterAction('folder drag');
     }
 }
 
@@ -309,15 +309,15 @@ function addSuperHeader(x = null, y = null) {
     grid.appendChild(superHeader);
 }
 
-function createCategoryFromData(catData) {
-    const catIndex = createCategory(catData.title, 
+function createFolderFromData(catData) {
+    const catIndex = createFolder(catData.title, 
         parseInt(catData.position.left), 
         parseInt(catData.position.top)
     );
     
-    const categories = AppState.get('categories');
-    const category = categories[catIndex];
-    const grid = category.element.querySelector('.files-grid');
+    const folders = AppState.get('folders');
+    const folder = folders[catIndex];
+    const grid = folder.element.querySelector('.files-grid');
     grid.innerHTML = '';
     for (let i = 0; i < CONSTANTS.INITIAL_FILE_SLOTS; i++) {
         const slot = createFileSlot();
@@ -326,7 +326,7 @@ function createCategoryFromData(catData) {
     
     if (catData.files) {
         catData.files.forEach(fileData => {
-            addFileToCategory(catIndex, fileData.title, fileData.content);
+            addFileToFolder(catIndex, fileData.title, fileData.content);
         });
     }
 }

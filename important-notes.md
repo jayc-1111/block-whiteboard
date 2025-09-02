@@ -1,15 +1,15 @@
 # Important Notes
 
-### Category Header Button Layout Fix (8/6/2025)
-- **Issue**: Category buttons were collapsing away from their proper position
+### Folder Header Button Layout Fix (8/6/2025)
+- **Issue**: Folder buttons were collapsing away from their proper position
 - **Solution**: 
   - Added missing toggle button to the headerButtons container in DOM
-  - Set category-title to flex: 1 with margin-right: 8px
+  - Set folder-title to flex: 1 with margin-right: 8px
   - Added flex-shrink: 0 to header-buttons container
-  - Added min-height: 24px to category-header
+  - Added min-height: 24px to folder-header
 - **Location**: 
-  - js/categories.js (line 95-97)
-  - css/items/widget/categories.css (lines 54-91)
+  - js/folders.js (line 95-97)
+  - css/items/widget/folders.css (lines 54-91)
 
 ### Bookmarks Button Added to Toolbar (8/6/2025)
 - **Feature**: Added "Your Bookmarks" button to main toolbar next to "Your Files"
@@ -111,13 +111,13 @@
 - **Solution**: Added validation to prevent empty boards from being saved to Firebase
 - **Changes**:
   - Added empty board validation in `sync-service.js` saveCurrentBoard method (lines ~450)
-  - Board must have at least one category, header, or drawing to save
+  - Board must have at least one folder, header, or drawing to save
   - Returns success but marks as skipped for empty boards
   - User document creation now uses setDoc with merge:true in firebase-config.js
 - **Key Learning**: Always validate board content before Firebase saves to prevent data loss
 
-### 7. Duplicate Categories from Live Sync
-- **Problem**: Categories appearing duplicated after creation due to live sync reloading UI
+### 7. Duplicate Folders from Live Sync
+- **Problem**: Folders appearing duplicated after creation due to live sync reloading UI
 - **Solution**: Disabled live sync and added local change detection
 - **Changes**:
   - Added `window.LIVE_SYNC_DISABLED = true` flag in index.html
@@ -127,7 +127,7 @@
 - **Key Learning**: Live sync can cause UI duplication when it reacts to your own saves
 
 ### 8. Duplicate Initial Board Load
-- **Problem**: Board loaded twice on startup causing duplicate categories
+- **Problem**: Board loaded twice on startup causing duplicate folders
 - **Solution**: Removed redundant board loads and added duplicate prevention
 - **Changes**:
   - Removed duplicate `loadBoardsFromFirebase()` calls from guest-auth-init.js
@@ -189,7 +189,7 @@
 ## Known Issues to Watch
 - Quill initialization timing can still be finicky with dynamic content
 - Element screenshot quality depends on html2canvas limitations (no cross-origin images)
-- Bookmark sidebar needs testing with multiple files/categories
+- Bookmark sidebar needs testing with multiple files/folders
 
 ## Development Notes
 - Always check console for detailed debug logs (debug.js provides comprehensive logging)
@@ -272,7 +272,7 @@
 - **Problem 2**: Files switching positions after refresh
 - **Root Cause**: Expanded files saved out of slot order
 - **Solutions**:
-  - Added bookmark restoration logging in addFileToCategory
+  - Added bookmark restoration logging in addFileToFolder
   - Fixed file save order by processing slots sequentially
   - Track originalSlotIndex when expanding files
   - Save expanded files in their original slot position
@@ -335,14 +335,14 @@
 
 ### 46. Bookmark Persistence Fix (8/9/2025)
 - **Problem**: Bookmarks disappearing after page refresh and files swapping positions
-- **Root Cause**: When loading files from saved data in `loadBoard()`, bookmarks weren't being passed to `addFileToCategory()`
+- **Root Cause**: When loading files from saved data in `loadBoard()`, bookmarks weren't being passed to `addFileToFolder()`
 - **Solution**: Updated `boards.js` to pass bookmarks as fourth parameter when loading files
 - **Code Change**: 
   ```javascript
   // Before:
-  addFileToCategory(catIndex, fileData.title, fileData.content);
+  addFileToFolder(catIndex, fileData.title, fileData.content);
   // After:
-  addFileToCategory(catIndex, fileData.title, fileData.content, fileData.bookmarks);
+  addFileToFolder(catIndex, fileData.title, fileData.content, fileData.bookmarks);
   ```
 - **Location**: `js/boards.js` line 303 in loadBoard function
 - **Key Learning**: Always check that all saved data is being passed through when restoring state
@@ -430,7 +430,7 @@
   - Removed bookmark sidebar div
   - Removed test bookmark button from toolbar
 - **Result**: Cleaned up codebase, removed unused bookmark system that was causing confusion
-- **Additional cleanup in `js/files.js`**: Removed hidden `file-bookmarks` div creation in `addFileToCategory` function
+- **Additional cleanup in `js/files.js`**: Removed hidden `file-bookmarks` div creation in `addFileToFolder` function
 
 ### 13. Applied Compact Bookmark Widget Styles to Bookmark Editor (8/5/2025)
 - **Problem**: Bookmark widgets inside bookmark-editor-widget still had large text and oversized elements
@@ -701,7 +701,7 @@
   - `index.html` - Script inclusion
 
 ### 29. Fixed File Tree Duplication Issue (8/7/2025)
-- **Problem**: File tree dropdown was showing duplicate categories and files
+- **Problem**: File tree dropdown was showing duplicate folders and files
 - **Root Cause**: 
   - `|| true` condition always refreshed tree on every hover
   - mouseenter event fired multiple times as mouse moved within element
@@ -723,39 +723,39 @@
 - **Key Learning**: MIME type mismatch usually means file doesn't exist at specified path
 
 ### 31. Fixed File Tree Not Showing Files (8/7/2025)
-- **Problem**: File tree dropdown showed categories but no files underneath them
+- **Problem**: File tree dropdown showed folders but no files underneath them
 - **Root Cause**: 
-  - Files are stored as DOM elements in `category.files` array
+  - Files are stored as DOM elements in `folder.files` array
   - File tree code was trying to access `file.title` on DOM elements
   - Should have been accessing `fileElement.querySelector('.file-title').textContent`
 - **Solution**: 
   - Updated populateFileTreeContent to extract titles from DOM elements
-  - Changed `category.title` to `category.element.querySelector('.category-title').textContent`
+  - Changed `folder.title` to `folder.element.querySelector('.folder-title').textContent`
   - Changed `file.title` to `fileElement.querySelector('.file-title').textContent`
   - Added null-safe fallbacks for untitled items
 - **Location**: `js/sidebar-menu.js` - populateFileTreeContent function
 - **Key Learning**: Always understand the actual data structure being used - DOM elements vs data objects
 
 ### 32. Enhanced File Tree Debugging (8/7/2025)
-- **Problem**: File tree showing "Unknown Category" despite setting category titles
+- **Problem**: File tree showing "Unknown Folder" despite setting folder titles
 - **Investigation**: Added comprehensive debugging to understand data structure
 - **Changes**:
   - Added logging for boards, currentBoardId, and board structure
-  - Added fallback to check both `currentBoard.categories` and `AppState.get('categories')`
-  - Enhanced category title extraction with detailed logging
+  - Added fallback to check both `currentBoard.folders` and `AppState.get('folders')`
+  - Enhanced folder title extraction with detailed logging
   - Enhanced file title extraction with null-safety checks
   - Added warnings when DOM elements or queries fail
-- **Purpose**: Determine whether categories are stored in board or AppState
+- **Purpose**: Determine whether folders are stored in board or AppState
 - **Location**: `js/sidebar-menu.js` - populateFileTreeContent function
 - **Next Step**: Test and see console output to identify the actual data structure issue
 
 ### 33. Fixed Dual Data Structure Issue in File Tree (8/7/2025)
-- **Problem**: File tree showing "Unknown Category" and "File element is not a valid DOM element"
+- **Problem**: File tree showing "Unknown Folder" and "File element is not a valid DOM element"
 - **Root Cause**: Two different data structures being used:
-  - **Live Categories**: `{ element: <DOM>, files: [<DOM elements>] }` (created in UI)
-  - **Saved Categories**: `{ title: "New Category", files: [{ title: "New File" }] }` (from Firebase)
+  - **Live Folders**: `{ element: <DOM>, files: [<DOM elements>] }` (created in UI)
+  - **Saved Folders**: `{ title: "New Folder", files: [{ title: "New File" }] }` (from Firebase)
 - **Solution**: Modified file tree to detect and handle both data structures:
-  - For categories: Check `category.element` first, then fallback to `category.title`
+  - For folders: Check `folder.element` first, then fallback to `folder.title`
   - For files: Check `fileElement.querySelector` first, then fallback to `fileElement.title`
   - Added appropriate logging for each structure type
 - **Files Changed**: `js/sidebar-menu.js` - populateFileTreeContent function
@@ -763,22 +763,22 @@
 - **Key Learning**: Always account for different data representations in the same system
 
 ### 34. Debugging File Save/Load Disconnect (8/7/2025)
-- **Problem**: Categories show correctly but files still not appearing in file tree
+- **Problem**: Folders show correctly but files still not appearing in file tree
 - **Investigation**: Console shows `files: []` in saved data despite files being created
 - **Root Cause**: Potential disconnect between file DOM placement and save process
 - **Debugging Added**:
   - **File Creation**: Logs when files are added, where placed, DOM verification
   - **Board Save**: Logs files found in DOM, titles, and final saved count
-  - **DOM Structure**: Verifies file hierarchy (category -> files-grid -> file-slot -> file)
+  - **DOM Structure**: Verifies file hierarchy (folder -> files-grid -> file-slot -> file)
 - **Expected DOM Structure**:
   ```
-  .category
+  .folder
   └── .files-grid
       └── .file-slot
           └── .file (this is what save looks for)
   ```
 - **Location**: 
-  - `js/files.js` - addFileToCategory function (file creation debugging)
+  - `js/files.js` - addFileToFolder function (file creation debugging)
   - `js/boards.js` - saveCurrentBoard function (save process debugging)
 - **Next**: Test file creation and check console for DOM placement vs save detection
 
@@ -786,14 +786,14 @@
 - **Problem**: Files being created and saved successfully but not appearing in file tree
 - **Root Cause**: File tree reading from stale Firebase data instead of live AppState data
 - **Evidence from Debug Logs**:
-  - ✅ **File Creation**: Files added to DOM correctly ("Total files now in category DOM: 4")
-  - ✅ **File Saving**: Files detected and saved ("Files saved for category: 3")
+  - ✅ **File Creation**: Files added to DOM correctly ("Total files now in folder DOM: 4")
+  - ✅ **File Saving**: Files detected and saved ("Files saved for folder: 3")
   - ❌ **File Tree**: Still showed `files: []` because reading from old Firebase data
 - **Solution**: Changed file tree priority to read from live AppState first:
-  - **Priority 1**: `AppState.get('categories')` (live data with DOM elements)
-  - **Priority 2**: `currentBoard.categories` (saved Firebase data)
+  - **Priority 1**: `AppState.get('folders')` (live data with DOM elements)
+  - **Priority 2**: `currentBoard.folders` (saved Firebase data)
 - **Technical Issue**: 
-  - **AppState**: Contains live categories with DOM elements and current files
+  - **AppState**: Contains live folders with DOM elements and current files
   - **currentBoard**: Contains stale Firebase data from last load
   - File tree was using currentBoard instead of live AppState
 - **Location**: `js/sidebar-menu.js` - populateFileTreeContent function
@@ -853,7 +853,7 @@
   - **Removed** all dropdown styling from `sidebar.css`
   - **Kept** only `#yourFilesItem { position: relative; }` for positioning
   - **Cleaned** up old hover styles that were affecting container
-- **Result**: Now only individual categories and files get blue hover, not the container
+- **Result**: Now only individual folders and files get blue hover, not the container
 - **Location**: 
   - `css/items/toolbar/sidebar.css` - Removed conflicting styles
   - `css/items/widget/file-tree-dropdown.css` - Now has full control
@@ -902,7 +902,7 @@
   - **Simpler**: No JavaScript timing issues
   - **Reliable**: Pure CSS hover states
   - **Fast**: Instant show/hide, no animations
-  - **Clean**: Only individual categories/files get blue hover
+  - **Clean**: Only individual folders/files get blue hover
 - **Location**: 
   - `js/sidebar-menu.js` - Removed complex hover handling
   - `css/items/widget/file-tree-dropdown.css` - Back to simple CSS
@@ -1018,7 +1018,7 @@
 - **Solution**: Added "Create New File" button in bookmark destination modal
 - **How it works**:
   - Shows blue "Create New File" button at top of tree
-  - If no categories exist, creates "Bookmarks" category
+  - If no folders exist, creates "Bookmarks" folder
   - Creates new file and adds bookmark immediately
   - Optionally expands file to show the new bookmark
   
@@ -1030,14 +1030,14 @@
 - **Fixes Applied**:
   - Fixed notification error with try/catch and proper function name
   - Enhanced modal close function to properly reset state
-  - Added category ID tracking to files (`file.dataset.categoryId`)
+  - Added folder ID tracking to files (`file.dataset.folderId`)
   - Modified board save to include expanded files
-  - Return file from `addFileToCategory` for proper reference
+  - Return file from `addFileToFolder` for proper reference
   
 - **Board Save Fix**:
   - When files are expanded, they move to `document.body`
   - Now checks for expanded files and includes them in save
-  - Tracks category ID to know where file belongs
+  - Tracks folder ID to know where file belongs
   - Bookmarks now saved with file data
   
 - **Extension Reset**:
@@ -1048,7 +1048,7 @@
 - **Files Updated**:
   - `bookmark-destination-selector.js` - Fixed notification error, improved modal reset
   - `boards.js` - Fixed save to include expanded files
-  - `files.js` - Added category tracking, file IDs, return statement
+  - `files.js` - Added folder tracking, file IDs, return statement
   - `content-script.js` - Improved error handling
   - `extension-bridge.js` - Added success logging
   - `background.js` - Added error boundaries to prevent crashes
@@ -1106,20 +1106,20 @@
 - **Root Causes**:
   1. Sections stored only on file DOM element (`file.sections`), not properly passed to Firebase
   2. `reinitializeModalLenis()` potentially losing section data when destroying/recreating Lenis
-  3. `addFileToCategory()` function not accepting sections parameter when loading from Firebase
+  3. `addFileToFolder()` function not accepting sections parameter when loading from Firebase
   4. Firebase sync service not passing sections when restoring files
 - **Debugging Added**:
   - Added comprehensive logging throughout section creation, save, and load flow
   - Track section IDs and bookmarks at each stage
   - Log when sections are backed up/restored during Lenis reinitialization
 - **Solution Implemented**:
-  1. **Fixed `addFileToCategory` signature**: Now accepts sections as 5th parameter
+  1. **Fixed `addFileToFolder` signature**: Now accepts sections as 5th parameter
   2. **Fixed Firebase loading**: `sync-service.js` now passes sections when creating files from Firebase  
   3. **Protected sections during Lenis reinit**: Added backup/restore of sections in `reinitializeModalLenis()`
   4. **Added debug logging**: Track sections throughout save/load cycle
 - **Files Modified**:
   - `js/files.js`: 
-    - Updated `addFileToCategory` to accept and store sections from Firebase
+    - Updated `addFileToFolder` to accept and store sections from Firebase
     - Enhanced `reinitializeModalLenis` to backup/restore sections
     - Added debug logging for section tracking
   - `js/boards.js`: Added debug logging for section saves

@@ -397,22 +397,22 @@
         const currentBoardId = AppState.get('currentBoardId');
         const board = boards.find(b => b.id === currentBoardId);
         
-        if (board && board.categories) {
-            const { categoryIndex, fileIndex } = file.appStateLocation;
-            if (board.categories[categoryIndex] && board.categories[categoryIndex].files[fileIndex]) {
+        if (board && board.folders) {
+            const { folderIndex, fileIndex } = file.appStateLocation;
+            if (board.folders[folderIndex] && board.folders[folderIndex].files[fileIndex]) {
                 if (section) {
                     // Update section bookmarks
-                    if (!board.categories[categoryIndex].files[fileIndex].sections) {
-                        board.categories[categoryIndex].files[fileIndex].sections = [];
+                    if (!board.folders[folderIndex].files[fileIndex].sections) {
+                        board.folders[folderIndex].files[fileIndex].sections = [];
                     }
                     
-                    const sectionIndex = board.categories[categoryIndex].files[fileIndex].sections.findIndex(s => s.id === section.id);
+                    const sectionIndex = board.folders[folderIndex].files[fileIndex].sections.findIndex(s => s.id === section.id);
                     if (sectionIndex !== -1) {
-                        board.categories[categoryIndex].files[fileIndex].sections[sectionIndex].bookmarks = 
+                        board.folders[folderIndex].files[fileIndex].sections[sectionIndex].bookmarks = 
                             isAdding ? [...section.bookmarks] : section.bookmarks.filter(b => b.id !== bookmarkToMove.id);
                     } else if (section.id) {
                         // Add new section if it doesn't exist
-                        board.categories[categoryIndex].files[fileIndex].sections.push({
+                        board.folders[folderIndex].files[fileIndex].sections.push({
                             id: section.id,
                             title: section.title || 'New Section',
                             content: section.content || null,
@@ -421,7 +421,7 @@
                     }
                 } else {
                     // Update file bookmarks
-                    board.categories[categoryIndex].files[fileIndex].bookmarks = 
+                    board.folders[folderIndex].files[fileIndex].bookmarks = 
                         isAdding ? [...file.bookmarks] : file.bookmarks.filter(b => b.id !== bookmarkToMove.id);
                 }
                 
@@ -435,21 +435,21 @@
         }
     }
     
-    // Create new file for bookmark with category selection
+    // Create new file for bookmark with folder selection
     function createNewFileForBookmark() {
-        // Get all categories
+        // Get all folders
         const canvas = document.getElementById('canvas');
-        const categories = canvas ? Array.from(canvas.querySelectorAll('.category')) : [];
+        const folders = canvas ? Array.from(canvas.querySelectorAll('.folder')) : [];
         
-        // If no categories exist, create a new one
-        if (categories.length === 0) {
-            if (window.createCategory) {
-                const newCategory = window.createCategory('Bookmarks', 200, 200);
-                if (newCategory >= 0) {
-                    const categories = AppState.get('categories');
-                    const category = categories[newCategory];
-                    if (category && window.addFileToCategory) {
-                        const newFile = window.addFileToCategory(newCategory, 'New Bookmark File');
+        // If no folders exist, create a new one
+        if (folders.length === 0) {
+            if (window.createFolder) {
+                const newFolder = window.createFolder('Bookmarks', 200, 200);
+                if (newFolder >= 0) {
+                    const folders = AppState.get('folders');
+                    const folder = folders[newFolder];
+                    if (folder && window.addFileToFolder) {
+                        const newFile = window.addFileToFolder(newFolder, 'New Bookmark File');
                         if (newFile) {
                             // Select the new file in the file tree
                             if (fileTree) {
@@ -466,31 +466,31 @@
             return;
         }
         
-        // Show category selection dialog
-        showCategorySelectionDialog(categories);
+        // Show folder selection dialog
+        showFolderSelectionDialog(folders);
     }
     
-    // Show category selection dialog
-    function showCategorySelectionDialog(categories) {
+    // Show folder selection dialog
+    function showFolderSelectionDialog(folders) {
         // Create dialog HTML
         let dialogHTML = `
-            <div id="categorySelectionDialog" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 10000001; display: flex; align-items: center; justify-content: center;">
+            <div id="folderSelectionDialog" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 10000001; display: flex; align-items: center; justify-content: center;">
                 <div style="background: #1a1a1a; border-radius: 12px; padding: 24px; width: 400px; max-width: 90%;">
-                    <h3 style="margin: 0 0 16px 0; color: #fff;">Select Category</h3>
+                    <h3 style="margin: 0 0 16px 0; color: #fff;">Select Folder</h3>
                     <p style="color: #999; margin-bottom: 20px;">Choose where to create the new file:</p>
                     
                     <div style="max-height: 200px; overflow-y: auto; margin-bottom: 20px;">
         `;
         
-        // Add existing categories
-        categories.forEach((category, index) => {
-            const titleElement = category.querySelector('.category-title');
-            const title = titleElement ? titleElement.textContent : `Category ${index + 1}`;
+        // Add existing folders
+        folders.forEach((folder, index) => {
+            const titleElement = folder.querySelector('.folder-title');
+            const title = titleElement ? titleElement.textContent : `Folder ${index + 1}`;
             dialogHTML += `
                 <div style="padding: 10px; margin: 5px 0; background: #2d2d2d; border-radius: 6px; cursor: pointer; transition: background 0.2s;" 
-                     data-category-index="${index}">
+                     data-folder-index="${index}">
                     <div style="font-weight: 500; color: #fff;">${title}</div>
-                    <div style="font-size: 12px; color: #999;">${category.querySelectorAll('.file').length} files</div>
+                    <div style="font-size: 12px; color: #999;">${folder.querySelectorAll('.file').length} files</div>
                 </div>
             `;
         });
@@ -499,8 +499,8 @@
                     </div>
                     
                     <div style="display: flex; gap: 10px;">
-                        <button id="createNewCategoryBtn" style="flex: 1; padding: 10px; background: #5353ff; color: white; border: none; border-radius: 6px; cursor: pointer;">Create New Category</button>
-                        <button id="cancelCategoryDialog" style="flex: 1; padding: 10px; background: #333; color: white; border: none; border-radius: 6px; cursor: pointer;">Cancel</button>
+                        <button id="createNewFolderBtn" style="flex: 1; padding: 10px; background: #5353ff; color: white; border: none; border-radius: 6px; cursor: pointer;">Create New Folder</button>
+                        <button id="cancelFolderDialog" style="flex: 1; padding: 10px; background: #333; color: white; border: none; border-radius: 6px; cursor: pointer;">Cancel</button>
                     </div>
                 </div>
             </div>
@@ -512,16 +512,16 @@
         document.body.appendChild(dialog);
         
         // Add event listeners
-        categories.forEach((category, index) => {
-            const categoryElement = dialog.querySelector(`[data-category-index="${index}"]`);
-            if (categoryElement) {
-                categoryElement.addEventListener('click', () => {
+        folders.forEach((folder, index) => {
+            const folderElement = dialog.querySelector(`[data-folder-index="${index}"]`);
+            if (folderElement) {
+                folderElement.addEventListener('click', () => {
                     // Remove dialog
                     dialog.remove();
                     
-                    // Create new file in selected category
-                    if (window.addFileToCategory) {
-                        const newFile = window.addFileToCategory(index, 'New Bookmark File');
+                    // Create new file in selected folder
+                    if (window.addFileToFolder) {
+                        const newFile = window.addFileToFolder(index, 'New Bookmark File');
                         if (newFile) {
                             // Select the new file in the file tree
                             if (fileTree) {
@@ -537,22 +537,22 @@
             }
         });
         
-        const createNewCategoryBtn = dialog.querySelector('#createNewCategoryBtn');
-        if (createNewCategoryBtn) {
-            createNewCategoryBtn.addEventListener('click', () => {
+        const createNewFolderBtn = dialog.querySelector('#createNewFolderBtn');
+        if (createNewFolderBtn) {
+            createNewFolderBtn.addEventListener('click', () => {
                 // Remove dialog
                 dialog.remove();
                 
-                // Ask for category name
-                const categoryName = prompt('Enter a name for the new category:', 'New Category');
-                if (categoryName !== null) {
-                    // Create new category
-                    if (window.createCategory) {
-                        const newCategoryIndex = window.createCategory(categoryName, 200, 200);
-                        if (newCategoryIndex >= 0) {
-                            // Create new file in the new category
-                            if (window.addFileToCategory) {
-                                const newFile = window.addFileToCategory(newCategoryIndex, 'New Bookmark File');
+                // Ask for folder name
+                const folderName = prompt('Enter a name for the new folder:', 'New Folder');
+                if (folderName !== null) {
+                    // Create new folder
+                    if (window.createFolder) {
+                        const newFolderIndex = window.createFolder(folderName, 200, 200);
+                        if (newFolderIndex >= 0) {
+                            // Create new file in the new folder
+                            if (window.addFileToFolder) {
+                                const newFile = window.addFileToFolder(newFolderIndex, 'New Bookmark File');
                                 if (newFile) {
                                     // Select the new file in the file tree
                                     if (fileTree) {
@@ -570,7 +570,7 @@
             });
         }
         
-        const cancelBtn = dialog.querySelector('#cancelCategoryDialog');
+        const cancelBtn = dialog.querySelector('#cancelFolderDialog');
         if (cancelBtn) {
             cancelBtn.addEventListener('click', () => {
                 // Remove dialog

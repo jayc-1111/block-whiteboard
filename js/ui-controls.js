@@ -113,7 +113,7 @@ document.addEventListener('DOMContentLoaded', () => {
         clearBoardOption.addEventListener('click', () => {
             showConfirmDialog(
                 'Clear Board',
-                'Are you sure you want to clear the entire board? This will remove all categories, files, headers, and drawings.',
+                'Are you sure you want to clear the entire board? This will remove all folders, files, headers, and drawings.',
                 () => {
                     clearBoard();
                 }

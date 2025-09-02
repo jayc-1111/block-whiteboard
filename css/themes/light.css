@@ -32,23 +32,23 @@
     background: #fff;
 }
 
-/* Categories */
-.light-mode .category {
+/* Folders */
+.light-mode .folder {
     background: #FFFFFF !important;
     border: 2px solid #ffffff !important;
     box-shadow: none !important;
 }
 
-.light-mode .category-header {
+.light-mode .folder-header {
     background: #FFFFFF !important;
     border-bottom: 1px solid #ffffff !important;
 }
 
-.light-mode .category-title {
+.light-mode .folder-title {
     color: #5c5c5c !important;
 }
 
-.light-mode .category-title::placeholder {
+.light-mode .folder-title::placeholder {
     color: #5c5c5c !important;
 }
 
@@ -358,7 +358,7 @@
 }
 
 /* ===================================
-   TOOLBAR - Match category styling
+   TOOLBAR - Match folder styling
    =================================== */
 .light-mode #topBar {
     background: #FFFFFF !important;
@@ -413,7 +413,7 @@
 }
 
 /* ===================================
-   sidebar MENU - Match category styling
+   sidebar MENU - Match folder styling
    =================================== */
 .light-mode #sidebarMenu .sidebar-btn {
     background: #FFFFFF !important;

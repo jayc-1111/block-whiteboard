@@ -43,8 +43,8 @@ function updateDevBoardInfo() {
     
     if (board) {
         window.setDevInfo?.('boardName', board.name);
-        window.setDevInfo?.('categories', board.categories?.length || 0);
-        const fileCount = board.categories?.reduce((sum, cat) => sum + (cat.files?.length || 0), 0) || 0;
+        window.setDevInfo?.('folders', board.folders?.length || 0);
+        const fileCount = board.folders?.reduce((sum, cat) => sum + (cat.files?.length || 0), 0) || 0;
         window.setDevInfo?.('files', fileCount);
     }
 }

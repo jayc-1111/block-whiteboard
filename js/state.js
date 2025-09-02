@@ -2,11 +2,11 @@
 const AppState = (() => {
     // Private state
     const state = {
-        categories: [],
+        folders: [],
         boards: [{
             id: 0,
             name: 'Board 1',
-            categories: [],
+            folders: [],
             canvasHeaders: [],
             drawingPaths: []
         }],
@@ -16,7 +16,7 @@ const AppState = (() => {
         
         // Drag state
         draggedFile: null,
-        currentCategory: null,
+        currentFolder: null,
         currentCanvasHeader: null,
         offset: { x: 0, y: 0 },
         expandedFile: null,
@@ -36,8 +36,8 @@ const AppState = (() => {
     
     // List of keys that should sync to global variables
     const globalSyncKeys = [
-        'categories', 'boards', 'currentBoardId', 'isDevMode', 'isGridSnapEnabled',
-        'draggedFile', 'currentCategory', 'currentCanvasHeader', 'offset', 
+        'folders', 'boards', 'currentBoardId', 'isDevMode', 'isGridSnapEnabled',
+        'draggedFile', 'currentFolder', 'currentCanvasHeader', 'offset', 
         'expandedFile', 'highestZIndex', 'selectedItems', 'isSelecting',
         'selectionStart', 'selectionRectangle', 'isDraggingMultiple', 'multiDragOffsets'
     ];
@@ -112,7 +112,7 @@ const AppState = (() => {
         },
         
         // Commonly used getters
-        getCategories: () => state.categories,
+        getFolders: () => state.folders,
         getBoards: () => state.boards,
         getCurrentBoardId: () => state.currentBoardId,
         getSelectedItems: () => state.selectedItems,
@@ -157,11 +157,11 @@ const AppState = (() => {
 })();
 
 // Initialize global references with proper fallbacks
-let categories = AppState.get('categories') || [];
+let folders = AppState.get('folders') || [];
 let boards = AppState.get('boards') || [{
     id: 0,
     name: 'Board 1',
-    categories: [],
+    folders: [],
     headers: [],
     drawingPaths: []
 }];
@@ -171,7 +171,7 @@ let isGridSnapEnabled = AppState.get('isGridSnapEnabled') !== false;
 
 // Drag and drop state
 let draggedFile = AppState.get('draggedFile') || null;
-let currentCategory = AppState.get('currentCategory') || null;
+let currentFolder = AppState.get('currentFolder') || null;
 let currentCanvasHeader = AppState.get('currentCanvasHeader') || null;
 let offset = AppState.get('offset') || { x: 0, y: 0 };
 let expandedFile = AppState.get('expandedFile') || null;

@@ -1,6 +1,6 @@
-/* Category blocks */
+/* Folder blocks */
 
-.category {
+.folder {
     position: absolute;
     background: #131313;
     border-radius: 12px;
@@ -11,32 +11,32 @@
     z-index: 1;
 }
 
-/* Category with background image borders */
-.with-background .category {
+/* Folder with background image borders */
+.with-background .folder {
     box-shadow: 
         0 0 0 2px #000,
         0 0 0 4px #e81cff,
         0 0 20px rgba(232, 28, 255, 0.5);
 }
 
-/* Category hover effects */
-.category {
+/* Folder hover effects */
+.folder {
     border: 1.7px solid transparent;
     transition: border 0.1s ease-in-out;
 }
 
-.category:hover {
+.folder:hover {
     border: 1.7px solid #3a5278;
     border-radius: 12px;
 }
 
-/* Category dragging state */
-.category.dragging {
+/* Folder dragging state */
+.folder.dragging {
     box-shadow: none;
 }
 
-/* Category selected state */
-.category.selected {
+/* Folder selected state */
+.folder.selected {
     background: #2c2c2c !important;
     border: none !important;
     box-shadow: 
@@ -48,8 +48,8 @@
     z-index: 10000 !important;
 }
 
-/* Category header */
-.category-header {
+/* Folder header */
+.folder-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -62,7 +62,7 @@
     margin-top: 18px;  /* Added top margin */
 }
 
-.category-title {
+.folder-title {
     color: #ffffff;
     font-size: 13px;
     font-weight: 700;
@@ -72,7 +72,7 @@
     cursor: text;
 }
 
-.category-title:focus {
+.folder-title:focus {
     outline: none;
     background: #333;
 }
@@ -86,7 +86,7 @@
     margin: 0;  /* Ensure no margin */
 }
 
-.category-header button {
+.folder-header button {
     width: 20px !important;
     height: 20px !important;
     padding: 0 !important;
@@ -102,43 +102,43 @@
     border: none;
 }
 
-.category-header button:hover {
+.folder-header button:hover {
     background: rgba(255, 255, 255, 0.2) !important;
     transform: none !important;
     box-shadow: 0 0 10px rgba(64, 201, 255, 0.3) !important;
 }
 
 /* Specific adjustments for SVG icons */
-.category-header .add-file-btn svg {
+.folder-header .add-file-btn svg {
     width: 16px;
     height: 16px;
     display: block;
     transition: transform 0.2s ease;
 }
 
-.category-header .add-file-btn:hover svg {
+.folder-header .add-file-btn:hover svg {
     transform: scale(1.1);
 }
 
-.category-header .delete-btn svg {
+.folder-header .delete-btn svg {
     width: 12px;
     height: 12px;
     display: block;
     transition: transform 0.2s ease;
 }
 
-.category-header .delete-btn:hover svg {
+.folder-header .delete-btn:hover svg {
     transform: scale(1.1) rotate(90deg);
 }
 
-/* Light mode adjustments for category buttons */
-.light-mode .category-header button {
+/* Light mode adjustments for folder buttons */
+.light-mode .folder-header button {
     background: rgba(0, 0, 0, 0.05) !important;
     color: #333;
     border: none;
 }
 
-.light-mode .category-header button:hover {
+.light-mode .folder-header button:hover {
     background: rgba(0, 0, 0, 0.1) !important;
     box-shadow: 0 0 8px rgba(0, 0, 0, 0.15) !important;
 }
@@ -153,27 +153,27 @@
     box-sizing: border-box;
 }
 
-.category.collapsed .files-grid {
+.folder.collapsed .files-grid {
     /* Keep grid visible but limit to 2 rows (4 files) */
 }
 
 /* Hide files after the 2nd one when collapsed */
-.category.collapsed .files-grid .file-slot:nth-child(n+3) {
+.folder.collapsed .files-grid .file-slot:nth-child(n+3) {
     display: none;
 }
 
-.category.collapsed .files-grid .file:nth-child(n+3) {
+.folder.collapsed .files-grid .file:nth-child(n+3) {
     display: none;
 }
 
-.category.collapsed .category-bottom {
+.folder.collapsed .folder-bottom {
     margin-top: 0;
     padding-top: 8px;
     border-top: none;
 }
 
-/* Category bottom section */
-.category-bottom {
+/* Folder bottom section */
+.folder-bottom {
     display: flex;
     justify-content: center;
     align-items: center;
@@ -182,7 +182,7 @@
 }
 
 /* Toggle button styles */
-.category-bottom .toggle-btn {
+.folder-bottom .toggle-btn {
     width: 30px !important;
     height: 20px !important;
     padding: 2px 5px !important;
@@ -196,12 +196,12 @@
     transition: all 0.2s ease;
 }
 
-.category-bottom .toggle-btn:hover {
+.folder-bottom .toggle-btn:hover {
     background: rgba(255, 255, 255, 0.1) !important;
     border-color: rgba(255, 255, 255, 0.2);
 }
 
-.category-bottom .toggle-btn svg {
+.folder-bottom .toggle-btn svg {
     width: 16px;
     height: 16px;
     display: block;
@@ -209,22 +209,22 @@
     /* No rotation needed - using different SVGs */
 }
 
-.category.collapsed .toggle-btn svg {
+.folder.collapsed .toggle-btn svg {
     /* No rotation needed - using different SVGs */
 }
 
 /* Light mode adjustments for toggle button */
-.light-mode .category-bottom {
+.light-mode .folder-bottom {
     border-top-color: rgba(0, 0, 0, 0.1);
 }
 
-.light-mode .category-bottom .toggle-btn {
+.light-mode .folder-bottom .toggle-btn {
     background: rgba(0, 0, 0, 0.02) !important;
     border: none;
     color: #333;
 }
 
-.light-mode .category-bottom .toggle-btn:hover {
+.light-mode .folder-bottom .toggle-btn:hover {
     background: rgba(0, 0, 0, 0.05) !important;
     border-color: rgba(0, 0, 0, 0.15);
 }
@@ -243,8 +243,8 @@
     background: #1a2332;
 }
 
-/* Glow effect for categories */
-@keyframes categoryGlow {
+/* Glow effect for folders */
+@keyframes folderGlow {
     0% {
         box-shadow: 0 0 5px rgba(59, 130, 246, 0.5);
     }
@@ -256,17 +256,17 @@
     }
 }
 
-.category.glow-effect {
-    animation: categoryGlow 1s ease-in-out infinite;
+.folder.glow-effect {
+    animation: folderGlow 1s ease-in-out infinite;
     z-index: 1000;
 }
 
 /* Light mode glow */
-.light-mode .category.glow-effect {
-    animation: categoryGlowLight 1s ease-in-out infinite;
+.light-mode .folder.glow-effect {
+    animation: folderGlowLight 1s ease-in-out infinite;
 }
 
-@keyframes categoryGlowLight {
+@keyframes folderGlowLight {
     0% {
         box-shadow: 0 0 5px rgba(59, 130, 246, 0.3);
     }

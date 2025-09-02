@@ -41,10 +41,10 @@
             } else {
                 boards.forEach(board => {
                     // Check board content
-                    const categories = board.categories || [];
-                    const fileCount = categories.reduce((sum, cat) => sum + (cat.files?.length || 0), 0);
+                    const folders = board.folders || [];
+                    const fileCount = folders.reduce((sum, cat) => sum + (cat.files?.length || 0), 0);
                     
-                    if (categories.length > 0) {
+                    if (folders.length > 0) {
                         html += `<li>
                             <details ${board.id === currentBoardId ? 'open' : ''}>
                                 <summary>
@@ -56,7 +56,7 @@
                                 </summary>
                                 <ul>`;
                         
-                        categories.forEach(cat => {
+                        folders.forEach(cat => {
                             if (cat.files?.length > 0) {
                                 html += `<li>
                                     <details>
@@ -118,7 +118,7 @@
                                 
                                 html += '</ul></details></li>';
                             } else {
-                                // No files in category
+                                // No files in folder
                                 html += `<li>
                                     <details>
                                         <summary style="opacity: 0.5;">

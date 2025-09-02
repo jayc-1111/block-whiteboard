@@ -59,7 +59,7 @@ function setupKeyboardShortcuts() {
 
 function selectAll() {
     clearSelection();
-    const allItems = [...document.querySelectorAll('.category'), ...document.querySelectorAll('.super-header')];
+    const allItems = [...document.querySelectorAll('.folder'), ...document.querySelectorAll('.super-header')];
     allItems.forEach(item => {
         if (item) selectItem(item);
     });
@@ -71,7 +71,7 @@ function duplicateSelected() {
     const newSelection = [];
     
     selectedItems.forEach(item => {
-        const isCategory = item.classList.contains('category');
+        const isFolder = item.classList.contains('folder');
         const clone = item.cloneNode(true);
         
         const x = parseInt(item.style.left) + 30;
@@ -81,8 +81,8 @@ function duplicateSelected() {
         clone.style.top = y + 'px';
         clone.classList.remove('selected');
         
-        if (isCategory) {
-            setupClonedCategory(clone);
+        if (isFolder) {
+            setupClonedFolder(clone);
         } else {
             setupClonedSuperHeader(clone);
         }
@@ -98,36 +98,36 @@ function duplicateSelected() {
     newSelection.forEach(item => selectItem(item));
 }
 
-function setupClonedCategory(clone) {
+function setupClonedFolder(clone) {
     if (!clone) return;
     
-    clone.dataset.categoryId = categories.length;
+    clone.dataset.folderId = folders.length;
     
     const toggleBtn = clone.querySelector('.toggle-btn');
     if (toggleBtn) {
-        toggleBtn.onclick = () => toggleCategory(clone);
+        toggleBtn.onclick = () => toggleFolder(clone);
     }
     
     const addFileBtn = clone.querySelector('.add-file-btn');
     if (addFileBtn) {
-        addFileBtn.onclick = () => addFileToCategory(categories.length);
+        addFileBtn.onclick = () => addFileToFolder(folders.length);
     }
     
     const deleteBtn = clone.querySelector('.delete-btn');
-    const categoryTitle = clone.querySelector('.category-title');
-    if (deleteBtn && categoryTitle) {
+    const folderTitle = clone.querySelector('.folder-title');
+    if (deleteBtn && folderTitle) {
         deleteBtn.onclick = (e) => {
         e.stopPropagation();
         showConfirmDialog(
-            'Remove Category',
-            `Are you sure you want to remove "${categoryTitle.textContent}"?`,
-            () => deleteCategory(clone)
+            'Remove Folder',
+            `Are you sure you want to remove "${folderTitle.textContent}"?`,
+            () => deleteFolder(clone)
         );
         };
     }
     
-    const categoryHeader = clone.querySelector('.category-header');
-    categoryHeader.addEventListener('mousedown', startCategoryDrag);
+    const folderHeader = clone.querySelector('.folder-header');
+    folderHeader.addEventListener('mousedown', startFolderDrag);
     
     clone.addEventListener('mousedown', (e) => {
         if (!e.shiftKey) clearSelection();
@@ -171,7 +171,7 @@ function setupClonedCategory(clone) {
         }
     });
     
-    categories.push({
+    folders.push({
         element: clone,
         files: []
     });
