@@ -1,80 +1,144 @@
-// Firebase configuration and initialization
-import { FirebaseErrorHandler, FirebaseDebugUtils } from './firebase-error-handler.js';
-import { initializeApp } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js";
-import { 
-    getAuth, 
-    signInWithEmailAndPassword, 
-    createUserWithEmailAndPassword,
-    signInWithPopup,
-    signInWithRedirect,
-    getRedirectResult,
-    GoogleAuthProvider,
-    signOut as firebaseSignOut,
-    onAuthStateChanged,
-    signInAnonymously,
-    linkWithCredential,
-    EmailAuthProvider,
-    GoogleAuthProvider as GoogleProvider,
-    linkWithPopup,
-    linkWithRedirect,
-    browserLocalPersistence,
-    setPersistence
-} from "https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js";
-import { 
-    getFirestore,
-    doc,
-    setDoc,
-    getDoc,
-    getDocs,
-    collection,
-    query,
-    orderBy,
-    deleteDoc,
-    serverTimestamp,
-    enableNetwork,
-    disableNetwork,
-    updateDoc
-} from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
+// === FIREBASE CONFIGURATION FILE (REPLACED WITH APPWRITE) ===
+// This file previously handled Firebase App initialization, Auth setup, and Firestore DB setup.
+// It exported three main services that need to be reimplemented with Appwrite:
+//
+// 1. authService: Handled user authentication and account management
+//    Key Functions (Previously Exported):
+//    - authService.signInAnonymously() → Appwrite: account.createAnonymousSession()
+//    - authService.signUp(email, password) → Appwrite: account.create() + account.createEmailSession()
+//    - authService.signIn(email, password) → Appwrite: account.createEmailSession()
+//    - authService.signInWithGoogle() → Appwrite: account.createOAuth2Session('google')
+//    - authService.signOut() → Appwrite: account.deleteSession('current')
+//    - authService.getCurrentUser() → Appwrite: account.get()
+//    - authService.onAuthStateChange(callback) → Custom implementation with Appwrite
+//    - authService.transferAnonymousData(fromUid, toUid) → Custom Appwrite implementation
+//    - authService.createUserProfile(user, isGuest) → Appwrite: databases.createDocument()
+//    - authService.updateUserProfileAfterLink(user) → Appwrite: databases.updateDocument()
+//
+// 2. dbService: Handled saving, loading, and deleting board data to/from Firestore
+//    Key Functions (Previously Exported):
+//    - dbService.saveBoard(boardData) → Appwrite: databases.createDocument() or databases.updateDocument()
+//    - dbService.loadBoards() → Appwrite: databases.listDocuments()
+//    - dbService.loadBoard(boardId) → Appwrite: databases.getDocument()
+//    - dbService.deleteBoard(boardId) → Appwrite: databases.deleteDocument()
+//    - dbService.getUserProfile() → Appwrite: databases.getDocument()
+//
+// 3. offlineService: Provided basic offline capability control
+//    Key Functions (Previously Exported):
+//    - offlineService.goOffline() → Custom implementation with Appwrite
+//    - offlineService.goOnline() → Custom implementation with Appwrite
+//
+// Original Firebase configuration was:
+// apiKey: "AIzaSyC0cgmwruNyna-KRs-T_uDRQ77g-oi-Zds"
+// authDomain: "zenban-fb04d.firebaseapp.com"
+// projectId: "zenban-fb04d"
+// storageBucket: "zenban-fb04d.firebasestorage.app"
+// messagingSenderId: "922934322238"
+// appId: "1:922934322238:web:f356f25b2d80306b379d6f"
+//
+// TODO: Replace with Appwrite configuration:
+// - Appwrite endpoint URL
+// - Appwrite project ID
+// - Appwrite database ID
+// - Appwrite collections for users and boards
+//
+// File backed up as firebase-config.js.BAK or logic replaced with this comment block.
 
-// Firebase configuration
-const firebaseConfig = {
-    apiKey: "AIzaSyC0cgmwruNyna-KRs-T_uDRQ77g-oi-Zds",
-    authDomain: "zenban-fb04d.firebaseapp.com",
-    projectId: "zenban-fb04d",
-    storageBucket: "zenban-fb04d.firebasestorage.app",
-    messagingSenderId: "922934322238",
-    appId: "1:922934322238:web:f356f25b2d80306b379d6f",
-    measurementId: "G-35KTYPS824"
-};
+/*
+// Original Firebase imports (commented out for reference):
+// import { FirebaseErrorHandler, FirebaseDebugUtils } from './firebase-error-handler.js';
+// import { initializeApp } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js";
+// import { 
+//     getAuth, 
+//     signInWithEmailAndPassword, 
+//     createUserWithEmailAndPassword,
+//     signInWithPopup,
+//     signInWithRedirect,
+//     getRedirectResult,
+//     GoogleAuthProvider,
+//     signOut as firebaseSignOut,
+//     onAuthStateChanged,
+//     signInAnonymously,
+//     linkWithCredential,
+//     EmailAuthProvider,
+//     GoogleAuthProvider as GoogleProvider,
+//     linkWithPopup,
+//     linkWithRedirect,
+//     browserLocalPersistence,
+//     setPersistence
+// } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js";
+// import { 
+//     getFirestore,
+//     doc,
+//     setDoc,
+//     getDoc,
+//     getDocs,
+//     collection,
+//     query,
+//     orderBy,
+//     deleteDoc,
+//     serverTimestamp,
+//     enableNetwork,
+//     disableNetwork,
+//     updateDoc
+// } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
+*/
+
+/*
+// Original Firebase configuration (commented out for reference):
+// const firebaseConfig = {
+//     apiKey: "AIzaSyC0cgmwruNyna-KRs-T_uDRQ77g-oi-Zds",
+//     authDomain: "zenban-fb04d.firebaseapp.com",
+//     projectId: "zenban-fb04d",
+//     storageBucket: "zenban-fb04d.firebasestorage.app",
+//     messagingSenderId: "922934322238",
+//     appId: "1:922934322238:web:f356f25b2d80306b379d6f",
+//     measurementId: "G-35KTYPS824"
+// };
 
 // Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
-const googleProvider = new GoogleAuthProvider();
+// const app = initializeApp(firebaseConfig);
+// const auth = getAuth(app);
+// const db = getFirestore(app);
+// const googleProvider = new GoogleAuthProvider();
 
 // Set auth persistence to local (survives page refresh)
-setPersistence(auth, browserLocalPersistence).catch((error) => {
-    console.error('Failed to set auth persistence:', error);
-});
+// setPersistence(auth, browserLocalPersistence).catch((error) => {
+//     console.error('Failed to set auth persistence:', error);
+// });
 
 // Make db globally available for live sync
-window.db = db;
+// window.db = db;
 
 // Make authService globally available for environment checks
-window.authService = null; // Will be set after export
+// window.authService = null; // Will be set after export
 
 // Auth state observer
-let currentUser = null;
-const authStateCallbacks = [];
+// let currentUser = null;
+// const authStateCallbacks = [];
 
-onAuthStateChanged(auth, (user) => {
-    currentUser = user;
-    authStateCallbacks.forEach(callback => callback(user));
-});
+// onAuthStateChanged(auth, (user) => {
+//     currentUser = user;
+//     authStateCallbacks.forEach(callback => callback(user));
+// });
+*/
 
-// Auth functions
-export const authService = {
+// TODO: Implement authService with Appwrite
+// The authService object provided these authentication functions:
+// - signInAnonymously(): Create anonymous session for guest users
+// - signUp(email, password): Create new user account and sign in
+// - signIn(email, password): Sign in existing user
+// - signInWithGoogle(): OAuth sign-in with Google
+// - transferAnonymousData(fromUid, toUid): Transfer guest data to real account
+// - signOut(): Sign out current user
+// - createUserProfile(user, isGuest): Create user profile document
+// - updateUserProfileAfterLink(user): Update profile after account linking
+// - getCurrentUser(): Get currently authenticated user
+// - onAuthStateChange(callback): Subscribe to auth state changes
+// - checkRedirectResult(): Check for OAuth redirect results
+
+/*
+// Original authService implementation (commented out for reference):
     // Sign in anonymously (guest account)
     async signInAnonymously() {
         try {
@@ -312,12 +376,23 @@ export const authService = {
         };
     }
 };
+*/
 
 // Set global reference for environment checks
-window.authService = authService;
+// window.authService = authService;
 
+// TODO: Implement dbService with Appwrite
+// The dbService object provided these database functions:
+// - saveBoard(boardData): Save board to cloud database  → Appwrite: databases.createDocument() or databases.updateDocument()
+// - loadBoards(): Load all boards for current user  → Appwrite: databases.listDocuments()
+// - loadBoard(boardId): Load specific board by ID  → Appwrite: databases.getDocument()
+// - deleteBoard(boardId): Delete board from cloud database  → Appwrite: databases.deleteDocument()
+// - getUserProfile(): Get current user's profile data  → Appwrite: databases.getDocument()
+
+/*
+// Original dbService implementation (commented out for reference):
 // Database functions
-export const dbService = {
+// export const dbService = {
     // Save board
     async saveBoard(boardData) {
         if (!currentUser) return { success: false, error: 'Not authenticated' };
@@ -573,15 +648,65 @@ export const dbService = {
             return { success: false, error: error.message };
         }
     }
-};
+//     ... (Full dbService implementation commented out - see firebase-config.js.BAK)
+// };
+*/
 
+// TODO: Implement offlineService with Appwrite
+// The offlineService object provided these offline capability functions:
+// - goOffline(): Disable network operations  → Custom implementation with Appwrite
+// - goOnline(): Enable network operations  → Custom implementation with Appwrite
+
+/*
+// Original offlineService implementation (commented out for reference):
 // Offline support
-export const offlineService = {
-    async goOffline() {
-        await disableNetwork(db);
-    },
+// export const offlineService = {
+//     async goOffline() {
+//         await disableNetwork(db);
+//     },
+// 
+//     async goOnline() {
+//         await enableNetwork(db);
+//     }
+// };
+*/
 
-    async goOnline() {
-        await enableNetwork(db);
-    }
+// ==================================================================
+// STUB EXPORTS - Prevent import errors while Firebase is disabled
+// ==================================================================
+// These are placeholder exports that return errors or no-ops
+// Replace with actual Appwrite implementations
+
+export const authService = {
+    signInAnonymously: async () => ({ success: false, error: 'Firebase disabled - implement with Appwrite' }),
+    signUp: async () => ({ success: false, error: 'Firebase disabled - implement with Appwrite' }),
+    signIn: async () => ({ success: false, error: 'Firebase disabled - implement with Appwrite' }),
+    signInWithGoogle: async () => ({ success: false, error: 'Firebase disabled - implement with Appwrite' }),
+    signOut: async () => ({ success: false, error: 'Firebase disabled - implement with Appwrite' }),
+    getCurrentUser: () => null,
+    onAuthStateChange: (callback) => {
+        console.warn('Firebase authService disabled - implement with Appwrite');
+        callback(null); // Call immediately with no user
+        return () => {}; // Return unsubscribe function
+    },
+    transferAnonymousData: async () => ({ success: false, error: 'Firebase disabled - implement with Appwrite' }),
+    createUserProfile: async () => ({ success: false, error: 'Firebase disabled - implement with Appwrite' }),
+    updateUserProfileAfterLink: async () => ({ success: false, error: 'Firebase disabled - implement with Appwrite' }),
+    checkRedirectResult: async () => ({ success: false, noResult: true })
 };
+
+export const dbService = {
+    saveBoard: async () => ({ success: false, error: 'Firebase disabled - implement with Appwrite' }),
+    loadBoards: async () => ({ success: false, error: 'Firebase disabled - implement with Appwrite' }),
+    loadBoard: async () => ({ success: false, error: 'Firebase disabled - implement with Appwrite' }),
+    deleteBoard: async () => ({ success: false, error: 'Firebase disabled - implement with Appwrite' }),
+    getUserProfile: async () => ({ success: false, error: 'Firebase disabled - implement with Appwrite' })
+};
+
+export const offlineService = {
+    goOffline: async () => console.warn('Firebase offlineService disabled - implement with Appwrite'),
+    goOnline: async () => console.warn('Firebase offlineService disabled - implement with Appwrite')
+};
+
+// Set global reference (for compatibility)
+window.authService = authService;

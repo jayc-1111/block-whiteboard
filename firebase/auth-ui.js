@@ -1,6 +1,93 @@
-// Authentication UI and logic - CSP compliant version
-import { authService } from './firebase-config.js';
-import { setAuthInProgress } from './guest-auth-init.js';
+// === FIREBASE AUTHENTICATION UI (REPLACED WITH APPWRITE) ===
+// This file previously handled the authentication user interface and logic.
+// It managed the auth modal, sign-in/sign-up forms, Google OAuth, and UI state updates.
+//
+// Key Functions (Previously Exported):
+// - authUI.init(): Initialize auth UI, modals, and event listeners
+// - authUI.show(): Display authentication modal
+// - authUI.hide(): Hide authentication modal
+// - authUI.switchToSignIn(): Switch modal to sign-in mode
+// - authUI.switchToSignUp(): Switch modal to sign-up mode
+// - authUI.handleSubmit(): Handle email/password form submission
+// - authUI.signInWithGoogle(): Handle Google OAuth sign-in
+// - authUI.signOut(): Sign out current user
+// - authUI.addAuthButton(): Add auth button to toolbar
+// - authUI.updateUIForUser(): Update UI based on auth state
+// - authUI.addUserInfoTosidebar(): Add user info to sidebar
+// - authUI.updateUserInfoForsidebar(): Update sidebar user info
+// - authUI.showError(): Display error messages
+// - authUI.clearErrors(): Clear error messages
+//
+// UI Components Created:
+// - Auth modal with sign-in/sign-up tabs
+// - Email/password input fields
+// - Google sign-in button
+// - Auth button in toolbar (Sign In / User Menu)
+// - User info display in sidebar
+// - Error message display
+//
+// Auth State Management:
+// - Listens to authService.onAuthStateChange()
+// - Updates toolbar auth button (Sign In / Sign Out)
+// - Shows user email or guest ID in toolbar and sidebar
+// - Handles guest account vs authenticated user states
+// - Manages auth-in-progress flag to prevent conflicts
+//
+// Modal Behavior:
+// - CSP-compliant (no inline event handlers)
+// - Popup-based Google auth (not redirect)
+// - Email authentication fallback for browser restrictions
+// - Form validation and error handling
+// - Prevents guest account creation during auth
+//
+// TODO: Reimplement with Appwrite:
+// - Replace authService calls with Appwrite account methods
+// - Update Google OAuth to use Appwrite.account.createOAuth2Session()
+// - Replace Firebase auth state listener with Appwrite events
+// - Update error handling for Appwrite error format
+// - Modify user profile creation to use Appwrite databases
+//
+// Original file backed up as auth-ui.js.BAK or logic replaced with this comment block.
+
+/*
+// Original Firebase imports (commented out for reference):
+/*
+// Original Firebase imports (commented out for reference):
+// import { authService } from './firebase-config.js';
+// import { setAuthInProgress } from './guest-auth-init.js';
+*/
+
+// ==================================================================
+// STUB EXPORTS - Prevent import errors while Firebase is disabled
+// ==================================================================
+// These are placeholder exports that return errors or no-ops
+// Replace with actual Appwrite implementations
+
+export const authUI = {
+    init: () => console.warn('Firebase authUI disabled - implement with Appwrite'),
+    show: () => console.warn('Firebase authUI disabled - implement with Appwrite'),
+    hide: () => console.warn('Firebase authUI disabled - implement with Appwrite'),
+    switchToSignIn: () => console.warn('Firebase authUI disabled - implement with Appwrite'),
+    switchToSignUp: () => console.warn('Firebase authUI disabled - implement with Appwrite'),
+    handleSubmit: async () => console.warn('Firebase authUI disabled - implement with Appwrite'),
+    signInWithGoogle: async () => console.warn('Firebase authUI disabled - implement with Appwrite'),
+    signOut: async () => console.warn('Firebase authUI disabled - implement with Appwrite'),
+    addAuthButton: () => console.warn('Firebase authUI disabled - implement with Appwrite'),
+    updateUIForUser: () => console.warn('Firebase authUI disabled - implement with Appwrite'),
+    addUserInfoTosidebar: () => console.warn('Firebase authUI disabled - implement with Appwrite'),
+    updateUserInfoForsidebar: () => console.warn('Firebase authUI disabled - implement with Appwrite'),
+    showError: () => console.warn('Firebase authUI disabled - implement with Appwrite'),
+    clearErrors: () => console.warn('Firebase authUI disabled - implement with Appwrite'),
+    // Internal properties (for compatibility)
+    isSignIn: false,
+    modal: null
+};
+
+// Set global reference (for compatibility)
+window.authUI = authUI;
+
+/*
+// Original authUI implementation (commented out for reference):
 
 // Create auth modal HTML without inline event handlers
 function createAuthModal() {
@@ -689,3 +776,9 @@ export const authUI = {
         }
     }
 };
+
+// ... (Full authUI implementation commented out - see auth-ui.js.BAK)
+// ... (Includes: createAuthModal, setupEventListeners, auth form handling)
+// ... (Google OAuth, UI state management, error handling, event listeners)
+// ... (Toolbar auth button, sidebar user info, modal behavior)
+*/

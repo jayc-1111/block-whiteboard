@@ -1,5 +1,70 @@
-// Guest authentication initialization - Fixed to not interfere with real auth
-import { authService } from './firebase-config.js';
+// === FIREBASE GUEST AUTHENTICATION INITIALIZATION (REPLACED WITH APPWRITE) ===
+// This file previously handled automatic guest account creation and initialization.
+// It managed guest session persistence, auth state monitoring, and conflict prevention.
+//
+// Key Functions (Previously Exported):
+// - initializeGuestAuth(): Create guest account if no user is authenticated
+// - setAuthInProgress(inProgress): Flag to prevent conflicts during auth
+//
+// Guest Account Management:
+// - Automatic anonymous sign-in for new users
+// - LocalStorage persistence of guest ID
+// - Cooldown period to prevent rapid guest account creation
+// - Auth state monitoring to detect existing sessions
+// - Guest session validation and cleanup
+//
+// Conflict Prevention:
+// - Prevents guest creation during real auth attempts
+// - Avoids duplicate guest accounts
+// - Manages auth-in-progress flag
+// - Coordinates with auth UI modal
+//
+// Session Persistence:
+// - Stores guest ID in localStorage
+// - Validates stored session against current user
+// - Clears invalid sessions
+// - Updates stored ID when session changes
+//
+// Initialization Flow:
+// 1. Wait for Firebase Auth to be ready
+// 2. Check for existing authenticated user
+// 3. Validate stored guest ID against current session
+// 4. Create new guest account if none exists
+// 5. Set up auth state listeners for persistence
+//
+// TODO: Reimplement with Appwrite:
+// - Replace Firebase anonymous auth with Appwrite anonymous sessions
+// - Update localStorage keys and session validation
+// - Replace authService calls with Appwrite account methods
+// - Implement Appwrite auth state monitoring
+// - Update cooldown and conflict prevention logic
+//
+// Original file backed up as guest-auth-init.js.BAK or logic replaced with this comment block.
+
+/*
+// Original Firebase import (commented out for reference):
+/*
+// Original Firebase import (commented out for reference):
+// import { authService } from './firebase-config.js';
+*/
+
+// ==================================================================
+// STUB EXPORTS - Prevent import errors while Firebase is disabled
+// ==================================================================
+// These are placeholder exports that return errors or no-ops
+// Replace with actual Appwrite implementations
+
+export async function initializeGuestAuth() {
+    console.warn('Firebase guest auth disabled - implement with Appwrite');
+    return Promise.resolve();
+}
+
+export function setAuthInProgress(inProgress) {
+    console.warn('Firebase setAuthInProgress disabled - implement with Appwrite');
+}
+
+/*
+// Original guest auth implementation (commented out for reference):
 
 // Track if authentication is in progress to avoid conflicts
 let authInProgress = false;
@@ -213,21 +278,26 @@ export function setAuthInProgress(inProgress) {
 }
 
 // Listen for auth state changes to update localStorage
-if (window.authService) {
-    authService.onAuthStateChange((user) => {
-        if (user?.isAnonymous) {
-            // Update stored guest ID
-            storeGuestId(user.uid);
-        } else if (user && !user.isAnonymous) {
-            // Clear stored guest ID for real users
-            clearStoredGuestId();
-        }
-    });
-}
+// if (window.authService) {
+//     authService.onAuthStateChange((user) => {
+//         if (user?.isAnonymous) {
+//             // Update stored guest ID
+//             storeGuestId(user.uid);
+//         } else if (user && !user.isAnonymous) {
+//             // Clear stored guest ID for real users
+//             clearStoredGuestId();
+//         }
+//     });
+// }
 
 // Delayed initialization to avoid conflicts with real auth
-setTimeout(() => {
-    initializeGuestAuth().catch(error => {
-        Debug.auth.error('Guest auth initialization failed', error);
-    });
-}, 1000); // Wait 1 second for app initialization
+// setTimeout(() => {
+//     initializeGuestAuth().catch(error => {
+//         Debug.auth.error('Guest auth initialization failed', error);
+//     });
+// }, 1000); // Wait 1 second for app initialization
+
+// ... (Full guest auth implementation commented out - see guest-auth-init.js.BAK)
+// ... (Includes: localStorage management, session validation, cooldown logic)
+// ... (Auth state monitoring, conflict prevention, initialization flow)
+*/

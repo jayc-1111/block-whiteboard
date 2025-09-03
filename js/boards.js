@@ -18,13 +18,14 @@ function initializeBoard() {
         grid.appendChild(canvas);
     }
     
-    // Check if board already has content from Firebase or is waiting for sync
+    // Check if board already has content from cloud or is waiting for sync
     const currentBoard = boards[0];
-    const user = window.authService?.getCurrentUser?.();
     
-    // If user is authenticated, wait for Firebase sync instead of creating default content
-    if (user) {
-        Debug.board.detail('User authenticated - waiting for Firebase sync...');
+    // TODO: Check if user is authenticated for cloud sync
+    const user = window.authService?.getCurrentUser?.();
+    if (user && (!user.labels || !user.labels.includes('anonymous'))) {
+        // Real user - wait for cloud sync
+        window.Debug?.appwrite?.info('User authenticated - waiting for cloud sync...');
         return;
     }
     
@@ -274,10 +275,12 @@ function deleteBoard(boardId) {
     
     Debug.board.info(`Board "${boardName}" deleted locally`);
     
-    // Delete from Firebase if sync service is available
-    if (window.syncService) {
-        window.syncService.deleteBoard(boardId);
-    }
+    // TODO: Replace with Appwrite board deletion
+    // Original Firebase deletion (commented out):
+    // Delete from cloud if sync service is available
+    // if (window.syncService) {
+    //     window.syncService.deleteBoard(boardId);
+    // }
 }
 
 async function loadBoard(boardId) {
@@ -286,10 +289,12 @@ async function loadBoard(boardId) {
     // Save current board state before switching
     try {
         saveCurrentBoard();
-        // Save to Firebase if sync service is available
-        if (window.syncService && window.syncService.saveCurrentBoard) {
-            await window.syncService.saveCurrentBoard();
-        }
+        // TODO: Replace with Appwrite sync service
+        // Original Firebase sync (commented out):
+        // Save to cloud if sync service is available
+        // if (window.syncService && window.syncService.saveCurrentBoard) {
+        //     await window.syncService.saveCurrentBoard();
+        // }
     } catch (error) {
         Debug.board.error('Failed to save current board before switching', error);
     }
@@ -325,13 +330,15 @@ async function loadBoard(boardId) {
     
     AppState.set('currentBoardId', boardId);
     
-    // Load board from Firebase on demand
-    if (window.syncService && window.syncService.loadBoardOnDemand) {
-        Debug.board.step('Loading board from Firebase...');
-        await window.syncService.loadBoardOnDemand(boardId);
-        // Re-get board after Firebase load
-        board = AppState.get('boards').find(b => b.id === boardId);
-    }
+    // TODO: Replace with Appwrite board loading on demand
+    // Original Firebase board loading (commented out):
+    // Load board from cloud on demand
+    // if (window.syncService && window.syncService.loadBoardOnDemand) {
+    //     Debug.board.step('Loading board from cloud...');
+    //     await window.syncService.loadBoardOnDemand(boardId);
+    //     // Re-get board after cloud load
+    //     board = AppState.get('boards').find(b => b.id === boardId);
+    // }
     
     // Load folders
     if (board.folders && board.folders.length > 0) {
@@ -471,10 +478,12 @@ window.closeOnboardingModal = function() {
         currentBoard.onboardingShown = true;
         AppState.set('boards', boards);
         
+        // TODO: Replace with Appwrite sync marking
+        // Original Firebase sync marking (commented out):
         // Mark for sync
-        if (window.syncService && window.syncService.markPendingChanges) {
-            window.syncService.markPendingChanges();
-        }
+        // if (window.syncService && window.syncService.markPendingChanges) {
+        //     window.syncService.markPendingChanges();
+        // }
     }
 }
 
@@ -616,18 +625,18 @@ function setupBoardNameEditing() {
 }
 
 // Manual save whiteboard function with user feedback
-let isSaveInProgress = false; // Prevent concurrent saves
+let boardSaveInProgress = false; // Prevent concurrent saves
 
 function manualSaveWhiteboard() {
     Debug.sync.start();
     
     // Prevent concurrent saves
-    if (isSaveInProgress) {
+    if (boardSaveInProgress) {
         Debug.sync.detail('Save already in progress, skipping');
         return;
     }
     
-    isSaveInProgress = true;
+    boardSaveInProgress = true;
     const saveBtn = document.getElementById('saveWhiteboardBtn');
     
     // Update button to show saving state
@@ -644,7 +653,7 @@ function manualSaveWhiteboard() {
             saveBtn.style.background = '#059669';
             saveBtn.disabled = false;
             saveBtn.classList.remove('saving', 'success', 'error');
-            isSaveInProgress = false; // Reset flag
+            boardSaveInProgress = false; // Reset flag
         };
         
         try {
@@ -652,62 +661,38 @@ function manualSaveWhiteboard() {
             saveCurrentBoard();
             Debug.sync.step('Local save completed');
             
-            // Trigger Firebase sync
-            if (window.syncService) {
-                window.syncService.isManualSave = true; // Mark as manual save
-                window.syncService.manualSave();
-                window.syncService.saveCurrentBoard().then(() => {
-                    Debug.sync.done('Manual cloud save completed');
-                    
-                    // Success state
-                    if (saveBtn) {
-                        saveBtn.classList.remove('saving');
-                        saveBtn.classList.add('success');
-                        saveBtn.textContent = 'Saved!';
-                        saveBtn.style.background = '#10b981';
-                        setTimeout(resetButton, 2000);
-                    }
-                }).catch((error) => {
-                    // Only show error if it's a real error, not a queueing issue
-                    if (error && error.message !== 'Save already in progress') {
-                        Debug.sync.error('Cloud save failed', error);
-                        
-                        // Error state  
-                        if (saveBtn) {
-                            saveBtn.classList.remove('saving');
-                            saveBtn.classList.add('error');
-                            saveBtn.textContent = 'Save Failed';
-                            saveBtn.style.background = '#ef4444';
-                            setTimeout(resetButton, 3000);
-                        }
-                        
-                        if (window.liveSyncUI) {
-                            window.liveSyncUI.showUpdateNotification('Save failed - check internet connection');
-                        }
-                    } else {
-                        // It's just queued, treat as success
-                        Debug.sync.detail('Save queued, will complete soon');
-                        if (saveBtn) {
-                            saveBtn.classList.remove('saving');
-                            saveBtn.classList.add('success');
-                            saveBtn.textContent = 'Saved!';
-                            saveBtn.style.background = '#10b981';
-                            setTimeout(resetButton, 2000);
-                        }
-                    }
-                });
-            } else {
-                Debug.sync.error('Sync service not initialized');
-                
-                // Error state
-                if (saveBtn) {
-                    saveBtn.classList.remove('saving');
-                    saveBtn.classList.add('error');
-                    saveBtn.textContent = 'Service Error';
-                    saveBtn.style.background = '#ef4444';
-                    setTimeout(resetButton, 3000);
-                }
-                isSaveInProgress = false;
+            // TODO: Replace with Appwrite sync service
+            // Original Firebase sync (commented out):
+            // Trigger cloud sync
+            // if (window.syncService) {
+            //     window.syncService.isManualSave = true; // Mark as manual save
+            //     window.syncService.manualSave();
+            //     window.syncService.saveCurrentBoard().then(() => {
+            //         Debug.sync.done('Manual cloud save completed');
+            //         
+            //         // Success state
+            //         if (saveBtn) {
+            //             saveBtn.classList.remove('saving');
+            //             saveBtn.classList.add('success');
+            //             saveBtn.textContent = 'Saved!';
+            //             saveBtn.style.background = '#10b981';
+            //             setTimeout(resetButton, 2000);
+            //         }
+            //     }).catch((error) => {
+            //         // Error handling logic...
+            //     });
+            // } else {
+            //     Debug.sync.error('Sync service not initialized');
+            //     isSaveInProgress = false;
+            // }
+            
+            // Temporary fallback - show success for local save only
+            if (saveBtn) {
+                saveBtn.classList.remove('saving');
+                saveBtn.classList.add('success');
+                saveBtn.textContent = 'Saved Locally!';
+                saveBtn.style.background = '#10b981';
+                setTimeout(resetButton, 2000);
             }
             
         } catch (error) {
@@ -721,10 +706,10 @@ function manualSaveWhiteboard() {
                 saveBtn.style.background = '#ef4444';
                 setTimeout(resetButton, 3000);
             }
-            isSaveInProgress = false;
+            boardSaveInProgress = false;
         }
     } else {
-        isSaveInProgress = false;
+        boardSaveInProgress = false;
     }
 }
 

@@ -361,6 +361,9 @@
 
 
     
+    <!-- Appwrite SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/appwrite@17.0.0"></script>
+    
     <!-- Lenis -->
     <script src="https://unpkg.com/lenis@1.1.13/dist/lenis.min.js"></script>
     
@@ -465,44 +468,98 @@
     <script src="js/constants.js"></script>
     <script src="js/debug.js"></script>
     
-    <!-- Firebase Modules -->
-    <script type="module">
-        import './firebase/firebase-error-handler.js'; // Initialize error handling first
-        // REMOVED: import './firebase/auth-reset-utility.js'; // Auth debugging utility
-        // REMOVED: import './firebase/popup-test-utility.js'; // Popup blocking test
-        // REMOVED: import './firebase/auth-status-checker.js'; // Complete auth status checker
-        import { authUI } from './firebase/auth-ui.js';
-        import { syncService, addSaveIndicator } from './firebase/sync-service.js';
-        // REMOVED: import { liveSyncService } from './firebase/live-sync-service.js';
-        // REMOVED: import { liveSyncUI } from './firebase/live-sync-ui.js';
-        import './firebase/guest-auth-init.js'; // Initialize guest auth automatically
+    <!-- Appwrite Services (Load in order) -->
+    <script src="appwrite/appwrite-config.js"></script>
+    <script src="appwrite/guest-auth-init.js"></script>
+    <script src="appwrite/auth-ui.js"></script>
+    <script src="appwrite/sync-service.js"></script>
+    
+    <!-- Initialize Appwrite services -->
+    <script>
+        // Track initialization attempts to prevent infinite loops
+        let initAttempts = 0;
+        const MAX_INIT_ATTEMPTS = 25;
         
-        // Disable live sync globally
-        window.LIVE_SYNC_DISABLED = true;
+        // Wait for everything to be ready
+        function initializeAppwriteWhenReady() {
+            initAttempts++;
+            console.log(`🚀 Starting Appwrite initialization... (attempt ${initAttempts}/${MAX_INIT_ATTEMPTS})`);
+            
+            // Prevent infinite loops
+            if (initAttempts > MAX_INIT_ATTEMPTS) {
+                console.error('❌ Max initialization attempts reached. Services may have failed to load.');
+                console.log('📋 Available services:', {
+                    Appwrite: !!window.Appwrite,
+                    authService: !!window.authService,
+                    authUI: !!window.authUI,
+                    syncService: !!window.syncService
+                });
+                return;
+            }
+            
+            // Check if DOM is ready and Appwrite services are loaded
+            if (document.readyState === 'complete' && 
+                window.Appwrite && 
+                window.authService && 
+                window.authUI && 
+                window.syncService) {
+                
+                console.log('🔄 All services loaded, initializing...');
+                
+                try {
+                    // Initialize auth UI first (this will add the login button)
+                    window.authUI.init();
+                    console.log('✅ Auth UI initialized');
+                    
+                    // Initialize sync service
+                    setTimeout(() => {
+                        try {
+                            window.syncService.init();
+                            console.log('✅ Sync service initialized');
+                        } catch (error) {
+                            console.error('❌ Sync service initialization failed:', error);
+                        }
+                    }, 500);
+                    
+                    // Add save indicator
+                    setTimeout(() => {
+                        try {
+                            if (window.addSaveIndicator) {
+                                window.addSaveIndicator();
+                                console.log('✅ Save indicator added');
+                            }
+                        } catch (error) {
+                            console.error('❌ Save indicator failed:', error);
+                        }
+                    }, 1000);
+                    
+                } catch (error) {
+                    console.error('❌ Appwrite initialization failed:', error);
+                }
+                
+            } else {
+                console.log('⏳ Waiting for services to load...');
+                console.log('📋 Service status:', {
+                    domReady: document.readyState === 'complete',
+                    Appwrite: !!window.Appwrite,
+                    authService: !!window.authService,
+                    authUI: !!window.authUI,
+                    syncService: !!window.syncService
+                });
+                
+                // Only continue if we haven't exceeded max attempts
+                if (initAttempts < MAX_INIT_ATTEMPTS) {
+                    setTimeout(initializeAppwriteWhenReady, 200);
+                }
+            }
+        }
         
-        // Initialize Firebase services after DOM is ready
-        document.addEventListener('DOMContentLoaded', () => {
-            Debug.firebase.info('Initializing simplified Firebase services');
-            
-            // Initialize auth UI first
-            authUI.init();
-            
-            // Initialize sync service (wait a bit for core functions to load)
-            setTimeout(() => {
-                syncService.init();
-                
-                // LIVE SYNC DISABLED - Using event-based saves only
-                // setTimeout(() => {
-                //     liveSyncService.init();
-                // }, 1000);
-                
-            }, 500);
-            
-            // Add save indicator after a delay to ensure toolbar exists
-            setTimeout(() => {
-            addSaveIndicator();
-        }, 1000);
-        });
+        // Start initialization when DOM is ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initializeAppwriteWhenReady);
+        } else {
+            initializeAppwriteWhenReady();
+        }
     </script>
     
     <!-- Load JavaScript files -->

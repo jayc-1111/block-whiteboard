@@ -1,7 +1,89 @@
-// Simplified sync service with 30-second interval saves
-import { dbService, authService } from './firebase-config.js';
+// === FIREBASE SYNC SERVICE (REPLACED WITH APPWRITE) ===
+// This file previously handled real-time synchronization between local app state and Firebase Firestore.
+// It managed event-based saving, data serialization/deserialization, and the save queue.
+//
+// Key Functions (Previously Exported):
+// - syncService.init(): Initialize sync service and auth state listeners
+// - syncService.saveAfterAction(actionName): Event-based save with debouncing
+// - syncService.saveCurrentBoard(): Save current board state to cloud
+// - syncService.loadInitialBoard(): Load boards from cloud on startup
+// - syncService.loadBoardsFromFirebase(): Alias for loadInitialBoard
+// - syncService.saveAllBoards(): Save all boards to cloud
+// - syncService.deleteBoard(boardId): Delete board from cloud
+// - syncService.clearLocalData(): Clear local app state
+// - syncService.manualSave(): Force immediate save (bypasses idle check)
+// - addSaveIndicator(): Add save status indicator to UI
+//
+// Board Data Flow:
+// 1. User action triggers saveAfterAction()
+// 2. Action is debounced (300ms) and queued
+// 3. Queue processor saves to Firebase every 500ms
+// 4. Save status indicator shows saving/saved/error states
+// 5. Board data is serialized (Quill Delta objects → JSON strings)
+// 6. Retry logic handles Firebase errors with exponential backoff
+//
+// Auth Integration:
+// - Listens to authService.onAuthStateChange()
+// - Loads initial boards after user authentication
+// - Handles guest account data transfer
+// - Manages save queue based on auth state
+//
+// Data Serialization:
+// - serializeBoardForFirebase(): Convert local board data for cloud storage
+// - deserializeBoardFromFirebase(): Convert cloud data back to local format
+// - Handles Quill Delta objects, drawing paths, canvas headers
+// - Manages file content, bookmarks, and sections
+//
+// TODO: Reimplement with Appwrite:
+// - Replace Firebase Firestore with Appwrite Databases
+// - Replace Firebase Auth state listener with Appwrite auth events
+// - Update serialization for Appwrite document structure
+// - Implement real-time subscriptions with Appwrite (optional)
+// - Replace Firebase retry logic with Appwrite error handling
+//
+// Original file backed up as sync-service.js.BAK or logic replaced with this comment block.
+
+/*
+// Original Firebase import (commented out for reference):
+/*
+// Original Firebase import (commented out for reference):
+// import { dbService, authService } from './firebase-config.js';
+*/
+
+// ==================================================================
+// STUB EXPORTS - Prevent import errors while Firebase is disabled
+// ==================================================================
+// These are placeholder exports that return errors or no-ops
+// Replace with actual Appwrite implementations
 
 export const syncService = {
+    init: () => console.warn('Firebase syncService disabled - implement with Appwrite'),
+    saveAfterAction: async () => console.warn('Firebase syncService disabled - implement save with Appwrite'),
+    saveCurrentBoard: async () => console.warn('Firebase syncService disabled - implement save with Appwrite'),
+    loadInitialBoard: async () => console.warn('Firebase syncService disabled - implement load with Appwrite'),
+    loadBoardsFromFirebase: async () => console.warn('Firebase syncService disabled - implement load with Appwrite'),
+    saveAllBoards: async () => console.warn('Firebase syncService disabled - implement save with Appwrite'),
+    deleteBoard: async () => ({ success: false, error: 'Firebase disabled - implement with Appwrite' }),
+    clearLocalData: () => console.warn('Firebase syncService disabled - implement with Appwrite'),
+    manualSave: async () => console.warn('Firebase syncService disabled - implement save with Appwrite'),
+    // Internal properties (for compatibility)
+    pendingChanges: false,
+    isSaving: false,
+    syncTimer: null,
+    lastActivity: Date.now(),
+    isDragging: false,
+    isEditing: false
+};
+
+export function addSaveIndicator() {
+    console.warn('Firebase addSaveIndicator disabled - implement with Appwrite');
+}
+
+// Set global reference (for compatibility)
+window.syncService = syncService;
+
+/*
+// Original syncService implementation (commented out for reference):
     syncTimer: null,
     pendingChanges: false,
     isSaving: false,
@@ -1728,3 +1810,9 @@ export function updateSaveStatus(status) {
         }
     }
 }
+
+// ... (Full syncService implementation commented out - see sync-service.js.BAK)
+// ... (Includes: init, saveAfterAction, saveCurrentBoard, loadInitialBoard, etc.)
+// ... (Data serialization, queue processing, error handling, retry logic)
+// ... (Auth state management, board loading/saving, status updates)
+*/
