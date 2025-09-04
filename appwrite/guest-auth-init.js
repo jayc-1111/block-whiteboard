@@ -98,7 +98,6 @@ async function initializeGuestAuth() {
     try {
         // Ensure Debug namespace exists
         if (!window.Debug || !window.Debug.appwrite) {
-            console.log('⚠️ Debug.appwrite namespace not ready, initializing...');
             window.Debug = window.Debug || {};
             window.Debug.appwrite = {
                 info: (msg, data) => console.log(`🔷 APPWRITE: ${msg}`, data || ''),
@@ -122,7 +121,7 @@ async function initializeGuestAuth() {
             window.Debug.appwrite.info('Found stored guest ID', { uid: storedGuestId });
         }
         
-        // Wait for auth state to stabilize
+        // Wait for auth state to stabilize using Appwrite's account system
         const currentUser = await new Promise((resolve) => {
             let resolved = false;
             let authStateCount = 0;
@@ -278,6 +277,21 @@ async function initializeGuestAuth() {
                     window.Debug.appwrite.info('Database setup completed after guest auth');
                 } else {
                     window.Debug.appwrite.warn('Database setup failed after guest auth', setupResult);
+                    // Try alternative setup method if quick setup fails
+                    if (setupResult.message === 'No authenticated user' && currentUser) {
+                        window.Debug.appwrite.step('Trying alternative setup method for guest user...');
+                        try {
+                            // Force setup with the authenticated user
+                            const alternativeResult = await integration.appwriteIntegration.setupDatabaseWithConsent();
+                            if (alternativeResult.success) {
+                                window.Debug.appwrite.info('Alternative database setup completed');
+                            } else {
+                                window.Debug.appwrite.error('Alternative database setup also failed', alternativeResult);
+                            }
+                        } catch (altError) {
+                            window.Debug.appwrite.error('Alternative setup error', altError);
+                        }
+                    }
                 }
             }
         } catch (dbError) {

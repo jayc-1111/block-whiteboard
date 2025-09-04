@@ -89,6 +89,17 @@ const authUI = {
     init() {
         window.Debug.appwrite.info('Initializing Appwrite auth UI');
 
+        // Ensure Debug namespace exists
+        if (!window.Debug || !window.Debug.appwrite) {
+            window.Debug = window.Debug || {};
+            window.Debug.appwrite = {
+                info: (msg, data) => console.log(`🔷 APPWRITE: ${msg}`, data || ''),
+                error: (msg, error) => console.error(`❌ APPWRITE ERROR: ${msg}`, error),
+                step: (msg) => console.log(`👉 APPWRITE: ${msg}`),
+                detail: (msg, data) => console.log(`📋 APPWRITE: ${msg}`, data || '')
+            };
+        }
+
         // Add auth modal to page
         this.modal = createAuthModal();
         document.body.appendChild(this.modal);
@@ -106,6 +117,8 @@ const authUI = {
         const waitForAuthService = () => {
             if (window.authService && window.authService.onAuthStateChange) {
                 this.setupAuthListeners();
+                // Check for existing session immediately
+                setTimeout(() => this.checkInitialAuthState(), 500);
             } else {
                 setTimeout(waitForAuthService, 100);
             }
@@ -119,43 +132,61 @@ const authUI = {
     },
 
     setupAuthListeners() {
-        // Listen for auth state changes
-        window.authService.onAuthStateChange((user) => {
-            window.Debug.appwrite.step('Auth state changed in UI');
+        // Listen for auth state changes with better error handling
+        const handleAuthStateChange = (user) => {
+            try {
+                window.Debug.appwrite.step('Auth state changed in UI');
 
-            // Detect real vs anonymous user
-            const isRealUser = user && (!user.labels || !user.labels.includes('anonymous')) && user.email && user.email !== 'guest@zenban.app';
+                // Detect real vs anonymous user using Appwrite's labels
+                const isRealUser = user && 
+                                  (!user.labels || !user.labels.includes('anonymous')) && 
+                                  user.email && 
+                                  user.email !== 'guest@zenban.app';
 
-            if (isRealUser) {
-                window.Debug.appwrite.info('Real user authenticated', { email: user.email });
-            } else if (user) {
-                window.Debug.appwrite.info('Anonymous user active', { userId: user.$id });
-            }
-
-            // Update UI
-            setTimeout(() => {
-                this.updateUIForUser(user);
-                this.updateUserInfoForsidebar(user);
-            }, 0);
-
-            // Update dev mode info
-            if (window.setDevInfo) {
-                if (user && user.labels && user.labels.includes('anonymous')) {
-                    const guestId = user.$id.slice(-6).toUpperCase();
-                    window.setDevInfo('guestId', guestId);
-                    window.setDevInfo('userEmail', null);
+                if (isRealUser) {
+                    window.Debug.appwrite.info('Real user authenticated', { email: user.email });
                 } else if (user) {
-                    window.setDevInfo('guestId', null);
-                    window.setDevInfo('userEmail', user.email);
-                } else {
-                    window.setDevInfo('guestId', null);
-                    window.setDevInfo('userEmail', null);
+                    window.Debug.appwrite.info('Anonymous user active', { userId: user.$id });
                 }
+
+                // Update UI with a small delay to ensure DOM is ready
+                setTimeout(() => {
+                    try {
+                        this.updateUIForUser(user);
+                        this.updateUserInfoForsidebar(user);
+                    } catch (uiError) {
+                        window.Debug.appwrite.error('UI update failed', uiError);
+                    }
+                }, 0);
+
+                // Update dev mode info
+                if (window.setDevInfo) {
+                    try {
+                        if (user && user.labels && user.labels.includes('anonymous')) {
+                            const guestId = user.$id.slice(-6).toUpperCase();
+                            window.setDevInfo('guestId', guestId);
+                            window.setDevInfo('userEmail', null);
+                        } else if (user) {
+                            window.setDevInfo('guestId', null);
+                            window.setDevInfo('userEmail', user.email);
+                        } else {
+                            window.setDevInfo('guestId', null);
+                            window.setDevInfo('userEmail', null);
+                        }
+                    } catch (devError) {
+                        window.Debug.appwrite.error('Dev info update failed', devError);
+                    }
+                }
+            } catch (error) {
+                window.Debug.appwrite.error('Auth state change handling failed', error);
             }
-        });
+        };
+
+        // Set up the listener with proper error handling
+        window.authService.onAuthStateChange(handleAuthStateChange);
 
         // Check for OAuth callbacks and existing users
-        this.checkInitialAuthState();
+        setTimeout(() => this.checkInitialAuthState(), 500);
     },
 
     checkInitialAuthState() {
@@ -403,14 +434,25 @@ const authUI = {
                 window.Debug.appwrite.info('Google authentication successful');
                 this.hide();
 
-                // Force UI update
+                // Force UI update with a small delay
                 setTimeout(() => {
-                    this.updateUIForUser(result.user);
+                    try {
+                        const currentUser = window.authService.getCurrentUser();
+                        this.updateUIForUser(currentUser);
+                    } catch (uiError) {
+                        window.Debug.appwrite.error('UI update after Google auth failed', uiError);
+                    }
                 }, 100);
 
                 // Trigger board sync
                 if (window.syncService && window.syncService.loadInitialBoards) {
-                    window.syncService.loadInitialBoards();
+                    setTimeout(() => {
+                        try {
+                            window.syncService.loadInitialBoards();
+                        } catch (syncError) {
+                            window.Debug.appwrite.error('Board sync after Google auth failed', syncError);
+                        }
+                    }, 200);
                 }
             } else {
                 window.Debug.appwrite.error('Google authentication failed', result.error);

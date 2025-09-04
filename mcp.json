@@ -1,0 +1,16 @@
+{
+  "servers": {
+    "appwrite": {
+      "command": "uvx",
+      "args": [
+        "mcp-server-appwrite",
+        "--sites",
+      ],
+      "env": {
+        "APPWRITE_PROJECT_ID": "68b6ed180029c5632ed3",
+        "APPWRITE_API_KEY": "standard_c1d206a64199c906bd59996c4bbe24a5b5d4492d8157cc7b050f5eede8634cc2f4ad28593159e5a9a93901fc5fe98d290031ad4c01ed64cb862fc6b531748a4ae13fa089b1654d187cc1f5997ca3495c45569367719c606fcf0768666c6e448f6f510bc0e11c9de38a3fa54e91f274763730ecba32547102f97aa60fc4f17998",
+        "APPWRITE_ENDPOINT": "https://sfo.cloud.appwrite.io/v1"
+      }
+    }
+  }
+}

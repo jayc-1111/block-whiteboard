@@ -15,8 +15,13 @@ const APPWRITE_CONFIG = {
     projectId: '68b6ed180029c5632ed3', // Your project ID
     databaseId: '68b6f1aa003a536da72d', // Your database ID
     collections: {
-        users: 'users', // Users collection ID - update this when you create the collection
-        boards: 'boards' // Boards collection ID - update this when you create the collection
+        users: 'users', // Users collection ID
+        boards: 'boards', // Boards collection ID
+        bookmarks: 'bookmarks',
+        folders: 'folders',
+        files: 'files',
+        canvasHeaders: 'canvasHeaders',
+        drawingPaths: 'drawingPaths'
     }
 };
 
@@ -33,8 +38,11 @@ window.Debug = window.Debug || {};
 window.Debug.appwrite = {
     info: (msg, data) => console.log(`🔷 APPWRITE: ${msg}`, data || ''),
     error: (msg, error) => console.error(`❌ APPWRITE ERROR: ${msg}`, error),
+    warn: (msg, data) => console.warn(`⚠️ APPWRITE: ${msg}`, data || ''),
     step: (msg) => console.log(`👉 APPWRITE: ${msg}`),
-    detail: (msg, data) => console.log(`📋 APPWRITE: ${msg}`, data || '')
+    detail: (msg, data) => console.log(`📋 APPWRITE: ${msg}`, data || ''),
+    start: (msg) => console.log(`🚀 APPWRITE: ${msg}`),
+    done: (msg) => console.log(`✅ APPWRITE: ${msg || 'Operation completed'}`)
 };
 
 // Auth state management
@@ -228,11 +236,14 @@ const authService = {
             const boardsResponse = await databases.listDocuments(
                 APPWRITE_CONFIG.databaseId,
                 APPWRITE_CONFIG.collections.boards,
-                [Appwrite.Query.equal('userId', fromUserId)]
+                [Appwrite.Query.equal('boardId', '0')] // Get the default board with ID 0
             );
 
+            // Filter boards that belong to the anonymous user
+            const userBoards = boardsResponse.documents.filter(doc => doc.userId === fromUserId);
+
             // Transfer each board to new account
-            for (const board of boardsResponse.documents) {
+            for (const board of userBoards) {
                 const boardData = { ...board };
                 delete boardData.$id; // Remove old ID
                 boardData.userId = toUserId; // Update owner
@@ -246,7 +257,7 @@ const authService = {
             }
 
             // Delete anonymous user data (optional - Appwrite will handle user cleanup)
-            for (const board of boardsResponse.documents) {
+            for (const board of userBoards) {
                 await databases.deleteDocument(
                     APPWRITE_CONFIG.databaseId,
                     APPWRITE_CONFIG.collections.boards,
@@ -254,8 +265,8 @@ const authService = {
                 );
             }
 
-            window.Debug.appwrite.info(`Transferred ${boardsResponse.documents.length} boards`);
-            return { success: true, boardCount: boardsResponse.documents.length };
+            window.Debug.appwrite.info(`Transferred ${userBoards.length} boards`);
+            return { success: true, boardCount: userBoards.length };
         } catch (error) {
             window.Debug.appwrite.error('Data transfer failed', error);
             return { success: false, error: error.message };
@@ -265,55 +276,45 @@ const authService = {
     // Create user profile
     async createUserProfile(user, isGuest = false) {
         try {
-            const profileData = {
-                userId: user.$id,
-                email: user.email || 'guest@zenban.app',
-                createdAt: new Date().toISOString(),
+            // Use Appwrite's account preferences for user data instead of a separate collection
+            const preferences = {
+                isGuest: isGuest,
                 plan: 'free',
                 boardCount: 0,
-                isGuest: isGuest
+                createdAt: new Date().toISOString(),
+                email: user.email || 'guest@zenban.app'
             };
-
-            await databases.createDocument(
-                APPWRITE_CONFIG.databaseId,
-                APPWRITE_CONFIG.collections.users,
-                Appwrite.ID.unique(),
-                profileData
-            );
-
-            window.Debug.appwrite.info('User profile created', { userId: user.$id });
+            
+            // Store preferences in Appwrite's account system
+            await account.updatePrefs(preferences);
+            
+            window.Debug.appwrite.info('User preferences created in Appwrite account', { 
+                userId: user.$id,
+                preferences: preferences 
+            });
         } catch (error) {
-            // Profile might already exist
-            if (error.code !== 409) {
-                window.Debug.appwrite.error('Failed to create user profile', error);
-            }
+            window.Debug.appwrite.error('Failed to create user preferences', error);
         }
     },
 
     // Update user profile after linking accounts
     async updateUserProfileAfterLink(user) {
         try {
-            // Find existing profile
-            const profiles = await databases.listDocuments(
-                APPWRITE_CONFIG.databaseId,
-                APPWRITE_CONFIG.collections.users,
-                [Appwrite.Query.equal('userId', user.$id)]
-            );
-
-            if (profiles.documents.length > 0) {
-                const profile = profiles.documents[0];
-                await databases.updateDocument(
-                    APPWRITE_CONFIG.databaseId,
-                    APPWRITE_CONFIG.collections.users,
-                    profile.$id,
-                    {
-                        email: user.email,
-                        isGuest: false
-                    }
-                );
-            }
+            // Update preferences in Appwrite's account system
+            const preferences = {
+                isGuest: false,
+                plan: 'free', // Can be updated based on subscription status
+                email: user.email,
+                linkedAt: new Date().toISOString()
+            };
+            
+            await account.updatePrefs(preferences);
+            window.Debug.appwrite.info('User preferences updated after account link', { 
+                userId: user.$id,
+                email: user.email 
+            });
         } catch (error) {
-            window.Debug.appwrite.error('Failed to update user profile', error);
+            window.Debug.appwrite.error('Failed to update user preferences', error);
         }
     },
 
@@ -373,48 +374,44 @@ const dbService = {
                 return { success: true, skipped: true };
             }
 
+            // Create a unique document ID that combines user and board information
+            // This allows us to easily identify and filter boards by user
+            const documentId = `user_${currentUser.$id}_board_${boardData.id}`;
+            
             const saveData = {
-                ...boardData,
-                userId: currentUser.$id,
-                lastModified: new Date().toISOString()
+                boardId: boardData.id,
+                name: boardData.name,
+                folders: boardData.folders || [],
+                canvasHeaders: boardData.canvasHeaders || [],
+                drawingPaths: boardData.drawingPaths || [],
+                lastModified: new Date().toISOString(),
+                isDevMode: boardData.isDevMode || false,
+                onboardingShown: boardData.onboardingShown || false
             };
 
             // Try to update existing board first
             try {
-                const existingBoards = await databases.listDocuments(
+                await databases.updateDocument(
                     APPWRITE_CONFIG.databaseId,
                     APPWRITE_CONFIG.collections.boards,
-                    [
-                        Appwrite.Query.equal('userId', currentUser.$id),
-                        Appwrite.Query.equal('id', boardData.id)
-                    ]
+                    documentId,
+                    saveData
                 );
-
-                if (existingBoards.documents.length > 0) {
-                    // Update existing board
-                    await databases.updateDocument(
-                        APPWRITE_CONFIG.databaseId,
-                        APPWRITE_CONFIG.collections.boards,
-                        existingBoards.documents[0].$id,
-                        saveData
-                    );
-                } else {
-                    // Create new board
-                    await databases.createDocument(
-                        APPWRITE_CONFIG.databaseId,
-                        APPWRITE_CONFIG.collections.boards,
-                        Appwrite.ID.unique(),
-                        saveData
-                    );
-                }
+                window.Debug.appwrite.detail('Board updated successfully', { documentId });
             } catch (updateError) {
-                // If update fails, try to create new
+                // If update fails (document doesn't exist), create new board
+                const createData = {
+                    ...saveData,
+                    createdAt: new Date().toISOString()
+                };
+                
                 await databases.createDocument(
                     APPWRITE_CONFIG.databaseId,
                     APPWRITE_CONFIG.collections.boards,
-                    Appwrite.ID.unique(),
-                    saveData
+                    documentId,
+                    createData
                 );
+                window.Debug.appwrite.detail('Board created successfully', { documentId });
             }
 
             window.Debug.appwrite.info('Board saved successfully');
@@ -435,24 +432,68 @@ const dbService = {
         try {
             window.Debug.appwrite.step('Loading boards from Appwrite');
 
+            // Use prefix query to find all boards for the current user
+            // Document IDs follow pattern: user_${userId}_board_${boardId}
+            const prefix = `user_${currentUser.$id}_board_`;
+            
             const response = await databases.listDocuments(
                 APPWRITE_CONFIG.databaseId,
                 APPWRITE_CONFIG.collections.boards,
                 [
-                    Appwrite.Query.equal('userId', currentUser.$id),
+                    Appwrite.Query.startsWith('$id', prefix),
                     Appwrite.Query.orderDesc('lastModified')
                 ]
             );
 
-            const boards = response.documents.map(doc => ({
-                ...doc,
-                id: doc.id || parseInt(doc.$id.slice(-2), 16) // Convert to numeric ID if needed
-            }));
+            // Extract board ID from document ID and prepare board data
+            const boards = response.documents.map(doc => {
+                // Extract numeric board ID from document ID (user_${userId}_board_${boardId})
+                const boardIdMatch = doc.$id.match(/board_(\d+)$/);
+                const boardId = boardIdMatch ? parseInt(boardIdMatch[1]) : parseInt(doc.boardId);
+                
+                return {
+                    id: boardId,
+                    boardId: doc.boardId,
+                    name: doc.name,
+                    folders: doc.folders || [],
+                    canvasHeaders: doc.canvasHeaders || [],
+                    drawingPaths: doc.drawingPaths || [],
+                    lastModified: doc.lastModified,
+                    isDevMode: doc.isDevMode || false,
+                    onboardingShown: doc.onboardingShown || false,
+                    createdAt: doc.createdAt
+                };
+            });
 
-            window.Debug.appwrite.info(`Loaded ${boards.length} boards`);
+            window.Debug.appwrite.info(`Loaded ${boards.length} boards for user ${currentUser.$id}`);
             return { success: true, boards };
 
         } catch (error) {
+            // Handle missing collection gracefully
+            if (error.code === 404 || error.message.includes('could not be found')) {
+                window.Debug.appwrite.warn('Boards collection not found - database may not be initialized');
+                
+                // Try to trigger database setup
+                if (window.appwriteIntegration) {
+                    window.Debug.appwrite.step('Attempting to initialize database...');
+                    try {
+                        const setupResult = await window.appwriteIntegration.initializeDatabase();
+                        if (setupResult.success) {
+                            window.Debug.appwrite.info('Database setup completed, retrying board load');
+                            // Retry loading boards
+                            return await this.loadBoards();
+                        } else {
+                            window.Debug.appwrite.error('Database setup failed', setupResult);
+                        }
+                    } catch (setupError) {
+                        window.Debug.appwrite.error('Database setup error', setupError);
+                    }
+                }
+                
+                // Return empty boards if setup fails or integration not available
+                return { success: true, boards: [] };
+            }
+            
             window.Debug.appwrite.error('Failed to load boards', error);
             return { success: false, error: error.message };
         }
@@ -465,29 +506,35 @@ const dbService = {
         }
 
         try {
-            const response = await databases.listDocuments(
+            // Create the expected document ID for this user and board
+            const documentId = `user_${currentUser.$id}_board_${boardId}`;
+            
+            const board = await databases.getDocument(
                 APPWRITE_CONFIG.databaseId,
                 APPWRITE_CONFIG.collections.boards,
-                [
-                    Appwrite.Query.equal('userId', currentUser.$id),
-                    Appwrite.Query.equal('id', boardId)
-                ]
+                documentId
             );
 
-            if (response.documents.length > 0) {
-                const board = response.documents[0];
-                return { 
-                    success: true, 
-                    board: { 
-                        ...board, 
-                        id: boardId 
-                    } 
-                };
-            } else {
-                return { success: false, error: 'Board not found' };
-            }
+            return { 
+                success: true, 
+                board: { 
+                    id: boardId,
+                    boardId: board.boardId,
+                    name: board.name,
+                    folders: board.folders || [],
+                    canvasHeaders: board.canvasHeaders || [],
+                    drawingPaths: board.drawingPaths || [],
+                    lastModified: board.lastModified,
+                    isDevMode: board.isDevMode || false,
+                    onboardingShown: board.onboardingShown || false,
+                    createdAt: board.createdAt
+                } 
+            };
 
         } catch (error) {
+            if (error.code === 404) {
+                return { success: false, error: 'Board not found or access denied' };
+            }
             window.Debug.appwrite.error('Failed to load board', error);
             return { success: false, error: error.message };
         }
@@ -500,53 +547,48 @@ const dbService = {
         }
 
         try {
-            const response = await databases.listDocuments(
+            // Create the expected document ID for this user and board
+            const documentId = `user_${currentUser.$id}_board_${boardId}`;
+            
+            await databases.deleteDocument(
                 APPWRITE_CONFIG.databaseId,
                 APPWRITE_CONFIG.collections.boards,
-                [
-                    Appwrite.Query.equal('userId', currentUser.$id),
-                    Appwrite.Query.equal('id', boardId)
-                ]
+                documentId
             );
-
-            if (response.documents.length > 0) {
-                await databases.deleteDocument(
-                    APPWRITE_CONFIG.databaseId,
-                    APPWRITE_CONFIG.collections.boards,
-                    response.documents[0].$id
-                );
-                return { success: true };
-            }
-
-            return { success: false, error: 'Board not found' };
+            
+            return { success: true };
 
         } catch (error) {
+            if (error.code === 404) {
+                return { success: false, error: 'Board not found or access denied' };
+            }
             window.Debug.appwrite.error('Failed to delete board', error);
             return { success: false, error: error.message };
         }
     },
 
-    // Get user profile
+    // Get user profile/preferences
     async getUserProfile() {
         if (!currentUser) {
             return { success: false, error: 'Not authenticated' };
         }
 
         try {
-            const response = await databases.listDocuments(
-                APPWRITE_CONFIG.databaseId,
-                APPWRITE_CONFIG.collections.users,
-                [Appwrite.Query.equal('userId', currentUser.$id)]
-            );
-
-            if (response.documents.length > 0) {
-                return { success: true, profile: response.documents[0] };
-            } else {
-                return { success: false, error: 'Profile not found' };
-            }
-
+            // Get preferences from Appwrite's account system
+            const preferences = await account.getPrefs();
+            
+            return { 
+                success: true, 
+                profile: {
+                    userId: currentUser.$id,
+                    email: currentUser.email,
+                    preferences: preferences,
+                    createdAt: currentUser.registration ? new Date(currentUser.registration).toISOString() : new Date().toISOString(),
+                    lastLogin: currentUser.$createdAt
+                }
+            };
         } catch (error) {
-            window.Debug.appwrite.error('Failed to load user profile', error);
+            window.Debug.appwrite.error('Failed to load user preferences', error);
             return { success: false, error: error.message };
         }
     }
@@ -600,3 +642,56 @@ window.APPWRITE_CONFIG = APPWRITE_CONFIG;
 window.appwriteClient = client;
 window.appwriteAccount = account;
 window.appwriteDatabases = databases;
+
+// Convenience functions for database setup
+window.setupAppwriteDatabase = async () => {
+    if (!window.appwriteIntegration) {
+        console.warn('Appwrite integration not available');
+        return { success: false, error: 'Integration service not available' };
+    }
+    return await window.appwriteIntegration.initializeDatabase();
+};
+
+window.checkAppwriteDatabase = async () => {
+    if (!window.appwriteIntegration) {
+        console.warn('Appwrite integration not available');
+        return { success: false, error: 'Integration service not available' };
+    }
+    return await window.appwriteIntegration.checkDatabaseStatus();
+};
+
+// Add function to trigger database setup on demand
+window.ensureDatabaseSetup = async () => {
+    console.log('🔧 Checking if database setup is needed...');
+    
+    try {
+        // Check current database status
+        if (!window.appwriteIntegration) {
+            console.warn('Appwrite integration not available');
+            return { success: false, error: 'Integration service not available' };
+        }
+        
+        const statusResult = await window.appwriteIntegration.checkDatabaseStatus();
+        
+        if (statusResult.success) {
+            const missingCollections = ['users', 'boards'].filter(
+                name => !statusResult.status[name]?.exists
+            );
+            
+            if (missingCollections.length > 0) {
+                console.log(`🔧 Missing collections: ${missingCollections.join(', ')}, setting up...`);
+                const setupResult = await window.appwriteIntegration.initializeDatabase();
+                return setupResult;
+            } else {
+                console.log('✅ Database is already set up');
+                return { success: true, message: 'Database already configured' };
+            }
+        } else {
+            console.log('🔧 Database status check failed, attempting setup...');
+            return await window.appwriteIntegration.initializeDatabase();
+        }
+    } catch (error) {
+        console.error('❌ Failed to ensure database setup:', error);
+        return { success: false, error: error.message };
+    }
+};

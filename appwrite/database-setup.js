@@ -12,7 +12,6 @@ const APPWRITE_CONFIG = {
     projectId: '68b6ed180029c5632ed3',
     databaseId: '68b6f1aa003a536da72d',
     collections: {
-        users: 'users',
         boards: 'boards',
         bookmarks: 'bookmarks',
         folders: 'folders',
@@ -24,79 +23,6 @@ const APPWRITE_CONFIG = {
 
 // Collection schemas based on Firebase data structure
 const COLLECTION_SCHEMAS = {
-    users: {
-        name: 'users',
-        permissions: {
-            read: ['any'],
-            write: ['users'],
-            delete: ['users']
-        },
-        attributes: [
-            {
-                key: 'userId',
-                type: 'string',
-                required: true,
-                default: '',
-                array: false
-            },
-            {
-                key: 'email',
-                type: 'string',
-                required: true,
-                default: '',
-                array: false,
-                size: 255
-            },
-            {
-                key: 'isGuest',
-                type: 'boolean',
-                required: true,
-                default: false,
-                array: false
-            },
-            {
-                key: 'plan',
-                type: 'string',
-                required: true,
-                default: 'free',
-                array: false,
-                size: 50
-            },
-            {
-                key: 'boardCount',
-                type: 'integer',
-                required: true,
-                default: 0,
-                array: false
-            },
-            {
-                key: 'createdAt',
-                type: 'datetime',
-                required: true,
-                array: false
-            },
-            {
-                key: 'lastUpdated',
-                type: 'datetime',
-                required: true,
-                array: false
-            }
-        ],
-        indexes: [
-            {
-                key: 'userId',
-                type: 'unique'
-            },
-            {
-                key: 'email',
-                type: 'unique'
-            },
-            {
-                key: 'createdAt',
-                type: 'general'
-            }
-        ]
-    },
     boards: {
         name: 'boards',
         permissions: {
@@ -813,16 +739,16 @@ const databaseSetup = {
         }
     },
 
-    // Quick setup for minimal collections (users and boards only)
+    // Quick setup for essential collections (boards only)
     async quickSetup() {
         try {
-            console.log('🚀 Starting quick Appwrite setup (users + boards only)...');
+            console.log('🚀 Starting quick Appwrite setup (boards only)...');
             
             const client = await this.initClient();
             const databases = new Appwrite.Databases(client);
             
-            // Setup only users and boards collections
-            const essentialCollections = [COLLECTION_SCHEMAS.users, COLLECTION_SCHEMAS.boards];
+            // Setup only boards collection
+            const essentialCollections = [COLLECTION_SCHEMAS.boards];
             let setupResults = [];
             
             for (const schema of essentialCollections) {

@@ -25,6 +25,11 @@ waitForAppwriteServices().then(services => {
     syncDbService = services.dbService;
 });
 
+// Function to check and get current auth service
+function getAuthService() {
+    return window.authService || syncAuthService;
+}
+
 // Sync configuration
 const SYNC_CONFIG = {
     SAVE_DEBOUNCE_DELAY: 300, // ms - delay before saving after user action
@@ -46,6 +51,7 @@ window.Debug = window.Debug || {};
 window.Debug.sync = {
     info: (msg, data) => console.log(`🔄 SYNC: ${msg}`, data || ''),
     error: (msg, error) => console.error(`❌ SYNC ERROR: ${msg}`, error),
+    warn: (msg, data) => console.warn(`⚠️ SYNC: ${msg}`, data || ''),
     step: (msg) => console.log(`👉 SYNC: ${msg}`),
     detail: (msg, data) => console.log(`📋 SYNC: ${msg}`, data || ''),
     start: () => console.log(`🚀 SYNC: Starting operation`),
@@ -61,15 +67,19 @@ const syncService = {
         window.Debug.sync.step('Initializing Appwrite sync service');
         
         // Listen for auth state changes
-        syncAuthService.onAuthStateChange((user) => {
-            if (user) {
-                window.Debug.sync.info('User authenticated - enabling sync', { userId: user.$id });
-                this.loadInitialBoards();
-            } else {
-                window.Debug.sync.info('User signed out - clearing local data');
-                this.clearLocalData();
-            }
-        });
+        if (syncAuthService && syncAuthService.onAuthStateChange) {
+            syncAuthService.onAuthStateChange((user) => {
+                if (user) {
+                    window.Debug.sync.info('User authenticated - enabling sync', { userId: user.$id });
+                    this.loadInitialBoards();
+                } else {
+                    window.Debug.sync.info('User signed out - clearing local data');
+                    this.clearLocalData();
+                }
+            });
+        } else {
+            window.Debug.sync.warn('authService not available - using fallback user check');
+        }
         
         // Set up automatic save on app state changes
         this.setupAutoSave();
@@ -92,7 +102,8 @@ const syncService = {
 
     // Save after user action with debouncing
     saveAfterAction(actionName) {
-        if (!authService.getCurrentUser()) {
+        let authService = window.authService;
+        if (!authService || !authService.getCurrentUser()) {
             window.Debug.sync.detail('No user - skipping save');
             return;
         }
@@ -115,6 +126,12 @@ const syncService = {
 
     // Save current board to Appwrite
     async saveCurrentBoard() {
+        const authService = getAuthService();
+        if (!authService) {
+            window.Debug.sync.error('Cannot save - authService not available');
+            return { success: false, error: 'AuthService not available' };
+        }
+
         const user = authService.getCurrentUser();
         if (!user) {
             window.Debug.sync.error('Cannot save - no user authenticated');
@@ -149,6 +166,11 @@ const syncService = {
             const serializedBoard = this.serializeBoardForAppwrite(currentBoard);
             
             // Save to Appwrite
+            const dbService = window.dbService || syncDbService;
+            if (!dbService) {
+                throw new Error('dbService not available');
+            }
+            
             const result = await dbService.saveBoard(serializedBoard);
             
             if (result.success) {
@@ -208,6 +230,11 @@ const syncService = {
         try {
             window.Debug.sync.step('Loading boards from Appwrite');
             
+            let dbService = window.dbService;
+            if (!dbService) {
+                throw new Error('dbService not available');
+            }
+            
             const result = await dbService.loadBoards();
             
             if (result.success && result.boards.length > 0) {
@@ -245,6 +272,11 @@ const syncService = {
         try {
             window.Debug.sync.step(`Loading board ${boardId} from Appwrite`);
             
+            let dbService = window.dbService;
+            if (!dbService) {
+                throw new Error('dbService not available');
+            }
+            
             const result = await dbService.loadBoard(boardId);
             
             if (result.success) {
@@ -271,14 +303,21 @@ const syncService = {
 
     // Save all boards (batch operation)
     async saveAllBoards() {
-        const user = authService.getCurrentUser();
-        if (!user) return { success: false, error: 'Not authenticated' };
+        const authService = getAuthService();
+        if (!authService || !authService.getCurrentUser()) {
+            return { success: false, error: 'Not authenticated' };
+        }
 
         try {
             const boards = window.AppState?.get('boards') || [];
-            const savePromises = boards.map(board => 
-                dbService.saveBoard(this.serializeBoardForAppwrite(board))
-            );
+            const dbService = window.dbService || syncDbService;
+            
+            const savePromises = boards.map(board => {
+                if (!dbService) {
+                    return Promise.resolve({ success: false, error: 'dbService not available' });
+                }
+                return dbService.saveBoard(this.serializeBoardForAppwrite(board));
+            });
             
             const results = await Promise.all(savePromises);
             const successful = results.filter(r => r.success).length;
@@ -295,6 +334,11 @@ const syncService = {
     // Delete board from cloud
     async deleteBoard(boardId) {
         try {
+            const dbService = window.dbService || syncDbService;
+            if (!dbService) {
+                throw new Error('dbService not available');
+            }
+            
             const result = await dbService.deleteBoard(boardId);
             if (result.success) {
                 window.Debug.sync.info(`Board ${boardId} deleted from cloud`);
@@ -347,7 +391,8 @@ const syncService = {
             canvasHeaders: board.canvasHeaders || [],
             drawingPaths: board.drawingPaths || [],
             isDevMode: board.isDevMode || false,
-            onboardingShown: board.onboardingShown || false
+            onboardingShown: board.onboardingShown || false,
+            lastModified: new Date().toISOString()
         };
     },
 
@@ -399,11 +444,14 @@ const syncService = {
 
     // Get sync statistics
     getSyncStats() {
+        const authService = getAuthService();
+        const user = authService?.getCurrentUser();
         return {
             isInProgress: isSaveInProgress,
             queueLength: saveQueue.length,
             hasLastGoodState: !!lastKnownGoodState,
-            currentUser: authService.getCurrentUser()?.email || 'Anonymous'
+            currentUser: user?.email || user?.$id || 'Anonymous',
+            isGuest: user?.labels?.includes('anonymous') || false
         };
     },
 
