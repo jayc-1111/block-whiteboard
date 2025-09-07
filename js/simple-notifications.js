@@ -1,123 +1,147 @@
-// Simple blue notification system for save status
-window.simpleNotifications = {
-    showSaveNotification(status) {
-        // Remove any existing notifications
-        const existing = document.querySelector('.save-notification');
-        if (existing) {
-            existing.remove();
-        }
-        
-        // Create notification element
-        const notification = document.createElement('div');
-        notification.className = 'save-notification';
-        
-        // Set content and style based on status
-        switch(status) {
-            case 'saving':
-                notification.textContent = 'Saving...';
-                notification.style.background = '#3b82f6'; // Blue
-                break;
-            case 'saved':
-                notification.textContent = 'Saved';
-                notification.style.background = '#3b82f6'; // Blue
-                break;
-            case 'error':
-                notification.textContent = 'Save failed';
-                notification.style.background = '#ef4444'; // Red
-                break;
-            default:
-                notification.textContent = status;
-                notification.style.background = '#3b82f6';
-        }
-        
-        // Common styles
-        notification.style.position = 'fixed';
-        notification.style.top = '80px';
-        notification.style.right = '20px';
-        notification.style.padding = '12px 20px';
-        notification.style.borderRadius = '8px';
-        notification.style.color = 'white';
-        notification.style.fontSize = '14px';
-        notification.style.fontWeight = '500';
-        notification.style.zIndex = '1000001';
-        notification.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
-        notification.style.opacity = '0';
-        notification.style.transform = 'translateX(100px)';
-        notification.style.transition = 'all 0.3s ease';
-        
-        // Add to page
-        document.body.appendChild(notification);
-        
-        // Animate in
-        requestAnimationFrame(() => {
-            notification.style.opacity = '1';
-            notification.style.transform = 'translateX(0)';
-        });
-        
-        // Auto-hide after 2 seconds (except for saving status)
-        if (status !== 'saving') {
-            setTimeout(() => {
-                notification.style.opacity = '0';
-                notification.style.transform = 'translateX(100px)';
-                setTimeout(() => notification.remove(), 300);
-            }, 2000);
-        }
-    },
-    
-    showError(message) {
-        // Remove any existing notifications
-        const existing = document.querySelector('.save-notification');
-        if (existing) {
-            existing.remove();
-        }
-        
-        // Create error notification element
-        const notification = document.createElement('div');
-        notification.className = 'save-notification error';
-        notification.textContent = message;
-        
-        // Error styles
-        notification.style.position = 'fixed';
-        notification.style.top = '80px';
-        notification.style.right = '20px';
-        notification.style.padding = '12px 20px';
-        notification.style.borderRadius = '8px';
-        notification.style.color = 'white';
-        notification.style.fontSize = '14px';
-        notification.style.fontWeight = '500';
-        notification.style.zIndex = '1000001';
-        notification.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
-        notification.style.background = '#ef4444'; // Red
-        notification.style.opacity = '0';
-        notification.style.transform = 'translateX(100px)';
-        notification.style.transition = 'all 0.3s ease';
-        notification.style.maxWidth = '300px';
-        notification.style.whiteSpace = 'normal';
-        notification.style.lineHeight = '1.4';
-        
-        // Add to page
-        document.body.appendChild(notification);
-        
-        // Animate in
-        requestAnimationFrame(() => {
-            notification.style.opacity = '1';
-            notification.style.transform = 'translateX(0)';
-        });
-        
-        // Auto-hide after 4 seconds (longer for errors)
-        setTimeout(() => {
-            notification.style.opacity = '0';
-            notification.style.transform = 'translateX(100px)';
-            setTimeout(() => notification.remove(), 300);
-        }, 4000);
-    }
-};
+// === SIMPLE NOTIFICATIONS SERVICE ===
+// Lightweight notification system for Appwrite database operations
+// Replaces Firebase notifications with minimal user feedback
 
-// Initialize on DOM ready
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => {
-        Debug.ui.step('Notification system restored');
-    });
-} else {
-    Debug.ui.step('Notification system restored');
-}
+(function() {
+    'use strict';
+
+    // Create notification container
+    const notificationsContainer = document.createElement('div');
+    notificationsContainer.id = 'notifications-container';
+    notificationsContainer.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 10000;
+        max-width: 400px;
+        pointer-events: none;
+    `;
+
+    // Add to DOM when ready
+    function initializeNotifications() {
+        if (document.body) {
+            document.body.appendChild(notificationsContainer);
+        } else {
+            setTimeout(initializeNotifications, 100);
+        }
+    }
+
+    // Notification system
+    const notifications = {
+        showNotification: function(message, type = 'info', duration = 5000) {
+            // Create notification element
+            const notification = document.createElement('div');
+            const notificationId = 'notification-' + Date.now();
+
+            notification.id = notificationId;
+            notification.style.cssText = `
+                margin-bottom: 10px;
+                padding: 12px 16px;
+                border-radius: 6px;
+                color: white;
+                font-size: 14px;
+                font-weight: 500;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+                pointer-events: auto;
+                opacity: 0;
+                transform: translateX(100%);
+                transition: all 0.3s ease;
+                position: relative;
+            `;
+
+            // Set colors based on type
+            const colors = {
+                success: '#10b981',
+                error: '#ef4444',
+                warning: '#f59e0b',
+                info: '#3b82f6'
+            };
+            notification.style.backgroundColor = colors[type] || colors.info;
+
+            // Add message
+            notification.textContent = message;
+
+            // Add close button
+            const closeBtn = document.createElement('span');
+            closeBtn.textContent = '×';
+            closeBtn.style.cssText = `
+                margin-left: 10px;
+                cursor: pointer;
+                font-size: 18px;
+                line-height: 1;
+                opacity: 0.8;
+            `;
+            closeBtn.onclick = () => this.hideNotification(notificationId);
+
+            notification.appendChild(closeBtn);
+
+            // Add to container
+            notificationsContainer.appendChild(notification);
+
+            // Animate in
+            setTimeout(() => {
+                notification.style.opacity = '1';
+                notification.style.transform = 'translateX(0)';
+            }, 10);
+
+            // Auto-hide after duration
+            if (duration > 0) {
+                setTimeout(() => {
+                    this.hideNotification(notificationId);
+                }, duration);
+            }
+
+            return notificationId;
+        },
+
+        hideNotification: function(notificationId) {
+            const notification = document.getElementById(notificationId);
+            if (notification) {
+                notification.style.opacity = '0';
+                notification.style.transform = 'translateX(100%)';
+
+                // Remove from DOM after animation
+                setTimeout(() => {
+                    if (notification.parentNode) {
+                        notification.parentNode.removeChild(notification);
+                    }
+                }, 300);
+            }
+        },
+
+        // Shorthand methods for common types
+        success: function(message, duration) {
+            return this.showNotification(message, 'success', duration);
+        },
+
+        error: function(message, duration = 7000) { // Longer duration for errors
+            return this.showNotification(message, 'error', duration);
+        },
+
+        warning: function(message, duration) {
+            return this.showNotification(message, 'warning', duration);
+        },
+
+        info: function(message, duration) {
+            return this.showNotification(message, 'info', duration);
+        },
+
+        // Clear all notifications
+        clear: function() {
+            notificationsContainer.innerHTML = '';
+        }
+    };
+
+    // Export globally
+    window.simpleNotifications = notifications;
+
+    // Initialize when DOM is ready
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initializeNotifications);
+    } else {
+        initializeNotifications();
+    }
+
+    // Console log for debugging
+    console.log('🔧 Simple notifications service initialized');
+})();

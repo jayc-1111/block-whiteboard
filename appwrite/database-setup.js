@@ -24,34 +24,58 @@ function waitForAppwriteReady() {
     return new Promise((resolve, reject) => {
         let attempts = 0;
         const maxAttempts = 50;
-        
+
         function checkReady() {
             attempts++;
             debug.step(`Checking Appwrite readiness (${attempts}/${maxAttempts})`);
-            
+
             if (attempts > maxAttempts) {
                 const error = 'Appwrite SDK or databases service not available after maximum attempts';
                 debug.error(error);
-                reject(new Error(error));
+                // Don't reject, resolve anyway to prevent app from hanging
+                resolve();
                 return;
             }
-            
+
+            // Check if Appwrite SDK is loaded first
+            if (window.Appwrite) {
+                debug.step('Appwrite SDK loaded, checking services...');
+            }
+
             // Check if global services are available
             if (window.Appwrite && window.databases) {
                 debug.done('Appwrite and databases service ready');
                 resolve();
                 return;
             }
-            
+
+            // If Appwrite is loaded but databases service isn't ready yet, initialize it
+            if (window.Appwrite && !window.databases && window.APPWRITE_CONFIG) {
+                try {
+                    debug.step('Appwrite loaded, initializing databases service...');
+                    // Try to initialize databases service from config
+                    if (window.appwriteDatabases) {
+                        window.databases = window.appwriteDatabases;
+                        debug.done('Databases service initialized from config');
+                        resolve();
+                        return;
+                    }
+                } catch (initError) {
+                    debug.warn('Failed to initialize databases service:', initError.message);
+                }
+            }
+
             // Log what's missing
             debug.detail('Still waiting for:', {
                 'window.Appwrite': !!window.Appwrite,
-                'window.databases': !!window.databases
+                'window.databases': !!window.databases,
+                'window.appwriteDatabases': !!window.appwriteDatabases,
+                'window.APPWRITE_CONFIG': !!window.APPWRITE_CONFIG
             });
-            
+
             setTimeout(checkReady, 100);
         }
-        
+
         checkReady();
     });
 }
@@ -264,7 +288,7 @@ async function setupDatabase() {
         // Create canvasHeaders indexes
         debug.step('Creating canvasHeaders indexes...');
         const canvasHeadersIndexes = [
-            { name: 'canvasHeaders_boardId_index', attributes: ['boardId'] },
+            { name: 'canvasHeaders_board_id_index', attributes: ['board_id'] }, // Fixed: use board_id
             { name: 'canvasHeaders_sort_index', attributes: ['$updatedAt'] }
         ];
 
@@ -315,9 +339,93 @@ async function setupDatabase() {
             }
         }
         
+        // Add required attributes to canvasHeaders collection
+        debug.step('Adding required attributes to canvasHeaders collection...');
+
+        const canvasHeadersAttributes = [
+            { name: 'board_id', type: 'string', size: 36, required: true }, // Changed from boardId to board_id
+            { name: 'text', type: 'string', size: 255, required: true },
+            { name: 'position', type: 'string', size: 1000, required: true },
+            { name: 'createdAt', type: 'datetime', required: false },
+            { name: 'updatedAt', type: 'datetime', required: false }
+        ];
+
+        for (const attr of canvasHeadersAttributes) {
+            try {
+                switch (attr.type) {
+                    case 'string':
+                        await databases.createStringAttribute(
+                            config.databaseId,
+                            'canvasHeaders',
+                            attr.name,
+                            attr.size,
+                            attr.required
+                        );
+                        break;
+                    case 'datetime':
+                        await databases.createDatetimeAttribute(
+                            config.databaseId,
+                            'canvasHeaders',
+                            attr.name,
+                            attr.required
+                        );
+                        break;
+                }
+                debug.done(`Added ${attr.name} attribute (${attr.type}) to canvasHeaders collection`);
+            } catch (error) {
+                if (error.message.includes('already exists') || error.code === 409) {
+                    debug.info(`${attr.name} attribute already exists in canvasHeaders collection`);
+                } else {
+                    debug.error(`Failed to create ${attr.name} attribute in canvasHeaders collection`, error);
+                }
+            }
+        }
+
+        // Add required attributes to drawingPaths collection
+        debug.step('Adding required attributes to drawingPaths collection...');
+
+        const drawingPathsAttributes = [
+            { name: 'board_id', type: 'string', size: 36, required: true },
+            { name: 'drawing_paths', type: 'string', size: 100000, required: true },
+            { name: 'color', type: 'string', size: 7, required: false },
+            { name: 'createdAt', type: 'datetime', required: false },
+            { name: 'updatedAt', type: 'datetime', required: false }
+        ];
+
+        for (const attr of drawingPathsAttributes) {
+            try {
+                switch (attr.type) {
+                    case 'string':
+                        await databases.createStringAttribute(
+                            config.databaseId,
+                            'drawingPaths',
+                            attr.name,
+                            attr.size,
+                            attr.required
+                        );
+                        break;
+                    case 'datetime':
+                        await databases.createDatetimeAttribute(
+                            config.databaseId,
+                            'drawingPaths',
+                            attr.name,
+                            attr.required
+                        );
+                        break;
+                }
+                debug.done(`Added ${attr.name} attribute (${attr.type}) to drawingPaths collection`);
+            } catch (error) {
+                if (error.message.includes('already exists') || error.code === 409) {
+                    debug.info(`${attr.name} attribute already exists in drawingPaths collection`);
+                } else {
+                    debug.error(`Failed to create ${attr.name} attribute in drawingPaths collection`, error);
+                }
+            }
+        }
+
         // Add required attributes to folders collection
         debug.step('Adding required attributes to folders collection...');
-        
+
         const folderAttributes = [
             { name: 'boardId', type: 'string', size: 255, required: true },
             { name: 'title', type: 'string', size: 255, required: true },

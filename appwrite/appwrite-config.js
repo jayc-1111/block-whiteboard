@@ -227,18 +227,20 @@ async function saveToCollection(collectionName, items, boardId) {
                     );
                     break;
 
-                // 📍 MANUAL COLLECTION REQUIRED: You need to create 'canvasHeaders' and 'drawingPaths' collections manually in the Appwrite Console
-
-                // For now, let's just log a helpful message instead of attempting unsupported operations
                 case 'canvasHeaders': {
-                    console.log('🚨 MANUAL SETUP REQUIRED:');
-                    console.log('   1. Go to Appwrite Console → Your Project → Database');
-                    console.log('   2. Create collection "canvasHeaders" with permissions: ["users"]');
-                    console.log('   3. Add required attributes:');
-                    console.log('      - boardId (string, required, size: 36)');
-                    console.log('      - text (string, required, size: 255)');
-                    console.log('      - position (string, required, size: 1000)');
-                    console.log('   4. Then re-run this test');
+                    await databases.createDocument(
+                        APPWRITE_CONFIG.databaseId,
+                        'canvasHeaders',
+                        Appwrite.ID.unique(), // Generate unique ID for each header
+                        {
+                            board_id: boardId, // Required board reference (note: lowercase)
+                            text: item.text, // Required
+                            position: JSON.stringify(item.position) // Required - serialize position object
+                            // Note: createdAt and updatedAt are system fields handled by Appwrite
+                        },
+                        permissions
+                    );
+                    debug.done(`✅ Canvas header created: "${item.text}" at (${JSON.stringify(item.position)})`);
                     break;
                 }
 
@@ -303,7 +305,8 @@ async function saveToCollection(collectionName, items, boardId) {
 async function loadFromCollection(collectionName, boardId) {
     try {
         const collectionId = collectionName;
-        const queryField = collectionName === 'drawingPaths' ? 'board_id' : 'boardId';
+        // Use consistent field naming: canvasHeaders and drawingPaths use board_id, folders uses boardId
+        const queryField = (collectionName === 'drawingPaths' || collectionName === 'canvasHeaders') ? 'board_id' : 'boardId';
         const response = await databases.listDocuments(
             APPWRITE_CONFIG.databaseId,
             collectionId,
@@ -1025,7 +1028,7 @@ const dbService = {
                 const headersResponse = await databases.listDocuments(
                     APPWRITE_CONFIG.databaseId,
                     APPWRITE_CONFIG.collections.canvasHeaders,
-                    [Appwrite.Query.equal('boardId', boardSystemId)]
+                    [Appwrite.Query.equal('board_id', boardSystemId)]
                 );
                 for (const header of headersResponse.documents) {
                     await databases.deleteDocument(
