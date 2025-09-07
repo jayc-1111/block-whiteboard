@@ -10,7 +10,7 @@ Your Block Whiteboard application is now ready to use Appwrite! Follow these ste
 2. Create a new project
 3. Note down your:
    - **Project ID**
-   - **Endpoint URL** (e.g., `https://cloud.appwrite.io/v1`)
+   - **Endpoint URL** (e.g., `https://sfo.cloud.appwrite.io/v1`)
 
 ## 2. Configure Database
 
@@ -81,7 +81,7 @@ Edit `appwrite/appwrite-config.js` and replace these values:
 
 ```javascript
 const APPWRITE_CONFIG = {
-    endpoint: 'https://cloud.appwrite.io/v1', // Your Appwrite endpoint
+    endpoint: 'https://sfo.cloud.appwrite.io/v1', // Your Appwrite endpoint
     projectId: 'YOUR_PROJECT_ID', // Your project ID
     databaseId: 'YOUR_DATABASE_ID', // Your database ID
     collections: {

@@ -188,6 +188,81 @@ let multiDragOffsets = AppState.get('multiDragOffsets') || [];
 // Grid size constant (fallback if CONSTANTS not loaded yet)
 const GRID_SIZE = (typeof CONSTANTS !== 'undefined' && CONSTANTS.GRID_SIZE) || 22;
 
+// LocalStorage utility for user-specific settings
+const LocalSettings = {
+    // Get isDevMode from localStorage
+    getIsDevMode: () => {
+        try {
+            const stored = localStorage.getItem('isDevMode');
+            return stored !== null ? JSON.parse(stored) : false;
+        } catch (error) {
+            console.warn('Failed to read isDevMode from localStorage', error);
+            return false;
+        }
+    },
+
+    // Set isDevMode to localStorage
+    setIsDevMode: (value) => {
+        try {
+            localStorage.setItem('isDevMode', JSON.stringify(value));
+            AppState.set('isDevMode', value);
+        } catch (error) {
+            console.error('Failed to save isDevMode to localStorage', error);
+        }
+    },
+
+    // Get onboardingShown from localStorage
+    getOnboardingShown: () => {
+        try {
+            const stored = localStorage.getItem('onboardingShown');
+            return stored !== null ? JSON.parse(stored) : false;
+        } catch (error) {
+            console.warn('Failed to read onboardingShown from localStorage', error);
+            return false;
+        }
+    },
+
+    // Set onboardingShown to localStorage
+    setOnboardingShown: (value) => {
+        try {
+            localStorage.setItem('onboardingShown', JSON.stringify(value));
+            // Update the current board's onboardingShown
+            const boards = AppState.get('boards') || [];
+            const currentBoardId = AppState.get('currentBoardId') || 0;
+            const currentBoard = boards.find(b => b.id === currentBoardId);
+            if (currentBoard) {
+                currentBoard.onboardingShown = value;
+                AppState.set('boards', boards);
+            }
+        } catch (error) {
+            console.error('Failed to save onboardingShown to localStorage', error);
+        }
+    },
+
+    // Mark onboarding as completed
+    markOnboardingCompleted: () => {
+        LocalSettings.setOnboardingShown(true);
+    },
+
+    // Initialize settings from localStorage on app start
+    initializeFromLocalStorage: () => {
+        const isDevMode = LocalSettings.getIsDevMode();
+        const onboardingShown = LocalSettings.getOnboardingShown();
+
+        AppState.set('isDevMode', isDevMode);
+        console.log(`Settings initialized: isDevMode=${isDevMode}, onboardingShown=${onboardingShown}`);
+
+        // Update current board's onboarding status
+        const boards = AppState.get('boards') || [];
+        const currentBoardId = AppState.get('currentBoardId') || 0;
+        const currentBoard = boards.find(b => b.id === currentBoardId);
+        if (currentBoard && !currentBoard.onboardingShown) {
+            currentBoard.onboardingShown = onboardingShown;
+            AppState.set('boards', boards);
+        }
+    }
+};
+
 // Initialize global synchronization when DOM is ready
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => {
@@ -197,9 +272,20 @@ if (document.readyState === 'loading') {
     AppState.initializeGlobalSync();
 }
 
+// Initialize LocalSettings when DOM is ready
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => {
+        LocalSettings.initializeFromLocalStorage();
+    });
+} else {
+    // Small delay to ensure localStorage is available
+    setTimeout(() => LocalSettings.initializeFromLocalStorage(), 50);
+}
+
 // Export for backwards compatibility
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = { AppState };
 } else if (typeof window !== 'undefined') {
     window.AppState = AppState;
+    window.LocalSettings = LocalSettings;
 }

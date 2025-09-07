@@ -8,18 +8,59 @@
     margin-right: 10px;
 }
 
+/* Ensure the sign out button is properly positioned - visible to everyone */
+#signOutBtn,
+#topBar #signOutBtn {
+    margin-right: 15px !important;
+    align-self: center !important;
+    opacity: 1 !important;
+    pointer-events: auto !important;
+    display: inline-block !important;
+    background: #2a2a2a !important; /* Override theme backgrounds */
+    border: 1px solid #3a3a3a !important;
+    color: #fff !important;
+    visibility: visible !important;
+    padding: 6px 12px !important;
+    border-radius: 4px !important;
+    font-size: 13px !important;
+    cursor: pointer !important;
+}
+
+/* Override ALL theme colors for signout button */
+.light-mode #signOutBtn,
+.frutiger-mode #signOutBtn,
+.night-mode #signOutBtn,
+.picnic-mode #signOutBtn,
+.lollipop-mode #signOutBtn {
+    background: #2a2a2a !important;
+    border: 1px solid #3a3a3a !important;
+    color: #fff !important;
+}
+
+.light-mode #topBar #signOutBtn,
+.frutiger-mode #topBar #signOutBtn,
+.night-mode #topBar #signOutBtn,
+.picnic-mode #topBar #signOutBtn,
+.lollipop-mode #topBar #signOutBtn {
+    background: #2a2a2a !important;
+    border: 1px solid #3a3a3a !important;
+    color: #fff !important;
+}
+
 /* Sign In/Out button */
 .auth-button {
-    padding: 8px 16px;
+    padding: 6px 12px;
     background: #2a2a2a;
     border: 1px solid #3a3a3a;
     color: #fff;
-    border-radius: 6px;
-    font-size: 14px;
+    border-radius: 4px;
+    font-size: 13px;
     font-weight: 500;
     cursor: pointer;
     transition: all 0.3s ease;
     font-family: 'Nunito', sans-serif;
+    height: fit-content;
+    align-self: center;
 }
 
 .auth-button:hover {
@@ -42,16 +83,17 @@
     opacity: 0.9;
 }
 
-#signOutBtn {
-    padding: 6px 14px;
-    background: transparent;
-    border: 1px solid #202020;
-    color: #fff;
-    border-radius: 10px;
-    font-size: 13px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    font-family: 'Nunito', sans-serif;
+/* Sign out button default state */
+#signOutBtn.auth-button-visible {
+    opacity: 1;
+    pointer-events: auto;
+    display: inline-block;
+}
+
+#signOutBtn.auth-button-hidden {
+    opacity: 0;
+    pointer-events: none;
+    display: none;
 }
 
 #signOutBtn:hover {

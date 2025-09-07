@@ -24,6 +24,104 @@ waitForAppwriteServices().then(services => {
     authServiceRef = services.authService;
 });
 
+// === STANDALONE BUTTON CREATION - NO SERVICE DEPENDENCIES ===
+function createAuthButtonImmediately() {
+    // Early check to avoid duplicates
+    if (document.getElementById('signOutBtn')) return;
+
+    const topBar = document.getElementById('topBar');
+    if (!topBar) {
+        // Retry once after a small delay if topBar not ready
+        setTimeout(createAuthButtonImmediately, 100);
+        return;
+    }
+
+    // Create the button
+    const authBtn = document.createElement('button');
+    authBtn.id = 'signOutBtn';
+    authBtn.className = 'auth-button';
+    authBtn.textContent = 'Sign Out';
+
+    // Simple click handler
+    authBtn.addEventListener('click', async () => {
+        try {
+            // Try to sign out first
+            if (window.authService?.signOut) {
+                await window.authService.signOut();
+            }
+        } catch (error) {
+            console.log('Sign out failed, redirecting anyway');
+        }
+        // Always redirect
+        window.location.href = 'appwrite/auth/index.html';
+    });
+
+    // Insert into toolbar
+    const whiteboardSwitcher = document.getElementById('whiteboardSwitcher');
+    if (whiteboardSwitcher) {
+        topBar.insertBefore(authBtn, whiteboardSwitcher);
+    } else {
+        topBar.insertBefore(authBtn, topBar.firstChild);
+    }
+
+    // Update text based on auth status
+    updateButtonText();
+}
+
+// Simple button text update - responsive to user state changes
+function updateButtonText() {
+    const btn = document.getElementById('signOutBtn');
+    if (!btn) return;
+
+    // Check user status
+    if (window.authService?.getCurrentUser?.()) {
+        btn.textContent = 'Sign Out';
+    } else {
+        btn.textContent = 'Sign In';
+        // Change click handler for sign-in
+        btn.onclick = () => {
+            // Send user to auth page - they can sign in there
+            window.location.href = 'appwrite/auth/index.html';
+        };
+    }
+}
+
+// INIT: Run immediately when DOM is ready
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => {
+        setTimeout(createAuthButtonImmediately, 50); // Small delay for element settlement
+    });
+} else {
+    setTimeout(createAuthButtonImmediately, 50);
+}
+
+// Also listen for any user state changes to update button text
+function watchForUserChanges() {
+    let lastUserState = null;
+
+    const checkUserState = () => {
+        let currentUserState = null;
+
+        if (window.authService?.getCurrentUser) {
+            const user = window.authService.getCurrentUser();
+            currentUserState = user ? 'authenticated' : 'guest';
+        }
+
+        if (currentUserState !== lastUserState) {
+            updateButtonText();
+            lastUserState = currentUserState;
+        }
+    };
+
+    // Check every second
+    setInterval(checkUserState, 1000);
+    // Initial check
+    setTimeout(checkUserState, 500);
+}
+
+// Start watching for user state changes
+watchForUserChanges();
+
 // Create auth modal HTML (CSP-compliant)
 function createAuthModal() {
     const modal = document.createElement('div');
@@ -251,72 +349,52 @@ const authUI = {
     },
 
     addAuthButton() {
-        const attemptAddButton = () => {
-            const topBar = document.getElementById('topBar');
-            const whiteboardSwitcher = document.getElementById('whiteboardSwitcher');
+        // Simple, direct button creation - no service dependencies, no retry logic
+        const topBar = document.getElementById('topBar');
+        const whiteboardSwitcher = document.getElementById('whiteboardSwitcher');
 
-            window.Debug.appwrite.detail('Attempting to add auth button', {
-                topBar: !!topBar,
-                whiteboardSwitcher: !!whiteboardSwitcher,
-                existing: !!document.querySelector('.auth-button-container')
-            });
+        // Return early if button already exists
+        if (document.getElementById('signOutBtn')) return;
 
-            if (!topBar || !whiteboardSwitcher) {
-                window.Debug.appwrite.detail('Missing required elements, retrying in 200ms...');
-                setTimeout(attemptAddButton, 200);
-                return;
+        // Return early if topBar doesn't exist
+        if (!topBar) return;
+
+        // Create button
+        const authButton = document.createElement('button');
+        authButton.id = 'signOutBtn';
+        authButton.className = 'auth-button';
+        authButton.textContent = 'Sign Out';
+        authButton.style.cssText = 'margin-right: 15px; align-self: center;';
+
+        // Add click handler
+        authButton.addEventListener('click', (event) => {
+            event.preventDefault();
+            event.stopPropagation();
+
+            // Simple user check - handle gracefully if authService isn't ready
+            if (window.authService?.getCurrentUser?.()) {
+                // User exists - sign out
+                this.signOut?.() || window.location.reload();
+            } else {
+                // No user or guest - show auth modal
+                this.show?.();
             }
+        });
 
-            // Check if auth container already exists
-            if (document.querySelector('.auth-button-container')) {
-                window.Debug.appwrite.info('Auth button container already exists');
-                return;
+        // Insert into toolbar
+        if (whiteboardSwitcher) {
+            topBar.insertBefore(authButton, whiteboardSwitcher);
+        } else {
+            topBar.insertBefore(authButton, topBar.firstChild);
+        }
+
+        // Update text based on current user
+        if (window.authService?.getCurrentUser) {
+            const currentUser = window.authService.getCurrentUser();
+            if (!currentUser) {
+                authButton.textContent = 'Sign In';
             }
-
-            const authContainer = document.createElement('div');
-            authContainer.className = 'auth-button-container';
-            authContainer.innerHTML = `
-                <button id="authButton" class="auth-button">
-                    Sign In
-                </button>
-                <div id="userMenu" class="user-menu" style="display: none;">
-                    <button id="signOutBtn">Sign Out</button>
-                </div>
-            `;
-
-            // Insert before whiteboard switcher
-            whiteboardSwitcher.insertAdjacentElement('beforebegin', authContainer);
-
-            // Setup event listeners
-            const authButton = authContainer.querySelector('#authButton');
-            const signOutBtn = authContainer.querySelector('#signOutBtn');
-
-            if (authButton) {
-                authButton.addEventListener('click', () => this.show());
-                window.Debug.appwrite.info('Auth button click listener added');
-            }
-
-            if (signOutBtn) {
-                this.signOutHandler = () => this.signOut();
-                signOutBtn.addEventListener('click', this.signOutHandler);
-                window.Debug.appwrite.info('Sign out button click listener added');
-            }
-
-            window.Debug.appwrite.info('Auth button successfully added to toolbar');
-
-            // Check current user and update UI after a delay
-            setTimeout(() => {
-                if (window.authService && window.authService.getCurrentUser) {
-                    const currentUser = window.authService.getCurrentUser();
-                    if (currentUser) {
-                        this.updateUIForUser(currentUser);
-                    }
-                }
-            }, 300);
-        };
-
-        // Start immediately, then retry if needed
-        attemptAddButton();
+        }
     },
 
     show() {
@@ -473,15 +551,29 @@ const authUI = {
 
     async signOut() {
         try {
-            const result = await window.authService.signOut();
-            if (result.success) {
-                // Clear local data
-                if (window.syncService) {
-                    window.syncService.clearLocalData();
-                }
+            window.Debug.appwrite.step('Attempting to sign out');
+            // First clear local data
+            if (window.syncService) {
+                window.Debug.appwrite.step('Clearing local data');
+                window.syncService.clearLocalData();
             }
+            
+            // Then sign out from Appwrite
+            const result = await window.authService.signOut();
+            window.Debug.appwrite.info('Sign out result', result);
+            // Always proceed with signout regardless of result
+            window.Debug.appwrite.info('Sign out successful');
+            // Clear auth cache
+            if (window.authGuard) {
+                window.authGuard.currentUser = null;
+            }
+            localStorage.removeItem('zenbanAuth');
+            // Redirect to auth page
+            window.location.href = 'appwrite/auth/index.html';
         } catch (error) {
             window.Debug.appwrite.error('Sign out error', error);
+            // Even if there's an error, still redirect to auth page
+            window.location.href = 'appwrite/auth/index.html';
         }
     },
 
@@ -525,45 +617,17 @@ const authUI = {
         attemptAddUserInfo();
     },
 
+    // Simple button text update - button is always visible
     updateUIForUser(user) {
-        const authButton = document.getElementById('authButton');
-        const userMenu = document.getElementById('userMenu');
+        const signOutBtn = document.getElementById('signOutBtn');
+        if (!signOutBtn) return;
 
-        if (!authButton || !userMenu) {
-            setTimeout(() => this.updateUIForUser(user), 100);
-            return;
-        }
-
-        if (user) {
-            // Check if this is a real authenticated user
-            const isAuthenticatedUser = user &&
-                                       (!user.labels || !user.labels.includes('anonymous')) &&
-                                       user.email &&
-                                       user.email !== 'guest@zenban.app';
-
-            // Check if this is an anonymous user
-            const isAnonymousUser = user && user.labels && user.labels.includes('anonymous');
-
-            if (isAuthenticatedUser) {
-                // Real user - show email and sign out option
-                authButton.textContent = user.email;
-                authButton.classList.add('authenticated');
-                authButton.style.color = '#40c9ff';
-                userMenu.style.display = 'block';
-            } else if (isAnonymousUser) {
-                // Anonymous user - show guest ID and sign in option
-                const guestId = user.$id.slice(-6).toUpperCase();
-                authButton.textContent = `Guest: ${guestId}`;
-                authButton.classList.remove('authenticated');
-                authButton.style.color = '#888';
-                userMenu.style.display = 'none';
-            }
+        // User exists and isn't anonymous - show "Sign Out"
+        if (user && (!user.labels || !user.labels.includes('anonymous'))) {
+            signOutBtn.textContent = 'Sign Out';
         } else {
-            // No user - show sign in button
-            authButton.textContent = 'Sign In';
-            authButton.classList.remove('authenticated');
-            authButton.style.color = '';
-            userMenu.style.display = 'none';
+            // No user or anonymous - show "Sign In"
+            signOutBtn.textContent = 'Sign In';
         }
     },
 

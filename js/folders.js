@@ -10,21 +10,106 @@ function toggleFolder(folder) {
 
 // Folder management
 function createFolder(title = 'New Folder', x = null, y = null) {
-    // Expose globally for file tree
-    window.createFolder = createFolder;
-    const canvas = document.getElementById('canvas');
-    if (!canvas) {
-        console.error('Canvas element not found');
-        return -1;
-    }
-    
-    const folder = document.createElement('div');
-    folder.className = 'folder';
-    const folders = AppState.get('folders');
-    folder.dataset.folderId = folders.length;
-    folder.style.left = (x || Math.random() * 600 + 100) + 'px';
-    folder.style.top = (y || Math.random() * 400 + 100) + 'px';
-    folder.style.zIndex = AppState.getNextZIndex();
+    try {
+        // Expose globally for file tree
+        window.createFolder = createFolder;
+        const canvas = document.getElementById('canvas');
+        if (!canvas) {
+            console.error('Canvas element not found');
+            return -1;
+        }
+        
+        const folder = document.createElement('div');
+        folder.className = 'folder';
+        const folders = AppState.get('folders');
+        folder.dataset.folderId = folders.length;
+        folder.style.left = (x || Math.random() * 600 + 100) + 'px';
+        folder.style.top = (y || Math.random() * 400 + 100) + 'px';
+        folder.style.zIndex = AppState.getNextZIndex();
+
+        // 🔧 APPWRITE INTEGRATION: Save to Appwrite folders collection
+        const saveToAppwrite = async () => {
+            const currentUser = window.authService?.getCurrentUser?.();
+            if (!currentUser || !window.appwriteDatabases || !window.getCurrentUserPermissions) {
+                console.warn('🚨 Appwrite not ready - folder saved locally only');
+                return;
+            }
+
+            try {
+                // Get current board info
+                const boards = AppState.get('boards');
+                const currentBoardId = AppState.get('currentBoardId');
+                const currentBoard = boards.find(b => b.id === currentBoardId);
+
+                if (!currentBoard) {
+                    console.warn('🚨 No current board found - cannot save folder to Appwrite');
+                    return;
+                }
+
+                // Generate unique folder document ID
+                const userShortId = currentUser.$id.substring(0, 4);
+                const timestamp = Date.now();
+                const folderDocId = `folder_${timestamp}_${userShortId}`;
+
+                // Get board's system ID for board_id field
+                const boardSystemId = currentBoard.systemId || currentBoard.$id || currentBoard.boardId;
+                if (!boardSystemId) {
+                    console.warn('🚨 Board has no system ID - folder cannot be linked to board');
+                    return;
+                }
+
+                // Prepare folder data matching Appwrite schema
+                const folderData = {
+                    board_id: boardSystemId, // ✅ Required for board association
+                    title: title,
+                    position: JSON.stringify({
+                        left: parseInt(folder.style.left) || 150,
+                        top: parseInt(folder.style.top) || 150
+                    }),
+                    files: JSON.stringify([]), // Empty initially
+                    z_index: parseInt(folder.style.zIndex) || AppState.get('highestZIndex') || 10
+                };
+
+                // Get permissions for this user
+                const permissions = window.getCurrentUserPermissions();
+
+                console.log('📂 SAVING FOLDER TO APPWRITE:', {
+                    folderId: folderDocId,
+                    boardId: boardSystemId,
+                    title: folderData.title,
+                    collection: window.APPWRITE_CONFIG?.collections?.folders || 'folders'
+                });
+
+                // Save to Appwrite folders collection
+                const folderResult = await window.appwriteDatabases.createDocument(
+                    window.APPWRITE_CONFIG.databaseId,
+                    window.APPWRITE_CONFIG.collections.folders,
+                    folderDocId,
+                    folderData,
+                    permissions
+                );
+
+                // Store the Appwrite document ID on the DOM element for future operations
+                folder.dataset.appwriteId = folderDocId;
+
+                console.log('✅ FOLDER SAVED TO APPWRITE SUCCESSFULLY:', {
+                    localId: folders.length,
+                    appwriteId: folderDocId,
+                    resultId: folderResult.$id,
+                    boardId: folderData.board_id
+                });
+
+            } catch (error) {
+                console.error('❌ FAILED TO SAVE FOLDER TO APPWRITE:', {
+                    error: error.message,
+                    code: error.code,
+                    title: title
+                });
+            }
+        };
+
+        // Save to Appwrite asynchronously (don't block folder creation)
+        saveToAppwrite().catch(err => console.error('Appwrite save failed:', err));
 
     const folderHeader = document.createElement('div');
     folderHeader.className = 'folder-header';
@@ -150,12 +235,41 @@ function createFolder(title = 'New Folder', x = null, y = null) {
     }];
     AppState.set('folders', updatedFolders);
     
+    // Also update the folders array in the current board
+    const boards = AppState.get('boards');
+    const currentBoardId = AppState.get('currentBoardId');
+    const currentBoard = boards.find(board => board.id === currentBoardId);
+    if (currentBoard) {
+        // Create a folder data object that matches what's expected for serialization
+        const folderData = {
+            title: title,
+            position: {
+                left: folder.style.left,
+                top: folder.style.top
+            },
+            files: []
+        };
+        currentBoard.folders = [...(currentBoard.folders || []), folderData];
+        AppState.set('boards', boards);
+    }
+    
     // Save after creating folder
     if (window.syncService) {
         window.syncService.saveAfterAction('folder created');
     }
 
+    // ✅ DEBUG: Verify folder was saved properly
+    console.log('📂 FOLDER CREATION COMPLETE:', {
+        localFolderIndex: updatedFolders.length - 1,
+        appwriteSavingEnabled: !!(window.appwriteDatabases && window.authService?.getCurrentUser()),
+        totalFolders: updatedFolders.length
+    });
+
     return updatedFolders.length - 1;
+    } catch (error) {
+        console.error('Error creating folder:', error);
+        return -1;
+    }
 }
 
 function deleteFolder(folder) {
@@ -170,6 +284,15 @@ function deleteFolder(folder) {
         });
         
         AppState.set('folders', folders);
+        
+        // Also update the folders array in the current board
+        const boards = AppState.get('boards');
+        const currentBoardId = AppState.get('currentBoardId');
+        const currentBoard = boards.find(board => board.id === currentBoardId);
+        if (currentBoard) {
+            currentBoard.folders.splice(folderIndex, 1);
+            AppState.set('boards', boards);
+        }
         
         // Save after deleting folder
         if (window.syncService) {

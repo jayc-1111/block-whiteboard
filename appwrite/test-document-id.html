@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Appwrite Document ID Test</title>
+    <script src="https://cdn.jsdelivr.net/npm/appwrite@11.0.0"></script>
+</head>
+<body>
+    <h1>Appwrite Document ID Test</h1>
+    <button id="runTest">Run Document ID Test</button>
+    <div id="results" style="margin-top: 20px; font-family: monospace;"></div>
+
+    <script>
+        // Test document ID generation
+        function testDocumentIdGeneration() {
+            const results = document.getElementById('results');
+            results.innerHTML = '<h3>Testing Document ID Generation...</h3>';
+            
+            // Test cases
+            const testCases = [
+                { userId: 'user1234567890', boardId: 'test-board-1' },
+                { userId: 'a'.repeat(50), boardId: 'short' },
+                { userId: 'user123', boardId: 'very-long-board-id-that-might-cause-issues' }
+            ];
+            
+            testCases.forEach((testCase, index) => {
+                const documentId = `board_${testCase.boardId}_${testCase.userId.substring(0, 10)}`;
+                const compliantDocumentId = documentId.length <= 36 ? documentId : `board_${testCase.boardId}_${Date.now()}`;
+                
+                results.innerHTML += `
+                    <div style="margin: 10px 0; padding: 10px; border: 1px solid #ccc;">
+                        <strong>Test Case ${index + 1}:</strong><br>
+                        User ID: ${testCase.userId.substring(0, 20)}...<br>
+                        Board ID: ${testCase.boardId}<br>
+                        Generated ID: ${documentId}<br>
+                        Length: ${documentId.length} chars<br>
+                        Compliant ID: ${compliantDocumentId}<br>
+                        Final Length: ${compliantDocumentId.length} chars<br>
+                        Valid: ${compliantDocumentId.length <= 36 && /^[a-zA-Z0-9_]+$/.test(compliantDocumentId) && !compliantDocumentId.startsWith('_') ? '✅' : '❌'}
+                    </div>
+                `;
+            });
+        }
+        
+        document.getElementById('runTest').addEventListener('click', testDocumentIdGeneration);
+    </script>
+</body>
+</html>

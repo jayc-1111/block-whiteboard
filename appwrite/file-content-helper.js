@@ -1,150 +1,102 @@
-// === FILE CONTENT JSON EMBEDDING UTILITY ===
-// This utility helps with the JSON embedding approach for the files collection
-// Required due to Appwrite's 5-attribute limit per collection in free plan
+// === APPWRITE FILE CONTENT HELPER ===
+// This script helps with file content handling for Appwrite storage
 
-export class FileContentHelper {
-    /**
-     * Parse JSON-embedded file content into separate components
-     * @param {string} jsonContent - JSON string from database content field
-     * @returns {Object} { text, position, sections }
-     */
-    static parse(jsonContent) {
-        try {
-            const data = JSON.parse(jsonContent || '{}');
-            return {
-                text: data.text || '',
-                position: data.position || { left: 0, top: 0 },
-                sections: data.sections || []
-            };
-        } catch (error) {
-            console.error('Error parsing file content JSON:', error);
-            return {
-                text: '',
-                position: { left: 0, top: 0 },
-                sections: []
-            };
+// Function to compress large content by removing redundant data
+function compressContent(content, maxSize) {
+    if (!content) return '';
+    
+    // If content is already a string, use it directly
+    if (typeof content === 'string') {
+        // If content is already small enough, return it as is
+        if (content.length <= maxSize) {
+            return content;
         }
+        
+        // Simple truncation with warning message
+        return content.substring(0, maxSize - 100) + 
+            '\n\n[Content truncated due to size limitations. Original size: ' + 
+            content.length + ' chars]';
     }
-
-    /**
-     * Create JSON-embedded file content from separate components
-     * @param {string} text - File text content
-     * @param {Object} position - Position object { left, top }
-     * @param {Array} sections - Array of section strings
-     * @returns {string} JSON string for database storage
-     */
-    static stringify(text, position, sections) {
-        try {
-            return JSON.stringify({
-                text: text || '',
-                position: position || { left: 0, top: 0 },
-                sections: sections || []
-            });
-        } catch (error) {
-            console.error('Error stringify file content JSON:', error);
-            return JSON.stringify({
-                text: '',
-                position: { left: 0, top: 0 },
-                sections: []
-            });
+    
+    // If content is an object, stringify it
+    try {
+        const jsonStr = JSON.stringify(content);
+        
+        // If JSON string is small enough, return it
+        if (jsonStr.length <= maxSize) {
+            return jsonStr;
         }
-    }
-
-    /**
-     * Convenience method for creating database-ready file object
-     * @param {Object} fileData - { boardId, folderId, title, text, position, sections, bookmarks }
-     * @returns {Object} File object ready for database save
-     */
-    static createFileObject(fileData) {
-        return {
-            boardId: fileData.boardId,
-            folderId: fileData.folderId,
-            title: fileData.title,
-            content: this.stringify(fileData.text, fileData.position, fileData.sections),
-            bookmarks: JSON.stringify(fileData.bookmarks || [])
-        };
-    }
-
-    /**
-     * Convenience method for parsing complete file object from database
-     * @param {Object} dbFile - File object from database query
-     * @returns {Object} Parsed file object with extracted content
-     */
-    static parseFileObject(dbFile) {
-        const embedded = this.parse(dbFile.content);
-        return {
-            id: dbFile.$id,
-            boardId: dbFile.boardId,
-            folderId: dbFile.folderId,
-            title: dbFile.title,
-            text: embedded.text,
-            position: embedded.position,
-            sections: embedded.sections,
-            bookmarks: JSON.parse(dbFile.bookmarks || '[]'),
-            createdAt: dbFile.$createdAt,
-            updatedAt: dbFile.$updatedAt
-        };
-    }
-
-    /**
-     * Update specific content part without replacing everything
-     * @param {string} currentJson - Current JSON content string
-     * @param {string} field - Field to update (text, position, sections)
-     * @param {*} value - New value for the field
-     * @returns {string} Updated JSON string
-     */
-    static updateField(currentJson, field, value) {
-        const parsed = this.parse(currentJson);
-        parsed[field] = value;
-        return this.stringify(parsed.text, parsed.position, parsed.sections);
-    }
-
-    /**
-     * Get a specific field from JSON content without parsing everything
-     * @param {string} jsonContent - JSON content string
-     * @param {string} field - Field to extract (text, position, sections)
-     * @returns {*} Value of the specified field
-     */
-    static getField(jsonContent, field) {
-        const parsed = this.parse(jsonContent);
-        return parsed[field];
+        
+        // Try to reduce size by removing some properties
+        const reduced = {...content};
+        
+        // List of properties to try removing (in order of importance)
+        const propsToRemove = ['metadata', 'history', 'revisions', 'comments'];
+        
+        // Remove properties until size is under limit
+        for (const prop of propsToRemove) {
+            if (reduced[prop]) {
+                delete reduced[prop];
+                const newStr = JSON.stringify(reduced);
+                if (newStr.length <= maxSize) {
+                    return newStr + '\n\n[Some properties removed due to size limitations]';
+                }
+            }
+        }
+        
+        // If still too large, truncate
+        return jsonStr.substring(0, maxSize - 100) + 
+            '\n\n[Content truncated due to size limitations. Original size: ' + 
+            jsonStr.length + ' chars]';
+    } catch (error) {
+        console.error('Error stringifying content:', error);
+        return String(content).substring(0, maxSize);
     }
 }
 
-// === USAGE EXAMPLES ===
+// Function to estimate total size of board data
+function estimateBoardSize(board) {
+    if (!board) return 0;
+    
+    try {
+        const foldersStr = JSON.stringify(board.folders || []);
+        const headersStr = JSON.stringify(board.canvasHeaders || []);
+        const pathsStr = JSON.stringify(board.drawingPaths || []);
+        
+        return {
+            total: foldersStr.length + headersStr.length + pathsStr.length,
+            folders: foldersStr.length,
+            canvasHeaders: headersStr.length,
+            drawingPaths: pathsStr.length
+        };
+    } catch (error) {
+        console.error('Error estimating board size:', error);
+        return {
+            total: 0,
+            folders: 0,
+            canvasHeaders: 0,
+            drawingPaths: 0,
+            error: error.message
+        };
+    }
+}
 
-/*
+// Function to safely parse JSON with error handling
+function safeParseJSON(jsonString, defaultValue = []) {
+    if (!jsonString) return defaultValue;
+    
+    try {
+        return JSON.parse(jsonString);
+    } catch (error) {
+        console.error('Error parsing JSON:', error);
+        console.log('Problematic JSON string:', jsonString.substring(0, 100) + '...');
+        return defaultValue;
+    }
+}
 
-// SAVE A FILE (create or update)
-const fileData = {
-    boardId: "some-board-id",
-    folderId: "some-folder-id",
-    title: "My Document",
-    text: "This is the main content...",
-    position: { left: 100, top: 200 },
-    sections: ["Introduction", "Details", "Conclusion"],
-    bookmarks: [{ title: "Bookmark 1", url: "https://example.com" }]
+// Expose functions globally
+window.appwriteContentHelper = {
+    compressContent,
+    estimateBoardSize,
+    safeParseJSON
 };
-
-const dbReadyObject = FileContentHelper.createFileObject(fileData);
-// Save dbReadyObject to Appwrite database
-
-// LOAD A FILE (read from database)
-const dbFile = await databases.getDocument('main', 'files', fileId);
-const parsedFile = FileContentHelper.parseFileObject(dbFile);
-console.log(parsedFile.text);        // "This is the main content..."
-console.log(parsedFile.position);    // { left: 100, top: 200 }
-console.log(parsedFile.sections);    // ["Introduction", "Details", "Conclusion"]
-
-// UPDATE POSITION ONLY (efficient for drag operations)
-const currentContent = file.positionDatabaseField; // From DB query
-const updatedContent = FileContentHelper.updateField(
-    currentContent,
-    'position',
-    { left: newX, top: newY }
-);
-// Save only updatedContent back to database
-
-*/
-
-export default FileContentHelper;

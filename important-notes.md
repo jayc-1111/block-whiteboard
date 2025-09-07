@@ -955,6 +955,74 @@
   - 🌉 marks extension bridge logs (extension-bridge.js)
   - Console logs show full flow from click to modal
 
+## Database Architecture Decision (September 2025)
+
+### Final Appwrite Database Schema - Optimized for Realtime + Search
+
+**Collaboration Database** (5 indexes used):
+- `boards` → `updatedAt DESC` (dashboard sorting)
+- `folders` → `boardId + position` (drag/drop ordering)
+- `files` → `folderId + updatedAt` (file trees + recent activity)
+- `drawingPaths` → `boardId + createdAt` (stroke replay)
+- `canvasHeaders` → `boardId` (canvas element fetch)
+
+**Content Database** (1 index used):
+- `bookmarks` → `fileId + createdAt` (bookmark grouping + chronology)
+
+**Key Design Principles**:
+1. **Everything stays realtime** - All collections use Appwrite realtime subscriptions
+2. **Permissions over userId indexes** - Let Appwrite handle access control, don't waste indexes
+3. **Search-ready architecture** - 4 free index slots reserved for future search features
+4. **Compound indexes for efficiency** - Each index serves multiple query patterns
+
+**Future Search Options** (when needed):
+- `files: boardId + name` (board-level file search)
+- `files: name + updatedAt` (global file search)
+- `boards: name + updatedAt` (board search)
+- `bookmarks: boardId + title` (cross-file bookmark search)
+
+**Why This Works**:
+- Minimal overhead (6/10 indexes used)
+- Handles all current queries efficiently
+- Room for growth without schema migration
+- Avoids complex hybrid storage patterns
+- Leverages Appwrite's strengths (realtime, permissions, indexing)
+
+### ✅ IMPLEMENTATION COMPLETE (September 7, 2025)
+
+**Database Setup**:
+- **Collaboration DB** (`68b6f1aa003a536da72d`) - 5 indexes used, 0 remaining
+- **Content DB** (`68bd70bc003176578fec`) - 1 index used, 4 remaining
+- **Total**: 6/10 indexes used, 4 slots free for future search features
+
+**Implemented Collections & Indexes**:
+
+**Collaboration Database** (5/5 indexes):
+1. `boards` → `$updatedAt DESC` ✅ (dashboard sorting)
+2. `folders` → `boardId + sortOrder ASC` ✅ (drag/drop ordering)
+3. `files` → `folderId + updatedAt DESC` ✅ (file trees + recent activity)
+4. `drawingPaths` → `boardId + createdAt ASC` ✅ (stroke replay)
+5. `canvasHeaders` → `boardId ASC` ✅ (canvas element fetch)
+
+**Content Database** (1/5 indexes):
+1. `bookmarks` → `fileId + createdAt DESC` ✅ (bookmark grouping + chronology)
+
+**New Attributes Added**:
+- `folders.sortOrder` (integer, default: 0) - for proper drag/drop indexing
+- `files.updatedAt` (datetime) - for recent file tracking
+- `bookmarks.*` (complete new collection)
+
+**Optimization Notes**:
+- Removed redundant single-field indexes (boardId-only indexes replaced by compounds)
+- Added `sortOrder` integer field for folders (string position field was too large for indexing)
+- Bookmarks collection ready with screenshot support (100KB limit)
+- All compound indexes use appropriate sort orders for query patterns
+
+**Ready for Search**:
+- 4 free index slots reserved in content DB
+- Future options: `files: boardId + name`, `boards: name + updatedAt`
+- `bookmarks: boardId + title` for cross-file bookmark search
+
 ### 44. localStorage Bridge Implementation (8/8/2025)
 - **Problem**: Script injection was unreliable due to browser security restrictions
 - **Solution**: Implemented localStorage bridge for extension-to-app communication
