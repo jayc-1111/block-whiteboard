@@ -241,12 +241,8 @@
                 const btn = document.getElementById('simpleSignOutBtn');
                 if (!btn) return;
 
-                // Check if user is authenticated
-                if (window.authService?.getCurrentUser?.()) {
-                    btn.textContent = 'Sign Out';
-                } else {
-                    btn.textContent = 'Sign In';
-                }
+                // Always show "Sign Out" - authentication happens on dedicated auth page
+                btn.textContent = 'Sign Out';
             }
 
             function handleSignOutClick(event) {
@@ -255,14 +251,10 @@
 
                 console.log('🎯 Simple sign out button clicked');
 
-                // Try to sign out if authenticated
-                if (window.authService?.getCurrentUser?.()) {
-                    console.log('👋 Attempting sign out...');
-                    window.authService.signOut?.().catch(error => {
-                        console.log('Sign out failed, redirecting anyway:', error);
-                    }).then(() => {
-                        window.location.href = 'appwrite/auth/index.html';
-                    });
+                // Use authGuard signout which properly terminates session
+                if (window.authGuard?.currentUser) {
+                    console.log('👋 Attempting sign out via authGuard...');
+                    window.authGuard.signOut();
                 } else {
                     console.log('🔓 No authenticated user, redirecting to auth page');
                     window.location.href = 'appwrite/auth/index.html';
