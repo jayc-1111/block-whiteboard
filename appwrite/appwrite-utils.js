@@ -566,16 +566,8 @@ async function createBoard(boardData) {
             'boards',
             Appwrite.ID.unique(),
             {
-                board_id: boardData.board_id || Appwrite.ID.unique(),
-                name: boardData.name || 'Untitled Board',
-                email: userEmail,
-                folders: boardData.folders || [],
-                canvasHeaders: boardData.canvasHeaders || [],
-                drawingPaths: boardData.drawingPaths || [],
-                isDevMode: boardData.isDevMode || false,
-                onboardingShown: boardData.onboardingShown || false,
-                createdAt: new Date().toISOString(),
-                $updatedAt: new Date().toISOString()
+                board_name: boardData.board_name || boardData.name || 'Untitled Board',
+                email: userEmail
             },
             permissions
         );

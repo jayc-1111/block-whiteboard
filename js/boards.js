@@ -377,39 +377,8 @@ async function saveCurrentBoard() {
             }
         }
 
-        // 🎯 PRE-SAVE VALIDATION - Prevent saving empty boards
-        const hasContent = (
-            (board.folders && board.folders.length > 0) ||
-            (board.canvasHeaders && board.canvasHeaders.length > 0) ||
-            (board.drawingPaths && board.drawingPaths.length > 0)
-        );
-
-        Debug.board.detail('PRE-SAVE VALIDATION SUMMARY', {
-            hasFolders: !!(board.folders && board.folders.length > 0),
-            folderCount: board.folders ? board.folders.length : 0,
-            hasHeaders: !!(board.canvasHeaders && board.canvasHeaders.length > 0),
-            headerCount: board.canvasHeaders ? board.canvasHeaders.length : 0,
-            hasDrawings: !!(board.drawingPaths && board.drawingPaths.length > 0),
-            drawingCount: board.drawingPaths ? board.drawingPaths.length : 0,
-            hasContent: hasContent
-        });
-
-        if (!hasContent) {
-            Debug.board.warn('🚨 BOARD IS COMPLETELY EMPTY - ABORTING SAVE!');
-            Debug.board.detail('Board data:', {
-                folders: board.folders,
-                canvasHeaders: board.canvasHeaders,
-                drawingPaths: board.drawingPaths
-            });
-            Debug.board.detail('This indicates DOM extraction completely failed or canvas has no content');
-            // Don't proceed with save - return success but with warning
-            return {
-                success: true,
-                skipped: true,
-                message: 'Board is empty - no content to save',
-                reason: 'Zero folders, headers, or drawings found on canvas'
-            };
-        }
+        // ✅ REMOVED: Empty board validation - boards can now be empty as intended
+        Debug.board.info('Board save proceeding - empty boards are allowed');
 
         // Save directly to Appwrite using dbService (like the working test)
         Debug.board.step('Saving board directly to Appwrite cloud...');
@@ -435,12 +404,14 @@ async function saveCurrentBoard() {
         if (window.dbService && window.dbService.saveBoard) {
             const result = await window.dbService.saveBoard(boardToSave);
 
-            if (result.success) {
+            // Ensure result is always an object with success property
+            if (result && typeof result === 'object' && result.success) {
                 Debug.board.done(`Board "${board.name}" saved to cloud successfully`);
                 return result;
             } else {
+                const errorMsg = result?.error || result?.details?.message || 'Unknown save error';
                 Debug.board.error('Cloud save failed', result);
-                throw new Error(`Cloud save failed: ${result.error}`);
+                throw new Error(`Cloud save failed: ${errorMsg}`);
             }
         } else {
             Debug.board.error('dbService.saveBoard not available');
@@ -704,7 +675,7 @@ window.closePaymentModal = function() {
     }
 }
 
-function addWhiteboard() {
+async function addWhiteboard() {
     const boards = AppState.get('boards');
     const newBoard = {
         id: boards.length,
@@ -712,12 +683,31 @@ function addWhiteboard() {
         folders: [],
         canvasHeaders: []
     };
-    
+
+    // Add to local state first for immediate UI update
     boards.push(newBoard);
     AppState.set('boards', boards);
-    
-    Debug.board.info(`Created new board: "${newBoard.name}"`);
-    
+
+    Debug.board.info(`Created new board locally: "${newBoard.name}"`);
+
+    // Save to Appwrite backend
+    try {
+        if (window.appwriteUtils && window.appwriteUtils.createBoard) {
+            // Send minimal board data - createBoard() handles all field mappings
+            const minimalBoardData = {
+                name: newBoard.name  // createBoard() maps this to board_name
+            };
+
+            await window.appwriteUtils.createBoard(minimalBoardData);
+            Debug.board.info(`Board "${newBoard.name}" created in backend successfully`);
+        } else {
+            Debug.board.warn(`Board "${newBoard.name}" created locally only - appwriteUtils.createBoard not available`);
+        }
+    } catch (error) {
+        Debug.board.error(`Failed to create board in backend:`, error);
+        // Continue with local creation at least
+    }
+
     updateBoardDropdown();
     loadBoard(newBoard.id);
 }

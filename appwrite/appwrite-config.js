@@ -42,10 +42,27 @@ async function getAuthenticatedUserEmail() {
 let currentAuthenticatedUser = null;
 
 async function updateAuthenticatedUser() {
-    const userEmail = await getAuthenticatedUserEmail();
-    currentAuthenticatedUser = { email: userEmail };
-    console.log('✅ Authenticated user updated:', userEmail);
-    return currentAuthenticatedUser;
+    if (!window.appwriteAccount) {
+        console.warn('❌ Appwrite account not available');
+        return null;
+    }
+
+    try {
+        // Get the full user object from Appwrite including $id
+        const fullUser = await window.appwriteAccount.get();
+        currentAuthenticatedUser = {
+            $id: fullUser.$id,
+            email: fullUser.email
+        };
+        console.log('✅ Authenticated user updated:', currentAuthenticatedUser);
+        return currentAuthenticatedUser;
+    } catch (error) {
+        console.warn('❌ Failed to get authenticated user, using fallback');
+        // Fallback for when user isn't fully authenticated
+        const userEmail = await getAuthenticatedUserEmail();
+        currentAuthenticatedUser = { email: userEmail };
+        return currentAuthenticatedUser;
+    }
 }
 
 // Initialize Appwrite client
@@ -110,32 +127,114 @@ const dbService = {
 
     async saveBoard(boardData) {
         try {
-            const permissions = [
-                typeof Appwrite !== 'undefined' ?
-                    Appwrite.Permission.read(Appwrite.Role.any()) :
-                    []
-            ];
+            const databaseId = APPWRITE_CONFIG.databases.main;
 
-            const result = await window.appwriteDatabasesMain.createDocument(
-                APPWRITE_CONFIG.databases.main,
-                'boards',
-                boardData.id,
-                {
-                    board_name: boardData.name || 'New Board',
-                    email: await getAuthenticatedUserEmail() // ✅ Now using real user email!
-                },
-                permissions
-            );
+            // Get current user for permissions
+            const currentUser = window.authService?.getCurrentUser?.();
+            const currentUserId = currentUser?.$id;
+            const userEmail = await getAuthenticatedUserEmail();
+            const boardName = boardData.name || 'New Board';
 
-            return {
-                id: result.$id,
-                name: result.board_name,
-                data: {},
-                createdAt: result.$createdAt
-            };
+            // Check if board already exists (by name and email combination)
+            let existingBoards;
+            try {
+                existingBoards = await window.appwriteDatabasesMain.listDocuments(
+                    databaseId,
+                    'boards',
+                    [
+                        window.Appwrite?.Query?.equal('board_name', boardName) || {},
+                        userEmail ? (window.Appwrite?.Query?.equal('email', userEmail) || {}) : {}
+                    ].filter(q => Object.keys(q).length > 0)
+                );
+            } catch (error) {
+                console.warn('Could not check for existing boards, proceeding with creation:', error);
+                existingBoards = { documents: [] };
+            }
+
+            // Determine permissions based on user context and board position
+            let permissions = [];
+            if (typeof window.Appwrite !== 'undefined') {
+                // First board: Use project-level permissions (users: ANY)
+                if (!existingBoards.documents || existingBoards.documents.length === 0) {
+                    // No existing board with this name/email - create new with project-level permissions
+                    permissions = [
+                        window.Appwrite.Permission.read('any'),
+                        window.Appwrite.Permission.update('any'),
+                        window.Appwrite.Permission.delete('any')
+                    ];
+                } else if (currentUserId) {
+                    // Subsequent boards: Use user-specific permissions
+                    permissions = [
+                        window.Appwrite.Permission.read(window.Appwrite.Role.user(currentUserId)),
+                        window.Appwrite.Permission.update(window.Appwrite.Role.user(currentUserId)),
+                        window.Appwrite.Permission.delete(window.Appwrite.Role.user(currentUserId))
+                    ];
+                } else {
+                    // Fallback for anonymous users
+                    permissions = [
+                        window.Appwrite.Permission.read('any'),
+                        window.Appwrite.Permission.update('any'),
+                        window.Appwrite.Permission.delete('any')
+                    ];
+                }
+            }
+
+            // If board exists, update it instead of creating new
+            if (existingBoards.documents && existingBoards.documents.length > 0) {
+                const existingBoard = existingBoards.documents[0]; // Take first match
+
+                // Update existing board
+                const result = await window.appwriteDatabasesMain.updateDocument(
+                    databaseId,
+                    'boards',
+                    existingBoard.$id,
+                    {
+                        board_name: boardName,
+                        email: userEmail,
+                        $updatedAt: new Date().toISOString()
+                    },
+                    permissions  // Update permissions too
+                );
+
+                return {
+                    success: true,
+                    id: result.$id,
+                    name: result.board_name,
+                    data: result,
+                    createdAt: result.$createdAt,
+                    updatedAt: result.$updatedAt
+                };
+            } else {
+                // Create new board
+                const result = await window.appwriteDatabasesMain.createDocument(
+                    databaseId,
+                    'boards',
+                    window.Appwrite?.ID?.unique() || boardData.id || Date.now().toString(),
+                    {
+                        board_name: boardName,
+                        email: userEmail,
+                        $updatedAt: new Date().toISOString()
+                    },
+                    permissions
+                );
+
+                return {
+                    success: true,
+                    id: result.$id,
+                    name: result.board_name,
+                    data: result,
+                    createdAt: result.$createdAt
+                };
+            }
+
         } catch (error) {
             console.error('❌ Failed to save board:', error);
-            throw error;
+            // Return consistent error format instead of throwing
+            return {
+                success: false,
+                error: error.message || 'Unknown save error',
+                details: error
+            };
         }
     },
 
@@ -190,7 +289,12 @@ const authService = {
     },
 
     getCurrentUser() {
-        return null; // TODO: implement properly
+        try {
+            return currentAuthenticatedUser;
+        } catch (error) {
+            console.error('❌ Failed to get current user:', error);
+            return null;
+        }
     }
 };
 
