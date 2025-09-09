@@ -362,19 +362,7 @@
                             email: user.email || 'anonymous'
                         });
 
-        // Trigger UI updates if authUI is available
-                        if (window.authUI && typeof window.authUI.updateUIForUser === 'function') {
-                            console.log('🔄 Updating UI for authenticated user:', {
-                                userId: user.$id,
-                                email: user.email,
-                                isAnonymous: user.labels?.includes('anonymous'),
-                                labels: user.labels,
-                                fullUser: user
-                            });
-                            // Try to update UI immediately and with a delay
-                            window.authUI.updateUIForUser(user);
-                            setTimeout(() => window.authUI.updateUIForUser(user), 500);
-                        }
+                        // UI updates handled by main index.html sign out button
 
                         return true;
                     }
@@ -394,10 +382,7 @@
                 localStorage.removeItem(AUTH_CONFIG.storageKey);
                 this.currentUser = null;
 
-                // Update UI to reflect unauthenticated state
-                if (window.authUI && typeof window.authUI.updateUIForUser === 'function') {
-                    setTimeout(() => window.authUI.updateUIForUser(null), 0);
-                }
+                // UI updates handled by main index.html sign out button
 
                 // Stop monitoring temporarily to avoid infinite redirects
                 this.stopSessionMonitoring();

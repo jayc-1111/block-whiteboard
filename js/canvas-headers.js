@@ -34,8 +34,8 @@ function addCanvasHeader(x = null, y = null) {
     
     // Update board state
     const boards = AppState.get('boards');
-    const currentBoardId = AppState.get('currentBoardId');
-    const currentBoard = boards.find(b => b.id === currentBoardId);
+    const currentBoard_id = AppState.get('currentBoard_id');
+    const currentBoard = boards.find(b => b.id === currentBoard_id);
     
     if (currentBoard) {
         if (!currentBoard.canvasHeaders) {
@@ -163,8 +163,8 @@ function startCanvasHeaderDrag(e, canvasHeader) {
 
 function updateCanvasHeaderInState(canvasHeader) {
     const boards = AppState.get('boards');
-    const currentBoardId = AppState.get('currentBoardId');
-    const currentBoard = boards.find(b => b.id === currentBoardId);
+    const currentBoard_id = AppState.get('currentBoard_id');
+    const currentBoard = boards.find(b => b.id === currentBoard_id);
     
     if (currentBoard && currentBoard.canvasHeaders) {
         const headerData = currentBoard.canvasHeaders.find(
@@ -228,8 +228,8 @@ function loadCanvasHeaders(canvasHeaders) {
 // Delete canvas header
 function deleteCanvasHeader(canvasHeader) {
     const boards = AppState.get('boards');
-    const currentBoardId = AppState.get('currentBoardId');
-    const currentBoard = boards.find(b => b.id === currentBoardId);
+    const currentBoard_id = AppState.get('currentBoard_id');
+    const currentBoard = boards.find(b => b.id === currentBoard_id);
     
     if (currentBoard && currentBoard.canvasHeaders) {
         const index = currentBoard.canvasHeaders.findIndex(

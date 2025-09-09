@@ -421,8 +421,16 @@
 
 
     
-    <!-- Appwrite SDK -->
-    <script src="https://cdn.jsdelivr.net/npm/appwrite@17.0.0"></script>
+    <!-- Appwrite v20 SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/appwrite@20.0.0"></script>
+
+    <!-- ✅ CRITICAL: Load CONFIG FIRST to provide window.appwriteDatabases -->
+    <script src="appwrite/appwrite-config.js"></script>
+
+    <!-- New Consolidated Appwrite Services - now databases are initialized! -->
+    <script src="appwrite/appwrite-utils.js"></script>
+    <script src="appwrite/appwrite-sync.js"></script>
+    <script src="appwrite/appwrite-setup.js"></script>
     
     <!-- Lenis -->
     <script src="https://unpkg.com/lenis@1.1.13/dist/lenis.min.js"></script>
@@ -538,13 +546,11 @@
     <!-- CRITICAL: Load Authentication Guard BEFORE any other services -->
     <script src="appwrite/auth/guard.js"></script>
 
-    <!-- Appwrite Services (Load in order - prevent duplicate declarations) -->
-    <script src="appwrite/appwrite-config.js"></script>
+    <!-- Appwrite Configuration & Database Setup -->
+    <!-- Moved appwrite-config.js to earlier position (after Appwrite SDK) -->
     <script src="appwrite/database-setup.js"></script>
-    <script src="appwrite/sync-service.js"></script>
-    <script src="appwrite/test-database.js"></script>
-    <script src="appwrite/test-save.js"></script>
-    
+    <script src="appwrite/database-recovery.js"></script>
+
     <!-- Authentication-Awareness Initialization -->
     <script>
         // Wait for both DOM ready AND authentication to be determined
@@ -582,34 +588,25 @@
                     console.log('📋 Available services:', {
                         Appwrite: !!window.Appwrite,
                         authService: !!window.authService,
-                        authUI: !!window.authUI,
-                        syncService: !!window.syncService,
+                        appwriteSync: !!window.appwriteSync,
+                        appwriteSetup: !!window.appwriteSetup,
                         authGuard: !!window.authGuard
                     });
                     return;
                 }
 
-                // Check if all services are loaded
+                // Check if all consolidated services are loaded
                 if (window.Appwrite &&
                     window.authService &&
-                    window.authUI &&
-                    window.syncService) {
+                    window.appwriteSync &&
+                    window.appwriteSetup) {
 
-                    console.log('🔄 All services loaded, initializing app...');
+                    console.log('🔄 All consolidated services loaded, initializing app...');
 
-                    try {
-                        // Initialize all services
-                        window.authUI.init();
-                        console.log('✅ Auth UI initialized');
+                                    try {
 
-                        setTimeout(() => {
-                            try {
-                                window.syncService.init();
-                                console.log('✅ Sync service initialized');
-                            } catch (error) {
-                                console.error('❌ Sync service initialization failed:', error);
-                            }
-                        }, 500);
+                        // Initialize consolidated Appwrite services (they auto-initialize)
+                        console.log('✅ Appwrite services initialized (appwrite-sync.js + appwrite-setup.js)');
 
                         setTimeout(() => {
                             try {
@@ -627,12 +624,12 @@
                     }
 
                 } else {
-                    console.log('⏳ Waiting for services to load...');
-                    console.log('📋 Service status:', {
+                    console.log('⏳ Waiting for consolidated services to load...');
+                    console.log('📋 Consolidated service status:', {
                         Appwrite: !!window.Appwrite,
                         authService: !!window.authService,
-                        authUI: !!window.authUI,
-                        syncService: !!window.syncService,
+                        appwriteSync: !!window.appwriteSync,
+                        appwriteSetup: !!window.appwriteSetup,
                         authGuard: !!window.authGuard
                     });
 
@@ -667,12 +664,8 @@
             }, 1500);
         }
     </script>
-    
-    <!-- Load JavaScript files -->
-    <script src="debug-signout.js"></script>
-    <script src="appwrite/diagnostic.js"></script>
-    <script src="appwrite/fixes.js"></script>
-    <script src="appwrite/test-board-fix.js"></script>
+
+    <!-- Debugging utilities -->
     <script src="js/grid-dots.js"></script>
     <script src="js/theme.js"></script>
     <script src="js/state.js"></script>

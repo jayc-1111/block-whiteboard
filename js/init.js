@@ -106,10 +106,10 @@ function setupBoardNameEditing() {
     if (boardNameEl) {
         boardNameEl.addEventListener('blur', () => {
             const boards = AppState.get('boards');
-            const currentBoardId = AppState.get('currentBoardId');
-            const board = boards.find(b => b.id === currentBoardId);
+            const currentBoard_id = AppState.get('currentBoard_id');
+            const board = boards.find(b => b.id === currentBoard_id);
             if (board) {
-                board.name = boardNameEl.textContent.trim() || `${CONSTANTS.DEFAULT_BOARD_NAME} ${currentBoardId + 1}`;
+                board.name = boardNameEl.textContent.trim() || `${CONSTANTS.DEFAULT_BOARD_NAME} ${currentBoard_id + 1}`;
                 boardNameEl.textContent = board.name;
                 AppState.set('boards', boards);
                 const selectorText = document.querySelector('.board-selector-text');

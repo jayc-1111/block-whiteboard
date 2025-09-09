@@ -38,8 +38,8 @@ function createFolder(title = 'New Folder', x = null, y = null) {
             try {
                 // Get current board info
                 const boards = AppState.get('boards');
-                const currentBoardId = AppState.get('currentBoardId');
-                const currentBoard = boards.find(b => b.id === currentBoardId);
+                const currentBoard_id = AppState.get('currentBoard_id');
+                const currentBoard = boards.find(b => b.id === currentBoard_id);
 
                 if (!currentBoard) {
                     console.warn('🚨 No current board found - cannot save folder to Appwrite');
@@ -52,7 +52,7 @@ function createFolder(title = 'New Folder', x = null, y = null) {
                 const folderDocId = `folder_${timestamp}_${userShortId}`;
 
                 // Get board's system ID for board_id field
-                const boardSystemId = currentBoard.systemId || currentBoard.$id || currentBoard.boardId;
+                const boardSystemId = currentBoard.systemId || currentBoard.$id || currentBoard.board_id;
                 if (!boardSystemId) {
                     console.warn('🚨 Board has no system ID - folder cannot be linked to board');
                     return;
@@ -75,7 +75,7 @@ function createFolder(title = 'New Folder', x = null, y = null) {
 
                 console.log('📂 SAVING FOLDER TO APPWRITE:', {
                     folderId: folderDocId,
-                    boardId: boardSystemId,
+                    board_id: boardSystemId,
                     title: folderData.title,
                     collection: window.APPWRITE_CONFIG?.collections?.folders || 'folders'
                 });
@@ -96,7 +96,7 @@ function createFolder(title = 'New Folder', x = null, y = null) {
                     localId: folders.length,
                     appwriteId: folderDocId,
                     resultId: folderResult.$id,
-                    boardId: folderData.board_id
+                    board_id: folderData.board_id
                 });
 
             } catch (error) {
@@ -237,8 +237,8 @@ function createFolder(title = 'New Folder', x = null, y = null) {
     
     // Also update the folders array in the current board
     const boards = AppState.get('boards');
-    const currentBoardId = AppState.get('currentBoardId');
-    const currentBoard = boards.find(board => board.id === currentBoardId);
+    const currentBoard_id = AppState.get('currentBoard_id');
+    const currentBoard = boards.find(board => board.id === currentBoard_id);
     if (currentBoard) {
         // Create a folder data object that matches what's expected for serialization
         const folderData = {
@@ -287,8 +287,8 @@ function deleteFolder(folder) {
         
         // Also update the folders array in the current board
         const boards = AppState.get('boards');
-        const currentBoardId = AppState.get('currentBoardId');
-        const currentBoard = boards.find(board => board.id === currentBoardId);
+        const currentBoard_id = AppState.get('currentBoard_id');
+        const currentBoard = boards.find(board => board.id === currentBoard_id);
         if (currentBoard) {
             currentBoard.folders.splice(folderIndex, 1);
             AppState.set('boards', boards);

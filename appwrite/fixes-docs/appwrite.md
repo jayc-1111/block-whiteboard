@@ -31,7 +31,7 @@ Due to the 5-attribute limit, the `files` collection uses a compact structure wi
 
 ```json
 {
-  "boardId": "string (required)",
+  "board_id": "string (required)",
   "folderId": "string (required)",
   "title": "string (required)",
   "content": {
@@ -48,27 +48,27 @@ Due to the 5-attribute limit, the `files` collection uses a compact structure wi
 ### Attributes Created
 
 **Files Collection (5/5 attributes):**
-- `boardId` (string, required)
+- `board_id` (string, required)
 - `folderId` (string, required)
 - `title` (string, required)
 - `content` (string, required) - JSON-embedded data
 - `bookmarks` (string, optional) - JSON bookmark array
 
 **CanvasHeaders Collection (3/3 attributes):**
-- `boardId` (string, required)
+- `board_id` (string, required)
 - `text` (string, required)
 - `position` (string, required)
 
 **DrawingPaths Collection (2/2 attributes):**
-- `boardId` (string, required)
+- `board_id` (string, required)
 - `paths` (string, optional)
 
 ### Indexes Created
 
-- `files.boardId` - General index for board relationships
+- `files.board_id` - General index for board relationships
 - `files.folderId` - Key index for folder relationships
-- `canvasheaders.boardId` - Key index for board relationships
-- `drawingpaths.boardId` - Key index for board relationships
+- `canvasheaders.board_id` - Key index for board relationships
+- `drawingpaths.board_id` - Key index for board relationships
 
 ## Authentication Integration
 
@@ -122,7 +122,7 @@ A utility class `FileContentHelper` has been created to handle JSON embedding op
 **Saving a File:**
 ```javascript
 const fileData = {
-    boardId: "board-id",
+    board_id: "board-id",
     folderId: "folder-id",
     title: "Document Title",
     text: "Content",

@@ -239,7 +239,7 @@ class DebugSystem {
         
         try {
             return {
-                currentBoardId: AppState.get('currentBoardId'),
+                currentBoard_id: AppState.get('currentBoard_id'),
                 boardCount: AppState.get('boards')?.length || 0,
                 isDevMode: AppState.get('isDevMode'),
                 currentUser: window.authService?.getCurrentUser ? {

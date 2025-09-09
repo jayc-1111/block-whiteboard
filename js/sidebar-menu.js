@@ -217,7 +217,7 @@ function updateFileTree() {
     if (!fileList) return;
 
     const boards = AppState.get('boards') || [];
-    const currentBoardId = AppState.get('currentBoardId');
+    const currentBoard_id = AppState.get('currentBoard_id');
 
     let html = '';
 
@@ -227,7 +227,7 @@ function updateFileTree() {
         const fileCount = folders.reduce((sum, cat) => sum + (cat.files?.length || 0), 0);
 
         if (folders.length > 0) {
-            const isExpanded = board.id === currentBoardId;
+            const isExpanded = board.id === currentBoard_id;
             html += `<li class="tree-item">
                 <div class="tree-toggle ${isExpanded ? 'expanded' : ''}">
                     <span class="toggle-icon">
@@ -380,7 +380,7 @@ function refreshFileTreeHTML() {
     if (!container) return;
 
     const latestBoards = AppState.get('boards') || [];
-    const latestCurrentBoardId = AppState.get('currentBoardId');
+    const latestCurrentBoard_id = AppState.get('currentBoard_id');
 
     let html = '';
 
@@ -389,7 +389,7 @@ function refreshFileTreeHTML() {
         const fileCount = folders.reduce((sum, cat) => sum + (cat.files?.length || 0), 0);
 
         if (folders.length > 0) {
-            const isExpanded = board.id === latestCurrentBoardId;
+            const isExpanded = board.id === latestCurrentBoard_id;
             html += `<li class="tree-item">
                 <div class="tree-toggle ${isExpanded ? 'expanded' : ''}">
                     <span class="toggle-icon">
@@ -553,10 +553,10 @@ function filterFileTree(searchTerm) {
 }
 
 // Open specific file
-window.openFile = function(boardId, folderTitle, fileTitle) {
+window.openFile = function(board_id, folderTitle, fileTitle) {
     // Switch board if needed
-    if (boardId !== AppState.get('currentBoardId')) {
-        loadBoard(boardId);
+    if (board_id !== AppState.get('currentBoard_id')) {
+        loadBoard(board_id);
     }
     
     // Find and expand file

@@ -9,7 +9,7 @@
 // - syncService.loadInitialBoard(): Load boards from cloud on startup
 // - syncService.loadBoardsFromFirebase(): Alias for loadInitialBoard
 // - syncService.saveAllBoards(): Save all boards to cloud
-// - syncService.deleteBoard(boardId): Delete board from cloud
+// - syncService.deleteBoard(board_id): Delete board from cloud
 // - syncService.clearLocalData(): Clear local app state
 // - syncService.manualSave(): Force immediate save (bypasses idle check)
 // - addSaveIndicator(): Add save status indicator to UI
@@ -303,7 +303,7 @@ window.syncService = syncService;
                     return this.deserializeBoardFromFirebase(board);
                 });
                 AppState.set('boards', boards);
-                AppState.set('currentBoardId', boards[0].id);
+                AppState.set('currentBoard_id', boards[0].id);
                 
                 // Apply the first board to UI
                 Debug.sync.step('Applying board to UI');
@@ -458,10 +458,10 @@ window.syncService = syncService;
             setTimeout(() => {
                 if (typeof updateBoardDropdown === 'function') {
                     // Save current board ID to prevent accidental reload
-                    const currentId = AppState.get('currentBoardId');
+                    const currentId = AppState.get('currentBoard_id');
                     updateBoardDropdown();
                     // Ensure board ID hasn't changed
-                    AppState.set('currentBoardId', currentId);
+                    AppState.set('currentBoard_id', currentId);
                     Debug.sync.detail('Board dropdown updated');
                 }
             }, 200);
@@ -670,11 +670,11 @@ window.syncService = syncService;
             }
             
             const boards = AppState.get('boards');
-            const currentBoardId = AppState.get('currentBoardId');
-            let board = boards.find(b => b.id === currentBoardId);
+            const currentBoard_id = AppState.get('currentBoard_id');
+            let board = boards.find(b => b.id === currentBoard_id);
             
             Debug.sync.detail('Board data before save', {
-                boardId: board?.id,
+                board_id: board?.id,
                 boardName: board?.name,
                 foldersCount: board?.folders?.length || 0,
                 canvasHeadersCount: board?.canvasHeaders?.length || 0
@@ -718,7 +718,7 @@ window.syncService = syncService;
                     // If we had bookmarks in last known good state, restore it
                     if (this.lastKnownGoodState) {
                         const lastGood = JSON.parse(this.lastKnownGoodState);
-                        const lastBoard = lastGood.find(b => b.id === currentBoardId);
+                        const lastBoard = lastGood.find(b => b.id === currentBoard_id);
                         if (lastBoard && this.countBookmarks(lastBoard) > 0) {
                             Debug.sync.stepError('Preventing loss of bookmarks - restoring last known good state');
                             AppState.set('boards', lastGood);
@@ -799,7 +799,7 @@ window.syncService = syncService;
                     // Enhanced error logging with more details
                     console.error('[SYNC ERROR] Failed to save board:', {
                         error: result.error,
-                        boardId: board.id,
+                        board_id: board.id,
                         boardName: board.name,
                         timestamp: new Date().toISOString(),
                         hasFolders: board.folders?.length > 0,
@@ -811,7 +811,7 @@ window.syncService = syncService;
                     // Enhanced error logging with more details
                     Debug.sync.stepError('Failed to save board', {
                         error: result.error,
-                        boardId: board.id,
+                        board_id: board.id,
                         boardName: board.name,
                         timestamp: new Date().toISOString(),
                         hasFolders: board.folders?.length > 0,
@@ -1063,8 +1063,8 @@ window.syncService = syncService;
         console.log('[SYNC DEBUG] Validating board state before save');
         
         const boards = AppState.get('boards');
-        const currentBoardId = AppState.get('currentBoardId');
-        const board = boards?.find(b => b.id === currentBoardId);
+        const currentBoard_id = AppState.get('currentBoard_id');
+        const board = boards?.find(b => b.id === currentBoard_id);
         
         if (!board) {
             console.error('[SYNC ERROR] No board found for validation');
@@ -1075,7 +1075,7 @@ window.syncService = syncService;
         // Check if we're about to save empty data over existing content
         if (this.lastKnownGoodState) {
             const lastGood = JSON.parse(this.lastKnownGoodState);
-            const lastBoard = lastGood.find(b => b.id === currentBoardId);
+            const lastBoard = lastGood.find(b => b.id === currentBoard_id);
             
             if (lastBoard) {
                 const lastBookmarkCount = this.countBookmarks(lastBoard);
@@ -1610,21 +1610,21 @@ window.syncService = syncService;
     },
     
     // Load board on demand (when switching boards)
-    async loadBoardOnDemand(boardId) {
+    async loadBoardOnDemand(board_id) {
         const user = authService.getCurrentUser();
         if (!user) return;
         
-        Debug.sync.step(`Loading board ${boardId} from Firebase`);
+        Debug.sync.step(`Loading board ${board_id} from Firebase`);
         
         try {
-            const result = await dbService.loadBoard(boardId);
+            const result = await dbService.loadBoard(board_id);
             
             if (result.success && result.board) {
                 const board = this.deserializeBoardFromFirebase(result.board);
                 
                 // Update boards in AppState
                 const boards = AppState.get('boards');
-                const boardIndex = boards.findIndex(b => b.id === boardId);
+                const boardIndex = boards.findIndex(b => b.id === board_id);
                 
                 if (boardIndex !== -1) {
                     boards[boardIndex] = board;
@@ -1632,7 +1632,7 @@ window.syncService = syncService;
                 }
                 
                 // DO NOT apply to UI - let the board switching handle that
-                Debug.sync.done(`Board ${boardId} loaded from Firebase`);
+                Debug.sync.done(`Board ${board_id} loaded from Firebase`);
             }
         } catch (error) {
             Debug.sync.stepError('Error loading board', error);
@@ -1657,7 +1657,7 @@ window.syncService = syncService;
             folders: [],
             canvasHeaders: []
         }]);
-        AppState.set('currentBoardId', 0);
+        AppState.set('currentBoard_id', 0);
         
         // Clear canvas content
         const canvas = document.getElementById('canvas');
@@ -1679,13 +1679,13 @@ window.syncService = syncService;
     },
     
     // Delete board from Firebase
-    async deleteBoard(boardId) {
+    async deleteBoard(board_id) {
         const user = authService.getCurrentUser();
         if (!user) return { success: false, error: 'Not authenticated' };
         
-        const result = await dbService.deleteBoard(boardId);
+        const result = await dbService.deleteBoard(board_id);
         if (result.success) {
-            Debug.sync.step(`Board ${boardId} deleted from Firebase`);
+            Debug.sync.step(`Board ${board_id} deleted from Firebase`);
         } else {
             Debug.sync.stepError('Failed to delete board', result.error);
         }
@@ -1723,9 +1723,7 @@ function updateGuestButton(user) {
         guestButton.style.fontStyle = 'italic';
         guestButton.title = 'Click to sign up or sign in';
         guestButton.onclick = () => {
-            if (window.authUI) {
-                window.authUI.show();
-            }
+            // Auth UI removed - use sign out button instead
         };
         Debug.sync.detail('Guest button updated', { guestId });
     } else if (user && !user.isAnonymous) {

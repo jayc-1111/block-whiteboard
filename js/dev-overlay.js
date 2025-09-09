@@ -77,8 +77,8 @@ function updateDevOverlay() {
         html += `<div>Board: ${devInfo.boardName}</div>`;
     } else if (window.AppState) {
         const boards = AppState.get('boards');
-        const currentBoardId = AppState.get('currentBoardId');
-        const currentBoard = boards?.find(b => b.id === currentBoardId);
+        const currentBoard_id = AppState.get('currentBoard_id');
+        const currentBoard = boards?.find(b => b.id === currentBoard_id);
         html += `<div>Board: ${currentBoard?.name || 'Unknown'}</div>`;
     }
     

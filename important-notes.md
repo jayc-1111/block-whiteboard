@@ -740,7 +740,7 @@
 - **Problem**: File tree showing "Unknown Folder" despite setting folder titles
 - **Investigation**: Added comprehensive debugging to understand data structure
 - **Changes**:
-  - Added logging for boards, currentBoardId, and board structure
+  - Added logging for boards, currentBoard_id, and board structure
   - Added fallback to check both `currentBoard.folders` and `AppState.get('folders')`
   - Enhanced folder title extraction with detailed logging
   - Enhanced file title extraction with null-safety checks
@@ -960,11 +960,11 @@
 ### Final Appwrite Database Schema - Optimized for Realtime + Search
 
 **Collaboration Database** (5 indexes used):
-- `boards` → `updatedAt DESC` (dashboard sorting)
-- `folders` → `boardId + position` (drag/drop ordering)
-- `files` → `folderId + updatedAt` (file trees + recent activity)
-- `drawingPaths` → `boardId + createdAt` (stroke replay)
-- `canvasHeaders` → `boardId` (canvas element fetch)
+- `boards` → `$updatedAt DESC` (dashboard sorting)
+- `folders` → `board_id + position` (drag/drop ordering)
+- `files` → `folderId + $updatedAt` (file trees + recent activity)
+- `drawingPaths` → `board_id + createdAt` (stroke replay)
+- `canvasHeaders` → `board_id` (canvas element fetch)
 
 **Content Database** (1 index used):
 - `bookmarks` → `fileId + createdAt` (bookmark grouping + chronology)
@@ -976,10 +976,10 @@
 4. **Compound indexes for efficiency** - Each index serves multiple query patterns
 
 **Future Search Options** (when needed):
-- `files: boardId + name` (board-level file search)
-- `files: name + updatedAt` (global file search)
-- `boards: name + updatedAt` (board search)
-- `bookmarks: boardId + title` (cross-file bookmark search)
+- `files: board_id + name` (board-level file search)
+- `files: name + $updatedAt` (global file search)
+- `boards: name + $updatedAt` (board search)
+- `bookmarks: board_id + title` (cross-file bookmark search)
 
 **Why This Works**:
 - Minimal overhead (6/10 indexes used)
@@ -998,30 +998,30 @@
 **Implemented Collections & Indexes**:
 
 **Collaboration Database** (5/5 indexes):
-1. `boards` → `$updatedAt DESC` ✅ (dashboard sorting)
-2. `folders` → `boardId + sortOrder ASC` ✅ (drag/drop ordering)
-3. `files` → `folderId + updatedAt DESC` ✅ (file trees + recent activity)
-4. `drawingPaths` → `boardId + createdAt ASC` ✅ (stroke replay)
-5. `canvasHeaders` → `boardId ASC` ✅ (canvas element fetch)
+1. `boards` → `$$updatedAt DESC` ✅ (dashboard sorting)
+2. `folders` → `board_id + sortOrder ASC` ✅ (drag/drop ordering)
+3. `files` → `folderId + $updatedAt DESC` ✅ (file trees + recent activity)
+4. `drawingPaths` → `board_id + createdAt ASC` ✅ (stroke replay)
+5. `canvasHeaders` → `board_id ASC` ✅ (canvas element fetch)
 
 **Content Database** (1/5 indexes):
 1. `bookmarks` → `fileId + createdAt DESC` ✅ (bookmark grouping + chronology)
 
 **New Attributes Added**:
 - `folders.sortOrder` (integer, default: 0) - for proper drag/drop indexing
-- `files.updatedAt` (datetime) - for recent file tracking
+- `files.$updatedAt` (datetime) - for recent file tracking
 - `bookmarks.*` (complete new collection)
 
 **Optimization Notes**:
-- Removed redundant single-field indexes (boardId-only indexes replaced by compounds)
+- Removed redundant single-field indexes (board_id-only indexes replaced by compounds)
 - Added `sortOrder` integer field for folders (string position field was too large for indexing)
 - Bookmarks collection ready with screenshot support (100KB limit)
 - All compound indexes use appropriate sort orders for query patterns
 
 **Ready for Search**:
 - 4 free index slots reserved in content DB
-- Future options: `files: boardId + name`, `boards: name + updatedAt`
-- `bookmarks: boardId + title` for cross-file bookmark search
+- Future options: `files: board_id + name`, `boards: name + $updatedAt`
+- `bookmarks: board_id + title` for cross-file bookmark search
 
 ### 44. localStorage Bridge Implementation (8/8/2025)
 - **Problem**: Script injection was unreliable due to browser security restrictions

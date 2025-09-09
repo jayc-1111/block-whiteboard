@@ -97,11 +97,11 @@ async function saveCurrentBoard() {
         return;
     }
 
-    const currentBoardId = AppState.get('currentBoardId');
-    let board = boards.find(b => b.id === currentBoardId);
+    const currentBoard_id = AppState.get('currentBoard_id');
+    let board = boards.find(b => b.id === currentBoard_id);
     if (!board) {
         Debug.board.error('Current board not found', {
-            boardId: currentBoardId,
+            board_id: currentBoard_id,
             availableBoards: boards.map(b => ({ id: b.id, name: b.name })),
             boardsLength: boards.length
         });
@@ -244,7 +244,7 @@ async function saveCurrentBoard() {
                     if (bookmarks.length === 0 && window.syncService?.lastKnownGoodState) {
                         try {
                             const lastGood = JSON.parse(window.syncService.lastKnownGoodState);
-                            const lastBoard = lastGood.find(b => b.id === currentBoardId);
+                            const lastBoard = lastGood.find(b => b.id === currentBoard_id);
                             if (lastBoard?.folders) {
                                 // Try to find this file's bookmarks from last known good state
                                 for (const lastCat of lastBoard.folders) {
@@ -417,7 +417,6 @@ async function saveCurrentBoard() {
         // Format board data to match test-save.js structure
         const boardToSave = {
             id: board.id,
-            boardId: board.id.toString(),
             name: board.name,
             folders: board.folders,
             canvasHeaders: board.canvasHeaders,
@@ -454,14 +453,14 @@ async function saveCurrentBoard() {
     }
 }
 
-function deleteBoard(boardId) {
+function deleteBoard(board_id) {
     const boards = AppState.get('boards');
     if (boards.length <= 1) {
         alert('Cannot delete the last board');
         return;
     }
     
-    const boardIndex = boards.findIndex(b => b.id === boardId);
+    const boardIndex = boards.findIndex(b => b.id === board_id);
     if (boardIndex === -1) return;
     
     // Get board name for logging
@@ -478,11 +477,11 @@ function deleteBoard(boardId) {
     AppState.set('boards', boards);
     
     // Handle current board switching
-    const currentBoardId = AppState.get('currentBoardId');
-    if (currentBoardId === boardId) {
+    const currentBoard_id = AppState.get('currentBoard_id');
+    if (currentBoard_id === board_id) {
         loadBoard(0);
-    } else if (currentBoardId > boardId) {
-        AppState.set('currentBoardId', currentBoardId - 1);
+    } else if (currentBoard_id > board_id) {
+        AppState.set('currentBoard_id', currentBoard_id - 1);
     }
     
     updateBoardDropdown();
@@ -493,12 +492,12 @@ function deleteBoard(boardId) {
     // Original Firebase deletion (commented out):
     // Delete from cloud if sync service is available
     // if (window.syncService) {
-    //     window.syncService.deleteBoard(boardId);
+    //     window.syncService.deleteBoard(board_id);
     // }
 }
 
-async function loadBoard(boardId) {
-    Debug.board.start(`Loading board ${boardId}`);
+async function loadBoard(board_id) {
+    Debug.board.start(`Loading board ${board_id}`);
     
     // Save current board state before switching
     try {
@@ -534,20 +533,20 @@ async function loadBoard(boardId) {
     
     // Find and load the target board
     const boards = AppState.get('boards');
-    let board = boards.find(b => b.id === boardId);
+    let board = boards.find(b => b.id === board_id);
     if (!board) {
-        Debug.board.error(`Board with ID ${boardId} not found`);
+        Debug.board.error(`Board with ID ${board_id} not found`);
         return;
     }
     
-    AppState.set('currentBoardId', boardId);
+    AppState.set('currentBoard_id', board_id);
     
     // Load board from cloud on demand
     if (window.syncService && typeof window.syncService.loadBoardOnDemand === 'function') {
         Debug.board.step('Loading board from cloud...');
-        await window.syncService.loadBoardOnDemand(boardId);
+        await window.syncService.loadBoardOnDemand(board_id);
         // Re-get board after cloud load
-        board = AppState.get('boards').find(b => b.id === boardId);
+        board = AppState.get('boards').find(b => b.id === board_id);
     }
     
     // Load folders
@@ -657,8 +656,8 @@ function showPaymentModal() {
 // Show onboarding modal if board is empty
 function showOnboardingIfEmpty() {
     const boards = AppState.get('boards');
-    const currentBoardId = AppState.get('currentBoardId');
-    const currentBoard = boards.find(b => b.id === currentBoardId);
+    const currentBoard_id = AppState.get('currentBoard_id');
+    const currentBoard = boards.find(b => b.id === currentBoard_id);
     
     if (currentBoard && 
         (!currentBoard.folders || currentBoard.folders.length === 0) &&
@@ -681,8 +680,8 @@ window.closeOnboardingModal = function() {
     
     // Mark onboarding as shown for this board
     const boards = AppState.get('boards');
-    const currentBoardId = AppState.get('currentBoardId');
-    const currentBoard = boards.find(b => b.id === currentBoardId);
+    const currentBoard_id = AppState.get('currentBoard_id');
+    const currentBoard = boards.find(b => b.id === currentBoard_id);
     
     if (currentBoard) {
         currentBoard.onboardingShown = true;
@@ -733,12 +732,12 @@ function updateBoardDropdown() {
     dropdownList.innerHTML = '';
     
     const boards = AppState.get('boards');
-    const currentBoardId = AppState.get('currentBoardId');
+    const currentBoard_id = AppState.get('currentBoard_id');
     
     // Add existing boards
     boards.forEach(board => {
         const li = document.createElement('li');
-        li.className = 'element' + (board.id === currentBoardId ? ' active' : '');
+        li.className = 'element' + (board.id === currentBoard_id ? ' active' : '');
         li.innerHTML = `
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#7e8590" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <rect width="18" height="18" x="3" y="3" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/>
@@ -778,19 +777,19 @@ function updateBoardDropdown() {
         `;
         deleteBoardLi.addEventListener('click', () => {
             const boards = AppState.get('boards');
-            const currentBoardId = AppState.get('currentBoardId');
-            const currentBoard = boards.find(b => b.id === currentBoardId);
+            const currentBoard_id = AppState.get('currentBoard_id');
+            const currentBoard = boards.find(b => b.id === currentBoard_id);
             
             if (currentBoard && typeof showConfirmDialog === 'function') {
                 showConfirmDialog(
                     'Delete Board',
                     `Are you sure you want to delete "${currentBoard.name}"?`,
-                    () => deleteBoard(currentBoardId)
+                    () => deleteBoard(currentBoard_id)
                 );
             } else {
                 // Fallback confirmation
                 if (confirm(`Are you sure you want to delete "${currentBoard ? currentBoard.name : 'this board'}"?`)) {
-                    deleteBoard(currentBoardId);
+                    deleteBoard(currentBoard_id);
                 }
             }
         });
@@ -807,11 +806,11 @@ function setupBoardNameEditing() {
     
     boardNameEl.addEventListener('blur', async () => {
         const boards = AppState.get('boards');
-        const currentBoardId = AppState.get('currentBoardId');
-        const board = boards.find(b => b.id === currentBoardId);
+        const currentBoard_id = AppState.get('currentBoard_id');
+        const board = boards.find(b => b.id === currentBoard_id);
 
         if (board) {
-            const newName = boardNameEl.textContent.trim() || `${CONSTANTS.DEFAULT_BOARD_NAME} ${currentBoardId + 1}`;
+            const newName = boardNameEl.textContent.trim() || `${CONSTANTS.DEFAULT_BOARD_NAME} ${currentBoard_id + 1}`;
             board.name = newName;
             boardNameEl.textContent = newName;
 

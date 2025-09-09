@@ -10,7 +10,7 @@ const AppState = (() => {
             canvasHeaders: [],
             drawingPaths: []
         }],
-        currentBoardId: 0,
+        currentBoard_id: 0,
         isDevMode: false,
         isGridSnapEnabled: true,
         
@@ -36,7 +36,7 @@ const AppState = (() => {
     
     // List of keys that should sync to global variables
     const globalSyncKeys = [
-        'folders', 'boards', 'currentBoardId', 'isDevMode', 'isGridSnapEnabled',
+        'folders', 'boards', 'currentBoard_id', 'isDevMode', 'isGridSnapEnabled',
         'draggedFile', 'currentFolder', 'currentCanvasHeader', 'offset', 
         'expandedFile', 'highestZIndex', 'selectedItems', 'isSelecting',
         'selectionStart', 'selectionRectangle', 'isDraggingMultiple', 'multiDragOffsets'
@@ -114,7 +114,7 @@ const AppState = (() => {
         // Commonly used getters
         getFolders: () => state.folders,
         getBoards: () => state.boards,
-        getCurrentBoardId: () => state.currentBoardId,
+        getCurrentBoard_id: () => state.currentBoard_id,
         getSelectedItems: () => state.selectedItems,
         
         // Initialize global sync
@@ -165,7 +165,7 @@ let boards = AppState.get('boards') || [{
     headers: [],
     drawingPaths: []
 }];
-let currentBoardId = AppState.get('currentBoardId') || 0;
+let currentBoard_id = AppState.get('currentBoard_id') || 0;
 let isDevMode = AppState.get('isDevMode') || false;
 let isGridSnapEnabled = AppState.get('isGridSnapEnabled') !== false;
 
@@ -228,8 +228,8 @@ const LocalSettings = {
             localStorage.setItem('onboardingShown', JSON.stringify(value));
             // Update the current board's onboardingShown
             const boards = AppState.get('boards') || [];
-            const currentBoardId = AppState.get('currentBoardId') || 0;
-            const currentBoard = boards.find(b => b.id === currentBoardId);
+            const currentBoard_id = AppState.get('currentBoard_id') || 0;
+            const currentBoard = boards.find(b => b.id === currentBoard_id);
             if (currentBoard) {
                 currentBoard.onboardingShown = value;
                 AppState.set('boards', boards);
@@ -254,8 +254,8 @@ const LocalSettings = {
 
         // Update current board's onboarding status
         const boards = AppState.get('boards') || [];
-        const currentBoardId = AppState.get('currentBoardId') || 0;
-        const currentBoard = boards.find(b => b.id === currentBoardId);
+        const currentBoard_id = AppState.get('currentBoard_id') || 0;
+        const currentBoard = boards.find(b => b.id === currentBoard_id);
         if (currentBoard && !currentBoard.onboardingShown) {
             currentBoard.onboardingShown = onboardingShown;
             AppState.set('boards', boards);

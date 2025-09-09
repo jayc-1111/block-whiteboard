@@ -38,8 +38,8 @@ function toggleDevMode() {
 // Update board info in dev overlay
 function updateDevBoardInfo() {
     const boards = AppState.get('boards');
-    const currentBoardId = AppState.get('currentBoardId');
-    const board = boards?.find(b => b.id === currentBoardId);
+    const currentBoard_id = AppState.get('currentBoard_id');
+    const board = boards?.find(b => b.id === currentBoard_id);
     
     if (board) {
         window.setDevInfo?.('boardName', board.name);

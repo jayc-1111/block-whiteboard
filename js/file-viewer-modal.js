@@ -51,7 +51,7 @@ function initializeFileViewer() {
                             id: `${board.id}-${folder.title}-${file.title}`,
                             title: file.title,
                             content: file.content,
-                            boardId: board.id,
+                            board_id: board.id,
                             boardName: board.name,
                             folderTitle: folder.title,
                             type: 'file',
@@ -257,7 +257,7 @@ function openFile(file) {
     
     // First, load the board that contains this file
     if (window.loadBoard) {
-        window.loadBoard(file.boardId);
+        window.loadBoard(file.board_id);
     }
     
     // Then find and expand the file
@@ -292,7 +292,7 @@ function deleteFile(file) {
     if (confirm(`Are you sure you want to delete "${file.title}"?`)) {
         // Load the board first
         const boards = AppState.get('boards') || [];
-        const board = boards.find(b => b.id === file.boardId);
+        const board = boards.find(b => b.id === file.board_id);
         
         if (board && board.folders) {
             // Find and remove the file from the board data

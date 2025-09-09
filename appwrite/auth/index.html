@@ -11,8 +11,11 @@
     <!-- Google Fonts - Inter for auth page -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
-    <!-- Appwrite SDK -->
-    <script src="https://cdn.jsdelivr.net/npm/appwrite@17.0.0"></script>
+    <!-- Load Appwrite SDK v20 -->
+    <script src="https://cdn.jsdelivr.net/npm/appwrite@20.0.0"></script>
+
+    <!-- Configuration layer (auth page needs this for database setup) -->
+    <script src="../appwrite-config.js"></script>
 
     <!-- Styles -->
     <style>
@@ -307,45 +310,69 @@
     </div>
 
     <script>
-        // === ZENBAN MANDATORY AUTHENTICATION PAGE ===
+    // === ZENBAN SECURE CLIENT-SIDE AUTHENTICATION (v20) ===
+    // Use global variables initialized in appwrite-config.js
+    const account = window.appwriteAccount;
+    
+    // Enhanced error handling for auth failures
+    function enhancedHandleAuthError(error) {
+        console.error('Enhanced auth error handling:', error);
+        
+        // Check if it's a network error
+        if (!navigator.onLine) {
+            showError('Network connection error. Please check your internet connection.');
+            return;
+        }
+        
+        // Check for specific error codes with better user messages
+        switch (error.code) {
+            case 401:
+                showError('Invalid email or password. Please try again.');
+                break;
+            case 409:
+                showError(isSignInMode ? 'Invalid email or password' : 'This email is already registered. Please sign in or use a different email.');
+                break;
+            case 400:
+                if (error.message.includes('password')) {
+                    showError('Password must be at least 8 characters long.');
+                } else if (error.message.includes('email')) {
+                    showError('Please enter a valid email address.');
+                } else {
+                    showError('Invalid request. Please check your input and try again.');
+                }
+                break;
+            case 500:
+                showError('Server error. Please try again later.');
+                break;
+            case 0:
+            case 'NETWORK_ERROR':
+                showError('Network error. Please check your connection and try again.');
+                break;
+            default:
+                showError(error.message || 'Authentication failed. Please try again.');
+        }
+    }
 
-        // Appwrite configuration already declared in appwrite-config.js
-        // const APPWRITE_CONFIG = { ... } // ← REMOVED to fix redeclaration error
+    // DOM Elements
+    const form = document.querySelector('.auth-form');
+    const emailInput = document.getElementById('authEmail');
+    const passwordInput = document.getElementById('authPassword');
+    const confirmPasswordInput = document.getElementById('authConfirmPassword');
+    const confirmPasswordGroup = document.getElementById('confirmPasswordGroup');
+    const submitBtn = document.querySelector('.auth-submit');
+    const submitText = document.querySelector('.auth-submit-text');
+    const loadingElement = document.getElementById('authLoading');
+    const errorElement = document.getElementById('authError');
+    const successElement = document.getElementById('authSuccess');
+    const signinTab = document.querySelector('.auth-signin-tab');
+    const signupTab = document.querySelector('.auth-signup-tab');
+    const googleBtn = document.getElementById('googleAuthBtn');
 
-        // Initialize Appwrite client
-        const client = new Appwrite.Client()
-            .setEndpoint(APPWRITE_CONFIG.endpoint)
-            .setProject(APPWRITE_CONFIG.projectId);
-
-        const account = new Appwrite.Account(client);
-
-        // Auth state
         let isSignInMode = false;
 
-        // DOM Elements
-        const form = document.querySelector('.auth-form');
-        const emailInput = document.getElementById('authEmail');
-        const passwordInput = document.getElementById('authPassword');
-        const confirmPasswordInput = document.getElementById('authConfirmPassword');
-        const confirmPasswordGroup = document.getElementById('confirmPasswordGroup');
-        const submitBtn = document.querySelector('.auth-submit');
-        const submitText = document.querySelector('.auth-submit-text');
-        const loadingElement = document.getElementById('authLoading');
-        const errorElement = document.getElementById('authError');
-        const successElement = document.getElementById('authSuccess');
-        const signinTab = document.querySelector('.auth-signin-tab');
-        const signupTab = document.querySelector('.auth-signup-tab');
-        const googleBtn = document.getElementById('googleAuthBtn');
-
         // Tab switching
-        signinTab.addEventListener('click', () => switchToSignIn());
-        signupTab.addEventListener('click', () => switchToSignUp());
-
-        // Form submission
-        form.addEventListener('submit', handleSubmit);
-
-        // Google sign-in
-        googleBtn.addEventListener('click', handleGoogleSignIn);
+        signinTab.addEventListener('click', switchToSignIn);
+        signupTab.addEventListener('click', switchToSignUp);
 
         function switchToSignIn() {
             isSignInMode = true;
@@ -367,14 +394,14 @@
             clearMessages();
         }
 
-        async function handleSubmit(event) {
+        // Form submit
+        form.addEventListener('submit', async (event) => {
             event.preventDefault();
             clearMessages();
 
             const email = emailInput.value.trim();
             const password = passwordInput.value.trim();
 
-            // Validation
             if (!email || !password) {
                 showError('Please fill in all required fields');
                 return;
@@ -392,122 +419,99 @@
                 }
             }
 
-            // Show loading state
             setLoading(true);
 
             try {
                 if (isSignInMode) {
-                    // Sign In
-                    const session = await account.createEmailPasswordSession(email, password);
+                    // --- Sign In ---
+                    await account.createEmailPasswordSession(email, password);
                     await handleAuthSuccess();
                 } else {
-                    // Sign Up
-                    const user = await account.create(
+                    // --- Sign Up ---
+                    await account.create(
                         Appwrite.ID.unique(),
                         email,
                         password
                     );
-                    // Automatically sign in after signup
-                    const session = await account.createEmailPasswordSession(email, password);
+
+                    // Auto-login after signup
+                    await account.createEmailPasswordSession(email, password);
                     showSuccess('Account created successfully!');
                     await handleAuthSuccess();
                 }
             } catch (error) {
                 console.error('Authentication error:', error);
-
-                if (error.code === 409) {
-                    if (isSignInMode) {
-                        showError('Invalid email or password');
-                    } else {
-                        showError('Email already in use. Try signing in instead.');
-                    }
-                } else if (error.code === 401) {
-                    showError('Invalid email or password');
-                } else if (error.code === 400) {
-                    if (error.message.includes('password')) {
-                        showError('Password must be at least 8 characters');
-                    } else {
-                        showError('Please check your email format');
-                    }
-                } else {
-                    showError(error.message || 'Authentication failed. Please try again.');
-                }
+                enhancedHandleAuthError(error);
             } finally {
                 setLoading(false);
             }
-        }
+        });
 
-        async function handleGoogleSignIn() {
+        // Google OAuth
+        googleBtn.addEventListener('click', async () => {
             clearMessages();
             setLoading(true, 'Continue with Google');
 
             try {
-                // Get current origin for redirect URLs
-                const currentOrigin = window.location.origin;
-                const successUrl = `${currentOrigin}/index.html?auth=success`;
-                const failureUrl = `${currentOrigin}/auth/index.html?error=oauth_failed`;
+                const origin = window.location.origin;
+                const successUrl = `${origin}/index.html?auth=success`;
+                const failureUrl = `${origin}/auth/index.html?error=oauth_failed`;
 
-                // Start OAuth flow
-                await account.createOAuth2Session(
-                    'google',
-                    successUrl,
-                    failureUrl,
-                    ['https://www.googleapis.com/auth/userinfo.email', 'https://www.googleapis.com/auth/userinfo.profile']
-                );
-
-                // Page will redirect, no need to do anything else
+                // This will redirect the user to Google login
+                await account.createOAuth2Session('google', successUrl, failureUrl);
             } catch (error) {
                 console.error('Google OAuth error:', error);
-
-                if (error.message.includes('popup') || error.message.includes('blocked')) {
-                    showError('Popups blocked. Please allow popups and try again.');
-                } else {
-                    showError('Google sign-in failed. Try using email authentication instead.');
-                }
-
+                showError('Google sign-in failed. Please try email login.');
                 setLoading(false);
             }
-        }
+        });
 
+        // Handle auth success
         async function handleAuthSuccess() {
-            // Check if we're authenticated
             try {
                 const user = await account.get();
-                console.log('Authentication successful:', user.email);
 
-                // Save session info to localStorage for main app
                 const authData = {
                     userId: user.$id,
                     email: user.email,
                     name: user.name,
                     authenticatedAt: new Date().toISOString()
                 };
-
                 localStorage.setItem('zenbanAuth', JSON.stringify(authData));
 
-                // Show success message briefly
                 showSuccess('Authentication successful! Redirecting...');
 
-                // Redirect to main app after short delay
                 setTimeout(() => {
                     window.location.href = '/index.html';
                 }, 1500);
-
             } catch (error) {
-                console.error('Failed to get user after auth:', error);
-                showError('Authentication succeeded but failed to load user. Please try again.');
-                setLoading(false);
+                console.error('Failed to get user:', error);
+                showError('Authentication succeeded but failed to load user.');
             }
         }
 
-        function showError(message) {
-            errorElement.textContent = message;
+        // Handle auth errors
+        function handleAuthError(error) {
+            if (error.code === 409) {
+                showError(isSignInMode ? 'Invalid email or password' : 'Email already in use');
+            } else if (error.code === 401) {
+                showError('Invalid email or password');
+            } else if (error.code === 400 && error.message.includes('password')) {
+                showError('Password must be at least 8 characters');
+            } else {
+                showError(error.message || 'Authentication failed. Please try again.');
+            }
+        }
+
+        // Utility functions
+        function showError(msg) {
+            errorElement.textContent = msg;
             errorElement.style.display = 'block';
             successElement.style.display = 'none';
         }
 
-        function showSuccess(message) {
-            successElement.textContent = message;
+        function showSuccess(msg) {
+            successElement.textContent = msg;
             successElement.style.display = 'block';
             errorElement.style.display = 'none';
         }
@@ -524,39 +528,20 @@
             loadingElement.style.display = isLoading ? 'inline-block' : 'none';
         }
 
-        // Check for auth success/error on page load
-        window.addEventListener('DOMContentLoaded', () => {
-            const urlParams = new URLSearchParams(window.location.search);
+        // Check existing auth state on page load
+        window.addEventListener('DOMContentLoaded', async () => {
+            const params = new URLSearchParams(window.location.search);
 
-            if (urlParams.get('auth') === 'success') {
-                console.log('OAuth success detected');
+            if (params.get('auth') === 'success') {
                 cleanUrl();
-                handleAuthSuccess();
-            } else if (urlParams.get('error') === 'oauth_failed') {
-                console.log('OAuth failure detected');
+                await handleAuthSuccess();
+            } else if (params.get('error') === 'oauth_failed') {
                 cleanUrl();
                 showError('Google authentication failed. Please try again.');
-            }
-        });
-
-        function cleanUrl() {
-            // Remove query parameters
-            const url = new URL(window.location);
-            url.search = '';
-            window.history.replaceState({}, document.title, url.pathname);
-        }
-
-        // Authentication state checking
-        async function checkAuthenticationState() {
+            } else {
             try {
-                console.log('🔍 Checking existing authentication...');
                 const user = await account.get();
-
-                // If user is already authenticated, redirect to main app
-                if (user && (!user.labels || !user.labels.includes('anonymous'))) {
-                    console.log('✅ User already authenticated, redirecting to main app:', user.email);
-
-                    // Save session info for main app
+                if (user) {
                     const authData = {
                         userId: user.$id,
                         email: user.email,
@@ -564,50 +549,20 @@
                         authenticatedAt: new Date().toISOString()
                     };
                     localStorage.setItem('zenbanAuth', JSON.stringify(authData));
-
-                    // Show success message briefly
-                    showSuccess('You\'re already logged in!');
-
-                    // Redirect to main app after short delay
-                    setTimeout(() => {
-                        window.location.href = '/index.html';
-                    }, 1500);
-
-                    return true;
+                    showSuccess("You're already logged in!");
+                    setTimeout(() => window.location.href = '/index.html', 1500);
                 }
-
-                return false;
-            } catch (error) {
-                console.log('ℹ️ User not authenticated:', error.message);
-                return false;
+            } catch (err) {
+                console.log('User not authenticated:', err.message);
             }
-        }
-
-        // Check auth state when page loads
-        window.addEventListener('DOMContentLoaded', async () => {
-            // Also check for OAuth success/error
-            const urlParams = new URLSearchParams(window.location.search);
-
-            if (urlParams.get('auth') === 'success') {
-                console.log('OAuth success detected');
-                cleanUrl();
-                await handleAuthSuccess();
-            } else if (urlParams.get('error') === 'oauth_failed') {
-                console.log('OAuth failure detected');
-                cleanUrl();
-                showError('Google authentication failed. Please try again.');
-            } else {
-                // Check if user is already authenticated
-                const isAuthenticated = await checkAuthenticationState();
-                if (!isAuthenticated) {
-                    console.log('🔓 User needs to authenticate - showing auth interface');
-                }
             }
         });
 
-        // Make Appwrite client available globally for other scripts
-        window.appwriteClient = client;
-        window.appwriteAccount = account;
+        function cleanUrl() {
+            const url = new URL(window.location);
+            url.search = '';
+            window.history.replaceState({}, document.title, url.pathname);
+        }
     </script>
 </body>
 </html>

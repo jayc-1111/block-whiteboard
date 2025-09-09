@@ -321,8 +321,8 @@ function addFileToFolder(folderOrIndex, title = 'New File', content = null, book
     
     // Store file reference in AppState for bookmark persistence
     const boards = AppState.get('boards');
-    const currentBoardId = AppState.get('currentBoardId');
-    const board = boards.find(b => b.id === currentBoardId);
+    const currentBoard_id = AppState.get('currentBoard_id');
+    const board = boards.find(b => b.id === currentBoard_id);
     if (board && board.folders) {
         const folderIndex = AppState.get('folders').indexOf(folder);
         if (folderIndex !== -1 && board.folders[folderIndex]) {
@@ -427,8 +427,8 @@ function expandFile(file) {
     
     // Find file's location in AppState
     const boards = AppState.get('boards');
-    const currentBoardId = AppState.get('currentBoardId');
-    const board = boards.find(b => b.id === currentBoardId);
+    const currentBoard_id = AppState.get('currentBoard_id');
+    const board = boards.find(b => b.id === currentBoard_id);
     let fileLocation = null;
     
     if (board && board.folders) {
@@ -1075,8 +1075,8 @@ function expandFile(file) {
                     // Update AppState
                     if (expandedFile.appStateLocation) {
                         const boards = AppState.get('boards');
-                        const currentBoardId = AppState.get('currentBoardId');
-                        const board = boards.find(b => b.id === currentBoardId);
+                        const currentBoard_id = AppState.get('currentBoard_id');
+                        const board = boards.find(b => b.id === currentBoard_id);
 
                         if (board && board.folders) {
                             const { folderIndex, fileIndex } = expandedFile.appStateLocation;
@@ -1179,8 +1179,8 @@ function removeBookmark(expandedFile, bookmarkIndex, sectionElement) {
             // Update AppState immediately
             if (expandedFile.appStateLocation) {
                 const boards = AppState.get('boards');
-                const currentBoardId = AppState.get('currentBoardId');
-                const board = boards.find(b => b.id === currentBoardId);
+                const currentBoard_id = AppState.get('currentBoard_id');
+                const board = boards.find(b => b.id === currentBoard_id);
                 
                 if (board && board.folders) {
                     const { folderIndex, fileIndex } = expandedFile.appStateLocation;
@@ -1301,8 +1301,8 @@ function reorderBookmark(expandedFile, fromIndex, toIndex, sectionElement) {
     // Update AppState immediately
     if (expandedFile.appStateLocation) {
         const boards = AppState.get('boards');
-        const currentBoardId = AppState.get('currentBoardId');
-        const board = boards.find(b => b.id === currentBoardId);
+        const currentBoard_id = AppState.get('currentBoard_id');
+        const board = boards.find(b => b.id === currentBoard_id);
         
         if (board && board.folders) {
             const { folderIndex, fileIndex } = expandedFile.appStateLocation;
@@ -1408,8 +1408,8 @@ function collapseFile(file) {
             sectionIds: file.sections.map(s => s.id)
         });
         const boards = AppState.get('boards');
-        const currentBoardId = AppState.get('currentBoardId');
-        const board = boards.find(b => b.id === currentBoardId);
+        const currentBoard_id = AppState.get('currentBoard_id');
+        const board = boards.find(b => b.id === currentBoard_id);
         
         if (board && board.folders) {
             const { folderIndex, fileIndex } = file.appStateLocation;
@@ -1806,8 +1806,8 @@ window.handleBookmarkData = function(data) {
     // Update AppState immediately
     if (expandedFile.appStateLocation) {
         const boards = AppState.get('boards');
-        const currentBoardId = AppState.get('currentBoardId');
-        const board = boards.find(b => b.id === currentBoardId);
+        const currentBoard_id = AppState.get('currentBoard_id');
+        const board = boards.find(b => b.id === currentBoard_id);
         
         if (board && board.folders) {
             const { folderIndex, fileIndex } = expandedFile.appStateLocation;
@@ -2016,8 +2016,8 @@ function createSection(file, bookmarks = [], existingSectionId = null) {
     // Save to AppState
     if (file.appStateLocation) {
         const boards = AppState.get('boards');
-        const currentBoardId = AppState.get('currentBoardId');
-        const board = boards.find(b => b.id === currentBoardId);
+        const currentBoard_id = AppState.get('currentBoard_id');
+        const board = boards.find(b => b.id === currentBoard_id);
         
         if (board && board.folders) {
             const { folderIndex, fileIndex } = file.appStateLocation;
@@ -2101,8 +2101,8 @@ function createSection(file, bookmarks = [], existingSectionId = null) {
     sectionTitle.addEventListener('blur', function() {
         if (file.appStateLocation) {
             const boards = AppState.get('boards');
-            const currentBoardId = AppState.get('currentBoardId');
-            const board = boards.find(b => b.id === currentBoardId);
+            const currentBoard_id = AppState.get('currentBoard_id');
+            const board = boards.find(b => b.id === currentBoard_id);
             
             if (board && board.folders) {
                 const { folderIndex, fileIndex } = file.appStateLocation;
@@ -2257,8 +2257,8 @@ async function initializeEditorJS(file, container = null) {
             // Save to AppState
             if (file.appStateLocation) {
                 const boards = AppState.get('boards');
-                const currentBoardId = AppState.get('currentBoardId');
-                const board = boards.find(b => b.id === currentBoardId);
+                const currentBoard_id = AppState.get('currentBoard_id');
+                const board = boards.find(b => b.id === currentBoard_id);
                 
                 if (board && board.folders) {
                     const { folderIndex, fileIndex } = file.appStateLocation;

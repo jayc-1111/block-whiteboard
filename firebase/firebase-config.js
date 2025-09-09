@@ -19,8 +19,8 @@
 //    Key Functions (Previously Exported):
 //    - dbService.saveBoard(boardData) → Appwrite: databases.createDocument() or databases.updateDocument()
 //    - dbService.loadBoards() → Appwrite: databases.listDocuments()
-//    - dbService.loadBoard(boardId) → Appwrite: databases.getDocument()
-//    - dbService.deleteBoard(boardId) → Appwrite: databases.deleteDocument()
+//    - dbService.loadBoard(board_id) → Appwrite: databases.getDocument()
+//    - dbService.deleteBoard(board_id) → Appwrite: databases.deleteDocument()
 //    - dbService.getUserProfile() → Appwrite: databases.getDocument()
 //
 // 3. offlineService: Provided basic offline capability control
@@ -385,8 +385,8 @@
 // The dbService object provided these database functions:
 // - saveBoard(boardData): Save board to cloud database  → Appwrite: databases.createDocument() or databases.updateDocument()
 // - loadBoards(): Load all boards for current user  → Appwrite: databases.listDocuments()
-// - loadBoard(boardId): Load specific board by ID  → Appwrite: databases.getDocument()
-// - deleteBoard(boardId): Delete board from cloud database  → Appwrite: databases.deleteDocument()
+// - loadBoard(board_id): Load specific board by ID  → Appwrite: databases.getDocument()
+// - deleteBoard(board_id): Delete board from cloud database  → Appwrite: databases.deleteDocument()
 // - getUserProfile(): Get current user's profile data  → Appwrite: databases.getDocument()
 
 /*
@@ -400,7 +400,7 @@
         Debug.firebase.detail('Saving board to Firebase', {
             uid: currentUser.uid,
             isGuest: currentUser.isAnonymous,
-            boardId: boardData.id,
+            board_id: boardData.id,
             boardName: boardData.name
         });
 
@@ -409,7 +409,7 @@
             timestamp: new Date().toISOString(),
             userId: currentUser.uid,
             isGuest: currentUser.isAnonymous,
-            boardId: boardData.id,
+            board_id: boardData.id,
             boardName: boardData.name,
             hasFolders: boardData.folders?.length > 0,
             hasHeaders: boardData.canvasHeaders?.length > 0,
@@ -598,11 +598,11 @@
     },
 
     // Load specific board
-    async loadBoard(boardId) {
+    async loadBoard(board_id) {
         if (!currentUser) return { success: false, error: 'Not authenticated' };
 
         try {
-            const boardRef = doc(db, 'users', currentUser.uid, 'boards', boardId.toString());
+            const boardRef = doc(db, 'users', currentUser.uid, 'boards', board_id.toString());
             const boardSnap = await getDoc(boardRef);
             
             if (boardSnap.exists()) {
@@ -617,11 +617,11 @@
     },
 
     // Delete board
-    async deleteBoard(boardId) {
+    async deleteBoard(board_id) {
         if (!currentUser) return { success: false, error: 'Not authenticated' };
 
         try {
-            const boardRef = doc(db, 'users', currentUser.uid, 'boards', boardId.toString());
+            const boardRef = doc(db, 'users', currentUser.uid, 'boards', board_id.toString());
             await deleteDoc(boardRef);
             return { success: true };
         } catch (error) {

@@ -261,8 +261,8 @@ function setupContextMenu() {
             
             // Update state
             const boards = AppState.get('boards');
-            const currentBoardId = AppState.get('currentBoardId');
-            const currentBoard = boards.find(b => b.id === currentBoardId);
+            const currentBoard_id = AppState.get('currentBoard_id');
+            const currentBoard = boards.find(b => b.id === currentBoard_id);
             
             if (currentBoard && currentBoard.superHeaders) {
                 currentBoard.superHeaders.push({

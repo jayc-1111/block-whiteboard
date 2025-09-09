@@ -22,7 +22,7 @@
 - **Fix**: Comprehensive error handling with retry logic
 
 ### 4. Document ID Issues
-- **Current**: `user_${userId}_board_${boardId}` pattern
+- **Current**: `user_${userId}_board_${board_id}` pattern
 - **Problem**: May fail with special characters in user IDs
 - **Fix**: Use Appwrite ID.unique() with metadata fields
 

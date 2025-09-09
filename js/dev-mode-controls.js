@@ -87,8 +87,8 @@ function toggleDevMode() {
         
         // Set other initial info
         const boards = AppState.get('boards');
-        const currentBoardId = AppState.get('currentBoardId');
-        const currentBoard = boards.find(b => b.id === currentBoardId);
+        const currentBoard_id = AppState.get('currentBoard_id');
+        const currentBoard = boards.find(b => b.id === currentBoard_id);
         
         if (window.setDevInfo) {
             window.setDevInfo('boardName', currentBoard?.name || 'Unknown');
@@ -102,11 +102,11 @@ function updateDevBoardInfo() {
     if (!AppState.get('isDevMode') || !window.setDevInfo) return;
     
     const boards = AppState.get('boards');
-    const currentBoardId = AppState.get('currentBoardId');
-    const currentBoard = boards.find(b => b.id === currentBoardId);
+    const currentBoard_id = AppState.get('currentBoard_id');
+    const currentBoard = boards.find(b => b.id === currentBoard_id);
     
     window.setDevInfo('boardName', currentBoard?.name || 'Unknown');
-    window.setDevInfo('boardId', currentBoardId);
+    window.setDevInfo('board_id', currentBoard_id);
     window.setDevInfo('totalBoards', boards.length);
     window.setDevInfo('foldersCount', currentBoard?.folders?.length || 0);
 }
@@ -139,7 +139,7 @@ window.toggleGridSnap = toggleGridSnap;
 
 // Update dev info when board changes
 if (window.AppState) {
-    AppState.onChange('currentBoardId', () => {
+    AppState.onChange('currentBoard_id', () => {
         if (AppState.get('isDevMode')) {
             updateDevBoardInfo();
         }
