@@ -4,7 +4,7 @@ let contextType = null;
 
 function showContextMenu(e, element, type) {
     // Check if dev mode is active - if so, don't show custom menu
-    if (window.isDevMode || AppState.get('isDevMode')) {
+    if (window.dev_mode || AppState.get('dev_mode')) {
         return; // Let browser's native context menu show
     }
     
@@ -25,7 +25,7 @@ function hideContextMenu() {
 
 function showWhiteboardContextMenu(e) {
     // Check if dev mode is active - if so, don't show custom menu
-    if (window.isDevMode || AppState.get('isDevMode')) {
+    if (window.dev_mode || AppState.get('dev_mode')) {
         return; // Let browser's native context menu show
     }
     
@@ -76,7 +76,7 @@ function showWhiteboardContextMenu(e) {
 function setupContextMenu() {
     document.addEventListener('contextmenu', (e) => {
         // Check if dev mode is active - if so, allow browser's native context menu
-        if (window.isDevMode || AppState.get('isDevMode')) {
+        if (window.dev_mode || AppState.get('dev_mode')) {
             return; // Don't prevent default, let browser menu show
         }
         

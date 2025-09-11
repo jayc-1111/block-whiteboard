@@ -1,14 +1,14 @@
 // Dev mode control functions
 function toggleDevMode() {
-    const currentDevMode = AppState.get('isDevMode');
+    const currentDevMode = AppState.get('dev_mode');
     const newDevMode = !currentDevMode;
 
     Debug.ui.info('DevMode', `Dev Mode: ${currentDevMode ? 'OFF' : 'ON'}`);
 
-    AppState.set('isDevMode', newDevMode);
+    AppState.set('dev_mode', newDevMode);
 
     // Update global variable for compatibility
-    window.isDevMode = newDevMode;
+    window.dev_mode = newDevMode;
 
     // Handle live sync during dev mode toggle
     if (newDevMode) {
@@ -99,7 +99,7 @@ function toggleDevMode() {
 }
 
 function updateDevBoardInfo() {
-    if (!AppState.get('isDevMode') || !window.setDevInfo) return;
+    if (!AppState.get('dev_mode') || !window.setDevInfo) return;
     
     const boards = AppState.get('boards');
     const currentBoard_id = AppState.get('currentBoard_id');
@@ -140,13 +140,13 @@ window.toggleGridSnap = toggleGridSnap;
 // Update dev info when board changes
 if (window.AppState) {
     AppState.onChange('currentBoard_id', () => {
-        if (AppState.get('isDevMode')) {
+        if (AppState.get('dev_mode')) {
             updateDevBoardInfo();
         }
     });
     
     AppState.onChange('boards', () => {
-        if (AppState.get('isDevMode')) {
+        if (AppState.get('dev_mode')) {
             updateDevBoardInfo();
         }
     });

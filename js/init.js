@@ -201,11 +201,85 @@ function setupEventBindings() {
     });
 }
 
-document.addEventListener('DOMContentLoaded', () => {
+let appInitializationComplete = false;
+
+// Check if board data has been loaded from database
+function isBoardDataAvailable() {
+    const boards = window.AppState?.get('boards') || [];
+
+    // Check if we have at least one board with some content
+    if (boards.length === 0) return false;
+
+    // Check if the first board has been loaded (has dbId or folders data)
+    const firstBoard = boards[0];
+    if (firstBoard.dbId || (firstBoard.folders && firstBoard.folders.length > 0)) {
+        console.log('✅ Board data available:', {
+            boardCount: boards.length,
+            firstBoardHasDbId: !!firstBoard.dbId,
+            firstBoardFolders: firstBoard.folders?.length || 0
+        });
+        return true;
+    }
+
+    console.log('⏳ Board data not yet available');
+    return false;
+}
+
+// Wait for board content to be fully loaded
+function waitForBoardContentLoad() {
+    return new Promise((resolve, reject) => {
+        let attempts = 0;
+        const maxAttempts = 10; // 10 seconds timeout
+
+        const checkContent = () => {
+            attempts++;
+            if (isBoardDataAvailable()) {
+                console.log('🎯 Board content load detected after authenticate');
+                resolve();
+                return;
+            }
+
+            if (attempts >= maxAttempts) {
+                console.log('⏰ Timeout waiting for board content load');
+                resolve(); // Resolve anyway to prevent hanging
+                return;
+            }
+
+            setTimeout(checkContent, 1000);
+        };
+
+        checkContent();
+    });
+}
+
+document.addEventListener('DOMContentLoaded', async () => {
+    console.log('🚀 DOMContentLoaded fired - Starting initialization sequence');
     try {
         Debug.init.start('App initialization');
-        Debug.init.step('Initializing board');
+        console.log('🔧 INIT SEQUENCE: Step 1 - Waiting for auth and board loading');
+
+        // 🚨 CRITICAL FIX: Don't initialize board directly!
+        // The auth guard (auth/guard.js) will call loadBoardsOnSignIn() which loads boards from database
+        // Then we wait for the board content to be available before initializing UI
+
+        // Wait for board data to be loaded (either from auth or fallback)
+        let boardLoadAttempts = 0;
+        const maxAttempts = 30; // 30 seconds max wait
+
+        while (!isBoardDataAvailable() && boardLoadAttempts < maxAttempts) {
+            console.log(`⏳ Waiting for board data (attempt ${boardLoadAttempts + 1}/${maxAttempts})`);
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            boardLoadAttempts++;
+        }
+
+        console.log('✅ Board data is now available for initialization');
+
+        // Now initialize the board with the loaded data
+        Debug.init.step('Initializing board with loaded data');
+        console.log('🏗️ INIT: Calling initializeBoard() with loaded board data');
         initializeBoard();
+
+        console.log('✅ INIT: Board initialization completed');
         Debug.init.step('Setting up context menu');
         setupContextMenu();
         Debug.init.step('Setting up zoom and pan');
@@ -214,20 +288,24 @@ document.addEventListener('DOMContentLoaded', () => {
         initSmoothScroll(); // From smooth-scroll.js
         Debug.init.step('Initializing pan controls');
         initPanControls(); // From pan.js
-        Debug.init.step('Setting up keyboard shortcuts');
-        setupKeyboardShortcuts();
-        Debug.init.step('Setting up board name editing');
-        setupBoardNameEditing();
-        Debug.init.step('Updating board dropdown');
-        updateBoardDropdown();
-        Debug.init.step('Setting up event bindings');
-        setupEventBindings();
-        Debug.init.step('Setting up selection listeners');
-        // Delay selection setup to avoid interfering with Firebase sync
-        setTimeout(() => setupSelectionListeners(), 2000);
-        Debug.init.done('App initialization completed');
+    Debug.init.step('Setting up keyboard shortcuts');
+    setupKeyboardShortcuts();
+    Debug.init.step('Setting up board name editing');
+    setupBoardNameEditing();
+    Debug.init.step('Updating board dropdown');
+    updateBoardDropdown();
+    Debug.init.step('Setting up event bindings');
+    setupEventBindings();
+    Debug.init.step('Setting up selection listeners');
+    // Delay selection setup to avoid interfering with Firebase sync
+    setTimeout(() => setupSelectionListeners(), 2000);
+    Debug.init.step('Initializing drag completion service');
+    // Drag completion service is auto-initialized when loaded
+    Debug.init.done('App initialization completed');
+    console.log('🎉 INIT: Full application initialization completed successfully');
     } catch (error) {
         Debug.init.error('Failed to initialize application', error);
+        console.error('💥 INIT FAILURE: Critical initialization error', error);
         alert('Failed to initialize the whiteboard. Please refresh the page.');
         return;
     }

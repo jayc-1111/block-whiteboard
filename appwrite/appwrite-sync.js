@@ -76,13 +76,14 @@ class SyncService {
         this.currentBoard_id = null;
         this.currentBoardName = null;
         this.boardVersion = 0;
-        this.isDevMode = false;
+        this.dev_mode = false;
         this.onboardingShown = false;
         this.lastSavedVersion = 0;
         this.hasUnsavedChanges = false;
         this.saveTimeout = null;
         this.syncInterval = null;
         this.config = SYNC_CONFIG;
+        this.realtimeService = null;
     }
 
     // ====================
@@ -92,6 +93,12 @@ class SyncService {
     async initialize() {
         debugSync.start('Initializing sync service');
         try {
+            // Initialize Realtime service if available
+            if (window.appwriteRealtime) {
+                this.realtimeService = window.appwriteRealtime;
+                debugSync.step('Realtime service available');
+            }
+            
             this.setupEventListeners();
             this.loadConfiguration();
             this.startAutoSync();
@@ -202,10 +209,15 @@ class SyncService {
                 this.currentBoard_id = latestBoard.id;
                 this.currentBoardName = latestBoard.name;
                 this.boardVersion = latestBoard.version || 0;
-                this.isDevMode = latestBoard.isDevMode || false;
+                this.dev_mode = latestBoard.dev_mode || false;
                 this.onboardingShown = latestBoard.onboardingShown || false;
 
                 debugSync.info(`Loaded board: ${this.currentBoard_id} (${this.currentBoardName})`);
+            }
+
+            // Set current board in Realtime service
+            if (this.realtimeService) {
+                this.realtimeService.setCurrentBoard(this.currentBoard_id);
             }
 
             // Load board data
@@ -229,7 +241,7 @@ class SyncService {
                 folders: [],
                 canvasHeaders: [],
                 drawingPaths: [],
-                isDevMode: false,
+                dev_mode: false,
                 onboardingShown: false,
                 version: 1,
                 createdAt: new Date().toISOString(),
@@ -262,8 +274,8 @@ class SyncService {
         try {
             debugSync.start(`Loading board data for ${this.currentBoard_id}`);
 
-            // Load folders
-            const folders = await this.loadFolders(this.currentBoard_id);
+            // Load folders from the collection instead of board state
+            const folders = await this.loadFoldersFromCollection(this.currentBoard_id);
             debugSync.info(`Loaded ${folders.length} folders`);
 
             // Load canvas headers
@@ -287,6 +299,25 @@ class SyncService {
         } catch (error) {
             debugSync.error('Failed to load board data', error);
             throw error;
+        }
+    }
+
+    async loadFoldersFromCollection(board_id) {
+        try {
+            debugSync.start(`Loading folders from collection for board ${board_id}`);
+            
+            const folders = await window.appwriteUtils.getFoldersByBoard_id(board_id);
+            
+            // Update AppState with fresh data from collection
+            if (window.AppState) {
+                window.AppState.set('folders', folders);
+            }
+            
+            debugSync.done(`Loaded ${folders.length} folders from collection`);
+            return folders || [];
+        } catch (error) {
+            debugSync.error('Failed to load folders from collection', error);
+            return [];
         }
     }
 
@@ -359,194 +390,16 @@ class SyncService {
             debugSync.done('Board state saved successfully');
         } catch (error) {
             debugSync.error('Failed to save board state', error);
-            throw error;
-        }
-    }
-
-    collectBoardData() {
-        if (!window.zenbanApp) {
-            return {};
-        }
-
-        return {
-            folders: window.zenbanApp.boardData?.folders || [],
-            canvasHeaders: window.zenbanApp.boardData?.canvasHeaders || [],
-            drawingPaths: window.zenbanApp.boardData?.drawingPaths || []
-        };
-    }
-
-    // ====================
-    // SYNC OPERATIONS
-    // ====================
-
-    async triggerSync() {
-        if (!this.isOnline || this.isSyncing) {
-            return;
-        }
-
-        try {
-            this.isSyncing = true;
-            debugSync.start('Triggering sync operation');
-
-            // Sync current board
-            if (this.currentBoard_id) {
-                await this.syncBoard(this.currentBoard_id);
-            }
-
-            // Process offline queue
-            await this.processOfflineQueue();
-
-            debugSync.done('Sync operation completed successfully');
-        } catch (error) {
-            debugSync.error('Sync operation failed', error);
-            throw error;
-        } finally {
-            this.isSyncing = false;
-        }
-    }
-
-    async syncBoard(board_id) {
-        try {
-            debugSync.start(`Syncing board ${board_id}`);
-
-            // Get latest board data
-            const board = await window.appwriteUtils.getBoardById(board_id);
             
-            if (!board) {
-                throw new Error(`Board ${board_id} not found`);
+            if (!this.isOnline) {
+                debugSync.info('Adding board save to offline queue');
+                this.addToOfflineQueue({
+                    type: 'saveBoard',
+                    data: this.collectBoardData()
+                });
             }
-
-            // Check for conflicts
-            const hasConflict = this.checkForConflict(board);
-            if (hasConflict) {
-                debugSync.warn('Conflict detected during sync');
-                await this.resolveConflict(board);
-            }
-
-            // Load updated board data
-            this.currentBoard_id = board.board_id;
-            this.currentBoardName = board.name;
-            this.boardVersion = board.version || 0;
-            this.isDevMode = board.isDevMode || false;
-            this.onboardingShown = board.onboardingShown || false;
-
-            await this.loadBoardData();
-
-            debugSync.done(`Board ${board_id} synced successfully`);
-        } catch (error) {
-            debugSync.error(`Failed to sync board ${board_id}`, error);
-            throw error;
-        }
-    }
-
-    checkForConflict(serverBoard) {
-        if (!window.zenbanApp || !window.zenbanApp.boardData) {
-            return false;
-        }
-
-        const clientVersion = this.boardVersion;
-        const serverVersion = serverBoard.version || 0;
-
-        return clientVersion !== serverVersion;
-    }
-
-    async resolveConflict(serverBoard) {
-        try {
-            debugSync.start('Resolving conflict');
-
-            const resolutionStrategy = this.config.conflict.resolutionStrategy;
             
-            switch (resolutionStrategy) {
-                case 'timestamp':
-                    const serverTime = new Date(serverBoard.$updatedAt);
-                    const clientTime = new Date();
-                    
-                    if (serverTime > clientTime) {
-                        debugSync.info('Server data is newer, loading server version');
-                        await this.loadBoardData();
-                    } else {
-                        debugSync.info('Client data is newer, keeping client version');
-                    }
-                    break;
-                    
-                case 'client_wins':
-                    debugSync.info('Client wins, keeping current data');
-                    break;
-                    
-                case 'server_wins':
-                    debugSync.info('Server wins, loading server data');
-                    await this.loadBoardData();
-                    break;
-                    
-                case 'manual':
-                    debugSync.info('Manual conflict resolution required');
-                    if (window.simpleNotifications) {
-                        window.simpleNotifications.showNotification(
-                            'Data conflict detected. Your changes will be merged.',
-                            'warning'
-                        );
-                    }
-                    await this.loadBoardData();
-                    break;
-                    
-                default:
-                    debugSync.warn('Unknown conflict resolution strategy, using client wins');
-                    break;
-            }
-
-            debugSync.done('Conflict resolved');
-        } catch (error) {
-            debugSync.error('Failed to resolve conflict', error);
             throw error;
-        }
-    }
-
-    async processOfflineQueue() {
-        if (!this.offlineQueue.length) {
-            return;
-        }
-
-        try {
-            debugSync.start(`Processing ${this.offlineQueue.length} offline operations`);
-
-            for (const operation of this.offlineQueue) {
-                try {
-                    await this.executeOperation(operation);
-                } catch (error) {
-                    debugSync.error('Failed to execute offline operation', error);
-                }
-            }
-
-            this.offlineQueue = [];
-            debugSync.done('Offline queue processed successfully');
-        } catch (error) {
-            debugSync.error('Failed to process offline queue', error);
-            throw error;
-        }
-    }
-
-    executeOperation(operation) {
-        switch (operation.type) {
-            case 'createFolder':
-                return this.createFolder(operation.data);
-            case 'updateFolder':
-                return this.updateFolder(operation.data);
-            case 'deleteFolder':
-                return this.deleteFolder(operation.id);
-            case 'createHeader':
-                return this.createHeader(operation.data);
-            case 'updateHeader':
-                return this.updateHeader(operation.data);
-            case 'deleteHeader':
-                return this.deleteHeader(operation.id);
-            case 'createPath':
-                return this.createPath(operation.data);
-            case 'updatePath':
-                return this.updatePath(operation.data);
-            case 'deletePath':
-                return this.deletePath(operation.id);
-            default:
-                throw new Error(`Unknown operation type: ${operation.type}`);
         }
     }
 
@@ -554,7 +407,7 @@ class SyncService {
     // FOLDER OPERATIONS
     // ====================
 
-    async createFolder(folderData) {
+    async createFolder(board_id, folderData) {
         try {
             debugSync.start('Creating folder');
 
@@ -563,12 +416,16 @@ class SyncService {
             }
 
             const databaseId = window.APPWRITE_CONFIG.databases.main;
-            const result = await window.appwriteUtils.createFolder(
-                this.currentBoard_id,
-                folderData
-            );
+            const result = await window.appwriteUtils.createFolder(board_id, folderData);
 
             debugSync.done('Folder created successfully');
+            
+            // Update AppState immediately
+            if (window.AppState) {
+                const currentFolders = window.AppState.get('folders') || [];
+                window.AppState.set('folders', [...currentFolders, result]);
+            }
+            
             return result;
         } catch (error) {
             debugSync.error('Failed to create folder', error);
@@ -585,7 +442,7 @@ class SyncService {
         }
     }
 
-    async updateFolder(folderData) {
+    async updateFolder(folderId, updates) {
         try {
             debugSync.start('Updating folder');
 
@@ -597,11 +454,21 @@ class SyncService {
             const result = await window.appwriteUtils.updateDocument(
                 databaseId,
                 'folders',
-                folderData.$id,
-                folderData
+                folderId,
+                updates
             );
 
             debugSync.done('Folder updated successfully');
+            
+            // Update AppState immediately
+            if (window.AppState) {
+                const currentFolders = window.AppState.get('folders') || [];
+                const updatedFolders = currentFolders.map(folder => 
+                    folder.$id === folderId ? result : folder
+                );
+                window.AppState.set('folders', updatedFolders);
+            }
+            
             return result;
         } catch (error) {
             debugSync.error('Failed to update folder', error);
@@ -610,7 +477,8 @@ class SyncService {
                 debugSync.info('Adding folder update to offline queue');
                 this.addToOfflineQueue({
                     type: 'updateFolder',
-                    data: folderData
+                    data: updates,
+                    id: folderId
                 });
             }
             
@@ -634,6 +502,14 @@ class SyncService {
             );
 
             debugSync.done('Folder deleted successfully');
+            
+            // Update AppState immediately
+            if (window.AppState) {
+                const currentFolders = window.AppState.get('folders') || [];
+                const updatedFolders = currentFolders.filter(folder => folder.$id !== folderId);
+                window.AppState.set('folders', updatedFolders);
+            }
+            
             return result;
         } catch (error) {
             debugSync.error('Failed to delete folder', error);
@@ -851,6 +727,143 @@ class SyncService {
     }
 
     // ====================
+    // REALTIME EVENT HANDLERS
+    // ====================
+
+    handleFolderCreate(payload) {
+        debugSync.step('Received folder create event from Realtime', payload);
+        
+        if (payload.board_id === this.currentBoard_id) {
+            debugSync.info('Folder belongs to current board, updating local state');
+            
+            // Add to AppState
+            if (window.AppState) {
+                const currentFolders = window.AppState.get('folders') || [];
+                const newFolder = {
+                    $id: payload.$id,
+                    id: payload.$id,
+                    board_id: payload.board_id,
+                    title: payload.title,
+                    position: payload.position,
+                    files: payload.files || [],
+                    createdAt: payload.$createdAt,
+                    $updatedAt: payload.$updatedAt
+                };
+                window.AppState.set('folders', [...currentFolders, newFolder]);
+            }
+            
+            // Update zenbanApp if available
+            if (window.zenbanApp && window.zenbanApp.updateFolders) {
+                const currentFolders = window.zenbanApp.getBoardData()?.folders || [];
+                const newFolder = {
+                    $id: payload.$id,
+                    id: payload.$id,
+                    board_id: payload.board_id,
+                    title: payload.title,
+                    position: payload.position,
+                    files: payload.files || [],
+                    createdAt: payload.$createdAt,
+                    $updatedAt: payload.$updatedAt
+                };
+                window.zenbanApp.updateFolders([...currentFolders, newFolder]);
+            }
+        }
+    }
+
+    handleFolderUpdate(payload) {
+        debugSync.step('Received folder update event from Realtime', payload);
+        
+        if (payload.board_id === this.currentBoard_id) {
+            debugSync.info('Folder belongs to current board, updating local state');
+            
+            // Update AppState
+            if (window.AppState) {
+                const currentFolders = window.AppState.get('folders') || [];
+                const updatedFolders = currentFolders.map(folder => 
+                    folder.$id === payload.$id ? payload : folder
+                );
+                window.AppState.set('folders', updatedFolders);
+            }
+            
+            // Update zenbanApp if available
+            if (window.zenbanApp && window.zenbanApp.updateFolders) {
+                const currentFolders = window.zenbanApp.getBoardData()?.folders || [];
+                const updatedFolders = currentFolders.map(folder => 
+                    folder.$id === payload.$id ? payload : folder
+                );
+                window.zenbanApp.updateFolders(updatedFolders);
+            }
+        }
+    }
+
+    handleFolderDelete(payload) {
+        debugSync.step('Received folder delete event from Realtime', payload);
+        
+        if (payload.board_id === this.currentBoard_id) {
+            debugSync.info('Folder belongs to current board, updating local state');
+            
+            // Remove from AppState
+            if (window.AppState) {
+                const currentFolders = window.AppState.get('folders') || [];
+                const updatedFolders = currentFolders.filter(folder => folder.$id !== payload.$id);
+                window.AppState.set('folders', updatedFolders);
+            }
+            
+            // Update zenbanApp if available
+            if (window.zenbanApp && window.zenbanApp.updateFolders) {
+                const currentFolders = window.zenbanApp.getBoardData()?.folders || [];
+                const updatedFolders = currentFolders.filter(folder => folder.$id !== payload.$id);
+                window.zenbanApp.updateFolders(updatedFolders);
+            }
+        }
+    }
+
+    handleBoardCreate(payload) {
+        debugSync.step('Received board create event from Realtime', payload);
+        // Handle board creation events if needed
+    }
+
+    handleBoardUpdate(payload) {
+        debugSync.step('Received board update event from Realtime', payload);
+        // Handle board update events if needed
+    }
+
+    handleBoardDelete(payload) {
+        debugSync.step('Received board delete event from Realtime', payload);
+        // Handle board deletion events if needed
+    }
+
+    handleCanvasHeaderCreate(payload) {
+        debugSync.step('Received canvas header create event from Realtime', payload);
+        // Handle canvas header creation events if needed
+    }
+
+    handleCanvasHeaderUpdate(payload) {
+        debugSync.step('Received canvas header update event from Realtime', payload);
+        // Handle canvas header update events if needed
+    }
+
+    handleCanvasHeaderDelete(payload) {
+        debugSync.step('Received canvas header delete event from Realtime', payload);
+        // Handle canvas header deletion events if needed
+    }
+
+    handleDrawingPathCreate(payload) {
+        debugSync.step('Received drawing path create event from Realtime', payload);
+        // Handle drawing path creation events if needed
+    }
+
+    handleDrawingPathUpdate(payload) {
+        debugSync.step('Received drawing path update event from Realtime', payload);
+        // Handle drawing path update events if needed
+    }
+
+    handleDrawingPathDelete(payload) {
+        debugSync.step('Received drawing path delete event from Realtime', payload);
+        // Handle drawing path deletion events if needed
+    }
+
+    // ====================
     // UTILITY METHODS
     // ====================
 
@@ -862,7 +875,7 @@ class SyncService {
                 folders: [],
                 canvasHeaders: [],
                 drawingPaths: [],
-                isDevMode: this.isDevMode,
+                dev_mode: this.dev_mode,
                 onboardingShown: this.onboardingShown,
                 version: this.boardVersion,
                 createdAt: new Date().toISOString(),
@@ -877,7 +890,7 @@ class SyncService {
             folders: boardData?.folders || [],
             canvasHeaders: boardData?.canvasHeaders || [],
             drawingPaths: boardData?.drawingPaths || [],
-            isDevMode: this.isDevMode,
+            dev_mode: this.dev_mode,
             onboardingShown: this.onboardingShown,
             version: this.boardVersion,
             createdAt: new Date().toISOString(),
@@ -907,6 +920,57 @@ class SyncService {
             this.saveTimeout = setTimeout(() => {
                 this.saveCurrentState();
             }, 2000);
+        }
+    }
+
+    triggerSync() {
+        if (this.isSyncing || !this.isOnline) {
+            return;
+        }
+        
+        this.processOfflineQueue();
+    }
+
+    async processOfflineQueue() {
+        if (this.offlineQueue.length === 0 || !this.isOnline) {
+            return;
+        }
+        
+        this.isSyncing = true;
+        
+        try {
+            debugSync.start(`Processing ${this.offlineQueue.length} offline operations`);
+            
+            for (const operation of this.offlineQueue) {
+                await this.processOfflineOperation(operation);
+            }
+            
+            this.offlineQueue = [];
+            debugSync.done('Offline queue processed successfully');
+            
+        } catch (error) {
+            debugSync.error('Failed to process offline queue', error);
+        } finally {
+            this.isSyncing = false;
+        }
+    }
+
+    async processOfflineOperation(operation) {
+        switch (operation.type) {
+            case 'createFolder':
+                await this.createFolder(operation.data.board_id, operation.data);
+                break;
+            case 'updateFolder':
+                await this.updateFolder(operation.id, operation.data);
+                break;
+            case 'deleteFolder':
+                await this.deleteFolder(operation.id);
+                break;
+            case 'saveBoard':
+                await this.saveBoard(operation.data);
+                break;
+            default:
+                debugSync.warn(`Unknown offline operation type: ${operation.type}`);
         }
     }
 
@@ -969,7 +1033,8 @@ function waitForDependencies() {
                 config: !!window.APPWRITE_CONFIG,
                 databases: !!window.appwriteDatabases,
                 utils: !!window.appwriteUtils,
-                dbService: !!window.dbService
+                dbService: !!window.dbService,
+                realtime: !!window.appwriteRealtime
             };
 
             debugSync.detail('Dependency status', status);

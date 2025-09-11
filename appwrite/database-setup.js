@@ -279,7 +279,7 @@ async function setupDatabase() {
             { name: 'folders', type: 'string', size: 100000, required: false, description: 'JSON string of folders array' },     // Increased from 10000
             { name: 'canvasHeaders', type: 'string', size: 20000, required: false, description: 'JSON string of canvas headers' }, // Increased from 5000
             { name: 'drawingPaths', type: 'string', size: 100000, required: false, description: 'JSON string of drawing paths' }, // Increased from 20000
-            { name: 'isDevMode', type: 'boolean', required: false, description: 'Development mode flag' },
+            { name: 'dev_mode', type: 'boolean', required: false, description: 'Development mode flag' },
             { name: 'onboardingShown', type: 'boolean', required: false, description: 'Onboarding completion flag' },
             { name: 'version', type: 'integer', required: false, description: 'Board version number for conflict resolution' }
         ];

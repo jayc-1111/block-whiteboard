@@ -206,6 +206,20 @@
                     email: this.currentUser.email,
                     isAnonymous: this.currentUser.labels?.includes('anonymous')
                 });
+
+                // Load user's boards if available
+                if (window.loadBoardsOnSignIn && typeof window.loadBoardsOnSignIn === 'function') {
+                    try {
+                        console.log('Loading user boards from database...');
+                        await window.loadBoardsOnSignIn();
+                    } catch (loadError) {
+                        console.error('Failed to load user boards:', loadError);
+                        console.log('Continuing with default board setup');
+                    }
+                } else {
+                    console.log('Board loading function not available, using default board setup');
+                }
+
                 this.isAuthenticating = false;
                 return true;
             }

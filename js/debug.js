@@ -241,7 +241,7 @@ class DebugSystem {
             return {
                 currentBoard_id: AppState.get('currentBoard_id'),
                 boardCount: AppState.get('boards')?.length || 0,
-                isDevMode: AppState.get('isDevMode'),
+                dev_mode: AppState.get('dev_mode'),
                 currentUser: window.authService?.getCurrentUser ? {
                     uid: window.authService.getCurrentUser()?.uid,
                     email: window.authService.getCurrentUser()?.email,

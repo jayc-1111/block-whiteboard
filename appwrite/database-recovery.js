@@ -413,7 +413,7 @@ if (window['DATABASE_RECOVERY_LOADED']) {
                     folders: [],
                     canvasHeaders: [],
                     drawingPaths: [],
-                    isDevMode: false,
+                    dev_mode: false,
                     onboardingShown: false,
                     version: 1,
                     createdAt: new Date().toISOString(),

@@ -1,17 +1,12 @@
 // Enhanced state management module with proper synchronization
+// CRITICAL: Make AppState available globally immediately after creation
 const AppState = (() => {
     // Private state
     const state = {
         folders: [],
-        boards: [{
-            id: 0,
-            name: 'Board 1',
-            folders: [],
-            canvasHeaders: [],
-            drawingPaths: []
-        }],
-        currentBoard_id: 0,
-        isDevMode: false,
+        boards: [],
+        currentBoard_stateId: 0,
+        dev_mode: false,
         isGridSnapEnabled: true,
         
         // Drag state
@@ -36,7 +31,7 @@ const AppState = (() => {
     
     // List of keys that should sync to global variables
     const globalSyncKeys = [
-        'folders', 'boards', 'currentBoard_id', 'isDevMode', 'isGridSnapEnabled',
+        'folders', 'boards', 'currentBoard_stateId', 'dev_mode', 'isGridSnapEnabled',
         'draggedFile', 'currentFolder', 'currentCanvasHeader', 'offset', 
         'expandedFile', 'highestZIndex', 'selectedItems', 'isSelecting',
         'selectionStart', 'selectionRectangle', 'isDraggingMultiple', 'multiDragOffsets'
@@ -104,17 +99,17 @@ const AppState = (() => {
         getNextZIndex: () => ++state.highestZIndex,
         
         resetSelection: () => {
-            this.set('selectedItems', []);
-            this.set('isSelecting', false);
-            this.set('selectionRectangle', null);
-            this.set('isDraggingMultiple', false);
-            this.set('multiDragOffsets', []);
+            AppState.set('selectedItems', []);
+            AppState.set('isSelecting', false);
+            AppState.set('selectionRectangle', null);
+            AppState.set('isDraggingMultiple', false);
+            AppState.set('multiDragOffsets', []);
         },
         
         // Commonly used getters
         getFolders: () => state.folders,
         getBoards: () => state.boards,
-        getCurrentBoard_id: () => state.currentBoard_id,
+        getCurrentBoard_stateId: () => state.currentBoard_stateId,
         getSelectedItems: () => state.selectedItems,
         
         // Initialize global sync
@@ -156,17 +151,12 @@ const AppState = (() => {
     };
 })();
 
+
 // Initialize global references with proper fallbacks
 let folders = AppState.get('folders') || [];
-let boards = AppState.get('boards') || [{
-    id: 0,
-    name: 'Board 1',
-    folders: [],
-    headers: [],
-    drawingPaths: []
-}];
-let currentBoard_id = AppState.get('currentBoard_id') || 0;
-let isDevMode = AppState.get('isDevMode') || false;
+let boards = AppState.get('boards') || [];
+let currentBoard_stateId = AppState.get('currentBoard_stateId') || 0;
+let dev_mode = AppState.get('dev_mode') || false;
 let isGridSnapEnabled = AppState.get('isGridSnapEnabled') !== false;
 
 // Drag and drop state
@@ -190,75 +180,105 @@ const GRID_SIZE = (typeof CONSTANTS !== 'undefined' && CONSTANTS.GRID_SIZE) || 2
 
 // LocalStorage utility for user-specific settings
 const LocalSettings = {
-    // Get isDevMode from localStorage
-    getIsDevMode: () => {
+
+    // Get dev_mode from Appwrite settings database
+    getdev_mode: () => {
         try {
-            const stored = localStorage.getItem('isDevMode');
+            // Try to get from AppState first (loaded from cloud)
+            const devModeFromState = AppState.get('dev_mode');
+            if (devModeFromState !== undefined) {
+                return devModeFromState;
+            }
+            // Fallback to localStorage temporarily during migration
+            const stored = localStorage.getItem('dev_mode');
             return stored !== null ? JSON.parse(stored) : false;
         } catch (error) {
-            console.warn('Failed to read isDevMode from localStorage', error);
+            console.warn('Failed to read dev_mode from Appwrite', error);
             return false;
         }
     },
 
-    // Set isDevMode to localStorage
-    setIsDevMode: (value) => {
+    // Set dev_mode to cloud settings database
+    setdev_mode: async (value) => {
         try {
-            localStorage.setItem('isDevMode', JSON.stringify(value));
-            AppState.set('isDevMode', value);
+            // Update AppState immediately for UI responsiveness
+            AppState.set('dev_mode', value);
+
+            // Save to cloud using appwriteUtils
+            if (window.appwriteUtils && window.appwriteUtils.saveUserSettings) {
+                await window.appwriteUtils.saveUserSettings({ dev_mode: value });
+                console.log('✅ Dev mode saved to cloud:', value);
+            } else {
+                console.warn('⚠️ appwriteUtils.saveUserSettings not available, relying on local state only');
+            }
+
+            // Update localStorage as backup/compatibility layer (cleanup later)
+            localStorage.setItem('dev_mode', JSON.stringify(value));
         } catch (error) {
-            console.error('Failed to save isDevMode to localStorage', error);
+            console.error('Failed to save dev_mode to cloud', error);
+            // Fallback to localStorage
+            localStorage.setItem('dev_mode', JSON.stringify(value));
         }
     },
 
-    // Get onboardingShown from localStorage
+    // ONBOARDING DEPRECATED - These functions are kept for compatibility but will be removed
     getOnboardingShown: () => {
-        try {
-            const stored = localStorage.getItem('onboardingShown');
-            return stored !== null ? JSON.parse(stored) : false;
-        } catch (error) {
-            console.warn('Failed to read onboardingShown from localStorage', error);
-            return false;
-        }
+        console.warn('⚠️ getOnboardingShown is deprecated - onboarding is no longer used');
+        return false;
     },
 
-    // Set onboardingShown to localStorage
     setOnboardingShown: (value) => {
+        console.warn('⚠️ setOnboardingShown is deprecated - onboarding is no longer used');
+    },
+
+    markOnboardingCompleted: () => {
+        console.warn('⚠️ markOnboardingCompleted is deprecated - onboarding is no longer used');
+    },
+
+    // Initialize settings from cloud database on app start
+    initializeFromLocalStorage: async () => {
         try {
-            localStorage.setItem('onboardingShown', JSON.stringify(value));
-            // Update the current board's onboardingShown
+            console.log('🔄 Loading user settings from cloud...');
+
+            // Try to load from cloud first
+            let cloudSettings = null;
+            if (window.appwriteUtils && window.appwriteUtils.getUserSettings) {
+                cloudSettings = await window.appwriteUtils.getUserSettings();
+                console.log('✅ Loaded cloud settings:', cloudSettings);
+
+                // Apply cloud settings to AppState
+                if (cloudSettings && typeof cloudSettings.dev_mode === 'boolean') {
+                    AppState.set('dev_mode', cloudSettings.dev_mode);
+                }
+
+            // ONBOARDING DEPRECATED - Cloud onboarding support removed
+            // No longer processing onboarding settings as the feature is deprecated
+            if (cloudSettings && typeof cloudSettings.onboarding === 'boolean') {
+                console.warn('⚠️ Cloud onboarding settings found - this feature is deprecated and ignored');
+            }
+            }
+
+        } catch (error) {
+            console.error('❌ Failed to load cloud settings, falling back to localStorage:', error);
+            console.log('🔄 Falling back to localStorage settings...');
+
+            // Fallback to localStorage
+            const dev_mode = LocalSettings.getdev_mode();
+            const onboardingShown = LocalSettings.getOnboardingShown();
+
+            AppState.set('dev_mode', dev_mode);
+
+            // ONBOARDING DEPRECATED - No longer updating onboarding status
             const boards = AppState.get('boards') || [];
-            const currentBoard_id = AppState.get('currentBoard_id') || 0;
-            const currentBoard = boards.find(b => b.id === currentBoard_id);
-            if (currentBoard) {
-                currentBoard.onboardingShown = value;
+            const currentBoard_stateId = AppState.get('currentBoard_stateId') || 0;
+            const currentBoard = boards.find(b => b.stateId === currentBoard_stateId);
+            if (currentBoard && !currentBoard.onboardingShown) {
+                console.warn('⚠️ Found board without onboardingShown - this is deprecated');
+                currentBoard.onboardingShown = false; // Set to false since onboarding is deprecated
                 AppState.set('boards', boards);
             }
-        } catch (error) {
-            console.error('Failed to save onboardingShown to localStorage', error);
-        }
-    },
 
-    // Mark onboarding as completed
-    markOnboardingCompleted: () => {
-        LocalSettings.setOnboardingShown(true);
-    },
-
-    // Initialize settings from localStorage on app start
-    initializeFromLocalStorage: () => {
-        const isDevMode = LocalSettings.getIsDevMode();
-        const onboardingShown = LocalSettings.getOnboardingShown();
-
-        AppState.set('isDevMode', isDevMode);
-        console.log(`Settings initialized: isDevMode=${isDevMode}, onboardingShown=${onboardingShown}`);
-
-        // Update current board's onboarding status
-        const boards = AppState.get('boards') || [];
-        const currentBoard_id = AppState.get('currentBoard_id') || 0;
-        const currentBoard = boards.find(b => b.id === currentBoard_id);
-        if (currentBoard && !currentBoard.onboardingShown) {
-            currentBoard.onboardingShown = onboardingShown;
-            AppState.set('boards', boards);
+            console.log(`Settings initialized from localStorage: dev_mode=${dev_mode}`);
         }
     }
 };

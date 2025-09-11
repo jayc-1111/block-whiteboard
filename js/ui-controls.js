@@ -16,8 +16,8 @@ function toggleGridSnap() {
 }
 
 function toggleDevMode() {
-    isDevMode = !isDevMode;
-    AppState.set('isDevMode', isDevMode);
+    dev_mode = !dev_mode;
+    AppState.set('dev_mode', dev_mode);
     
     const devModeOption = document.getElementById('devModeOption');
     if (devModeOption) {
@@ -26,7 +26,7 @@ function toggleDevMode() {
     
     // Toggle the dev overlay
     if (window.toggleDevOverlay) {
-        window.toggleDevOverlay(isDevMode);
+        window.toggleDevOverlay(dev_mode);
     }
     
     // Dev mode only controls whether Add Whiteboard button is functional

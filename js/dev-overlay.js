@@ -38,7 +38,7 @@ function addDevLog(type, message) {
     devLogs.push({ type, message, time: new Date().toLocaleTimeString() });
     if (devLogs.length > MAX_LOGS) devLogs.shift();
     
-    if (AppState.get('isDevMode')) {
+    if (AppState.get('dev_mode')) {
         updateDevOverlay();
     }
 }
@@ -51,9 +51,9 @@ function updateDevOverlay() {
     if (!devOverlay) return;
     
     // Check if dev mode is enabled with fallback
-    const isDevModeEnabled = (window.AppState && AppState.get('isDevMode')) || window.isDevMode || false;
+    const dev_modeEnabled = (window.AppState && AppState.get('dev_mode')) || window.dev_mode || false;
     
-    if (!isDevModeEnabled) {
+    if (!dev_modeEnabled) {
         devOverlay.style.display = 'none';
         return;
     }
@@ -126,8 +126,8 @@ function toggleDevOverlay(show) {
     
     // If show parameter is provided, use it; otherwise check AppState
     const shouldShow = show !== undefined ? show : 
-                      (window.AppState && AppState.get('isDevMode')) || 
-                      window.isDevMode || false;
+                      (window.AppState && AppState.get('dev_mode')) || 
+                      window.dev_mode || false;
     
     if (shouldShow) {
         console.log('🔧 Showing dev overlay');
@@ -144,9 +144,9 @@ function setDevInfo(key, value) {
     devInfo[key] = value;
     
     // Check if dev mode is enabled with fallback
-    const isDevModeEnabled = (window.AppState && AppState.get('isDevMode')) || window.isDevMode || false;
+    const dev_modeEnabled = (window.AppState && AppState.get('dev_mode')) || window.dev_mode || false;
     
-    if (isDevModeEnabled) {
+    if (dev_modeEnabled) {
         updateDevOverlay();
     }
 }
@@ -164,7 +164,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Listen for state changes to update dev info
     if (window.AppState) {
         AppState.onChange('boards', () => {
-            if (AppState.get('isDevMode') && window.updateDevBoardInfo) {
+            if (AppState.get('dev_mode') && window.updateDevBoardInfo) {
                 window.updateDevBoardInfo();
             }
         });

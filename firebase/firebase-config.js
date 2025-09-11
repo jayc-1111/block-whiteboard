@@ -709,4 +709,5 @@ export const offlineService = {
 };
 
 // Set global reference (for compatibility)
-window.authService = authService;
+// window.authService = authService; // Commented out to prevent Appwrite override
+// window.dbService = dbService; // Commented out to prevent Appwrite override

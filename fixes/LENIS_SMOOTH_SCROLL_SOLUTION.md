@@ -12,7 +12,7 @@ Implemented proper scroll isolation for modals and expanded files using the `dat
 - Added styles to handle elements with `data-lenis-prevent` attribute
 - Ensured proper overscroll behavior for modal content
 
-### 2. JavaScript Updates (`js/files.js`)
+### 2. JavaScript Updates (`js/files/files.js`)
 - Added `data-lenis-prevent` attribute to the main content area in expanded files
 - Implemented a custom Lenis instance for modal scrolling
 - Added `reinitializeModalLenis` function to handle dynamic content changes

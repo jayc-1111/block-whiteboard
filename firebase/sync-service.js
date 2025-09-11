@@ -874,7 +874,7 @@ window.syncService = syncService;
         const serialized = { ...board };
         
         // Add dev mode status
-        serialized.isDevMode = AppState.get('isDevMode');
+        serialized.dev_mode = AppState.get('dev_mode');
         
         // Serialize folders with their files
         if (serialized.folders) {
@@ -933,10 +933,10 @@ window.syncService = syncService;
         const deserialized = { ...board };
         
         // Restore dev mode if present
-        if (deserialized.isDevMode !== undefined) {
-            AppState.set('isDevMode', deserialized.isDevMode);
+        if (deserialized.dev_mode !== undefined) {
+            AppState.set('dev_mode', deserialized.dev_mode);
             // Update UI
-            if (deserialized.isDevMode && window.toggleDevOverlay) {
+            if (deserialized.dev_mode && window.toggleDevOverlay) {
                 window.toggleDevOverlay(true);
             }
         }

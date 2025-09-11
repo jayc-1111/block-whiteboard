@@ -1,10 +1,21 @@
 // Toggle folder collapse/expand
 function toggleFolder(folder) {
     folder.classList.toggle('collapsed');
-    
-    // Save state after toggling
-    if (window.syncService) {
-        window.syncService.saveAfterAction('folder toggled');
+
+    // Find the toggle button and update its icon
+    const toggleBtn = folder.querySelector('.toggle-btn');
+    if (toggleBtn) {
+        if (folder.classList.contains('collapsed')) {
+            // Collapsed - show expand icon
+            toggleBtn.innerHTML = `<svg class="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m8 10 4 4 4-4"/>
+            </svg>`;
+        } else {
+            // Expanded - show collapse icon
+            toggleBtn.innerHTML = `<svg class="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m16 14-4-4-4 4"/>
+            </svg>`;
+        }
     }
 }
 
@@ -38,8 +49,8 @@ function createFolder(title = 'New Folder', x = null, y = null) {
             try {
                 // Get current board info
                 const boards = AppState.get('boards');
-                const currentBoard_id = AppState.get('currentBoard_id');
-                const currentBoard = boards.find(b => b.id === currentBoard_id);
+                const currentBoard_stateId = AppState.get('currentBoard_stateId');
+                const currentBoard = boards.find(b => b.stateId === currentBoard_stateId);
 
                 if (!currentBoard) {
                     console.warn('🚨 No current board found - cannot save folder to Appwrite');
@@ -51,11 +62,67 @@ function createFolder(title = 'New Folder', x = null, y = null) {
                 const timestamp = Date.now();
                 const folderDocId = `folder_${timestamp}_${userShortId}`;
 
-                // Get board's system ID for board_id field
-                const boardSystemId = currentBoard.systemId || currentBoard.$id || currentBoard.board_id;
+                // 🎯 ENHANCED BOARD ID RESOLUTION AND DEBUGGING
+                console.log('🎯 FOLDER SAVE: Resolving board ID...');
+                console.log('🚨 BOARD PROPERTIES DEBUG:', {
+                    id: currentBoard.id,           // Local sequential ID
+                    dbId: currentBoard.dbId,       // Appwrite database ID
+                    $id: currentBoard.$id,         // Appwrite document ID
+                    systemId: currentBoard.systemId, // Legacy system ID
+                    board_id: currentBoard.board_id, // Alternative ID field
+                    name: currentBoard.name
+                });
+
+                // Try multiple board ID resolution strategies with priority
+                let boardSystemId = currentBoard.$id || // Highest priority - official Appwrite $id
+                                    currentBoard.dbId || // Second priority - our stored dbId
+                                    currentBoard.systemId || // Third priority - legacy system ID
+                                    currentBoard.board_id; // Lowest priority - alternative field
+
                 if (!boardSystemId) {
-                    console.warn('🚨 Board has no system ID - folder cannot be linked to board');
-                    return;
+                    console.warn('🚨 Board has no database ID - attempting to save board first...');
+
+                    try {
+                        if (window.saveCurrentBoard) {
+                            console.log('✅ Attempting board save first...');
+                            const saveResult = await window.saveCurrentBoard();
+
+                            console.log('✅ Board save completed, refreshing board state...');
+
+                            // 🔧 CRITICAL FIX: Refresh board state after save to get $id
+                            const boards = AppState.get('boards');
+                            const refreshedBoard = boards.find(b => b.stateId === currentBoard_stateId);
+
+                            console.log('🔄 REFRESHED BOARD PROPERTIES:', {
+                                found: !!refreshedBoard,
+                                $id: refreshedBoard?.$id,
+                                dbId: refreshedBoard?.dbId,
+                                name: refreshedBoard?.name
+                            });
+
+                            // Try all possible ID fields from refreshed board
+                            boardSystemId = refreshedBoard?.$id || // Official Appwrite $id
+                                           refreshedBoard?.dbId || // Our stored dbId
+                                           refreshedBoard?.systemId; // Legacy fallback
+
+                            if (boardSystemId) {
+                                console.log(`✅ SUCCESS: Found board ID after save: ${boardSystemId}`);
+
+                                // Update current board reference with fresh state
+                                currentBoard = refreshedBoard;
+                            } else {
+                                console.warn('❌ Board still has no ID after save');
+                                console.log('Saved board result:', saveResult);
+                                return; // Give up and save locally only
+                            }
+                        } else {
+                            console.warn('❌ No save function available - folder saved locally only');
+                            return;
+                        }
+                    } catch (saveError) {
+                        console.warn('❌ Failed to save board first:', saveError);
+                        return; // Continue with local save only
+                    }
                 }
 
                 // Prepare folder data matching Appwrite schema
@@ -80,9 +147,9 @@ function createFolder(title = 'New Folder', x = null, y = null) {
                     collection: window.APPWRITE_CONFIG?.collections?.folders || 'folders'
                 });
 
-                // Save to Appwrite folders collection
-                const folderResult = await window.appwriteDatabases.createDocument(
-                    window.APPWRITE_CONFIG.databaseId,
+                // Save to Appwrite folders collection using correct database reference
+                const folderResult = await window.appwriteDatabasesMain.createDocument(
+                    window.APPWRITE_CONFIG.databases.main,
                     window.APPWRITE_CONFIG.collections.folders,
                     folderDocId,
                     folderData,
@@ -133,10 +200,17 @@ function createFolder(title = 'New Folder', x = null, y = null) {
         if (this.textContent.trim() === '') {
             this.textContent = this.dataset.placeholder;
         }
-        // Save after editing folder title
-        if (window.syncService) {
-            window.syncService.saveAfterAction('folder title edited');
-        }
+        // Save after editing folder title - use Appwrite via board save
+        setTimeout(() => {
+            if (window.saveCurrentBoard) {
+                try {
+                    window.saveCurrentBoard();
+                    console.log('📝 Folder title edit saved via board save');
+                } catch (error) {
+                    console.warn('⚠️ Folder title save via board failed:', error);
+                }
+            }
+        }, 100);
     });
 
     const toggleBtn = document.createElement('button');
@@ -237,8 +311,8 @@ function createFolder(title = 'New Folder', x = null, y = null) {
     
     // Also update the folders array in the current board
     const boards = AppState.get('boards');
-    const currentBoard_id = AppState.get('currentBoard_id');
-    const currentBoard = boards.find(board => board.id === currentBoard_id);
+    const currentBoard_stateId = AppState.get('currentBoard_stateId');
+    const currentBoard = boards.find(board => board.stateId === currentBoard_stateId);
     if (currentBoard) {
         // Create a folder data object that matches what's expected for serialization
         const folderData = {
@@ -253,10 +327,18 @@ function createFolder(title = 'New Folder', x = null, y = null) {
         AppState.set('boards', boards);
     }
     
-    // Save after creating folder
-    if (window.syncService) {
-        window.syncService.saveAfterAction('folder created');
-    }
+    // Save after creating folder - use Appwrite via board save
+    // Folders are saved as part of the board data in saveCurrentBoard()
+    setTimeout(() => {
+        if (window.saveCurrentBoard) {
+            try {
+                window.saveCurrentBoard(); // This will save the folder as part of the board
+                console.log('📂 Folder creation saved via board save');
+            } catch (error) {
+                console.warn('⚠️ Folder save via board failed:', error);
+            }
+        }
+    }, 100);
 
     // ✅ DEBUG: Verify folder was saved properly
     console.log('📂 FOLDER CREATION COMPLETE:', {
@@ -287,17 +369,24 @@ function deleteFolder(folder) {
         
         // Also update the folders array in the current board
         const boards = AppState.get('boards');
-        const currentBoard_id = AppState.get('currentBoard_id');
-        const currentBoard = boards.find(board => board.id === currentBoard_id);
+        const currentBoard_stateId = AppState.get('currentBoard_stateId');
+        const currentBoard = boards.find(board => board.stateId === currentBoard_stateId);
         if (currentBoard) {
             currentBoard.folders.splice(folderIndex, 1);
             AppState.set('boards', boards);
         }
         
-        // Save after deleting folder
-        if (window.syncService) {
-            window.syncService.saveAfterAction('folder deleted');
-        }
+        // Save after deleting folder - use Appwrite via board save
+        setTimeout(() => {
+            if (window.saveCurrentBoard) {
+                try {
+                    window.saveCurrentBoard();
+                    console.log('🗑️ Folder deletion saved via board save');
+                } catch (error) {
+                    console.warn('⚠️ Folder deletion save via board failed:', error);
+                }
+            }
+        }, 100);
     }
     
     folder.remove();
@@ -305,7 +394,7 @@ function deleteFolder(folder) {
 
 function toggleFolder(folder) {
     const toggleBtn = folder.querySelector('.toggle-btn');
-    
+
     if (folder.classList.contains('collapsed')) {
         // Expand
         folder.classList.remove('collapsed');
@@ -319,25 +408,32 @@ function toggleFolder(folder) {
             <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m8 10 4 4 4-4"/>
         </svg>`;
     }
-    
-    // Save state after toggling
-    if (window.syncService) {
-        window.syncService.saveAfterAction('folder toggled');
-    }
+
+    // Save state after toggling - use Appwrite via board save
+    setTimeout(() => {
+        if (window.saveCurrentBoard) {
+            try {
+                window.saveCurrentBoard();
+                console.log('🔽 Folder toggle saved via board save');
+            } catch (error) {
+                console.warn('⚠️ Folder toggle save via board failed:', error);
+            }
+        }
+    }, 100);
 }
 
 function startFolderDrag(e) {
     const folder = e.target.closest('.folder');
-    if (!folder || e.target.classList.contains('delete-btn') || 
-        e.target.classList.contains('add-file-btn') || 
+    if (!folder || e.target.classList.contains('delete-btn') ||
+        e.target.classList.contains('add-file-btn') ||
         e.target.classList.contains('toggle-btn') ||
         e.target.classList.contains('folder-title')) {
         return;
     }
-    
-    // Set dragging flag in sync service
-    if (window.syncService) {
-        window.syncService.isDragging = true;
+
+    // Use drag completion service instead of sync service
+    if (window.dragCompletionService) {
+        window.dragCompletionService.startDrag('folder', folder);
     }
     
     const isDraggingMultiple = AppState.get('isDraggingMultiple');
@@ -384,11 +480,10 @@ function stopDragFolder() {
     AppState.set('currentFolder', null);
     document.removeEventListener('mousemove', dragFolder);
     document.removeEventListener('mouseup', stopDragFolder);
-    
-    // Unset dragging flag and save after drag completes
-    if (window.syncService) {
-        window.syncService.isDragging = false;
-        window.syncService.saveAfterAction('folder drag');
+
+    // Use drag completion service instead of sync service
+    if (window.dragCompletionService) {
+        window.dragCompletionService.stopDrag();
     }
 }
 
@@ -418,10 +513,17 @@ function addSuperHeader(x = null, y = null) {
         if (this.textContent.trim() === '') {
             this.textContent = this.dataset.placeholder;
         }
-        // Save after editing header text
-        if (window.syncService) {
-            window.syncService.saveAfterAction('header text edited');
-        }
+        // Save after editing header text - use Appwrite via board save
+        setTimeout(() => {
+            if (window.saveCurrentBoard) {
+                try {
+                    window.saveCurrentBoard();
+                    console.log('📝 Header text edit saved via board save');
+                } catch (error) {
+                    console.warn('⚠️ Header text save via board failed:', error);
+                }
+            }
+        }, 100);
     });
     
     superHeader.addEventListener('mousedown', (e) => {

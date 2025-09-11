@@ -1,11 +1,171 @@
+// Load user boards from database on sign-in
+async function loadBoardsOnSignIn() {
+    try {
+        console.log('📚 Loading user boards from database...');
+
+        // Load settings from cloud first
+        if (window.CloudState && typeof window.CloudState.initializeSettings === 'function') {
+            await window.CloudState.initializeSettings();
+        }
+
+        // Require appwriteUtils to be loaded
+        if (!window.appwriteUtils || !window.APPWRITE_CONFIG?.databases?.main) {
+            console.warn('⚠️ appwriteUtils or config not available, skipping board loading');
+            return false;
+        }
+
+        // Query user's boards from main database
+        const result = await window.appwriteUtils.listDocuments(
+            window.APPWRITE_CONFIG.databases.main,
+            'boards'
+        );
+
+        console.log(`📊 Found ${result.documents.length} boards for user`);
+
+        if (result.documents.length > 0) {
+            // Map database boards to local AppState format
+            const loadedBoards = result.documents.map((dbBoard, index) => ({
+                stateId: index, // Keep local sequential IDs for compatibility
+                dbId: dbBoard.$id, // Store database document ID
+                name: dbBoard.board_name || `Board ${index + 1}`,
+                folders: [], // Will be loaded on-demand
+                canvasHeaders: [], // Will be loaded on-demand
+                drawingPaths: [], // Will be loaded on-demand
+            }));
+
+            // Replace default board with loaded boards
+            AppState.set('boards', loadedBoards);
+
+            // Load content for the first board
+            await loadBoardContent(0);
+
+            console.log('✅ Successfully loaded user boards:', loadedBoards.map(b => b.name));
+            return true;
+
+        } else {
+            console.log('📝 No boards found for this user');
+            // ONBOARDING DEPRECATED - No longer clearing boards for onboarding
+            // AppState.set('boards', []);
+            return false;
+        }
+
+    } catch (error) {
+        console.error('❌ Failed to load boards from database:', error);
+        console.log('🔄 Falling back to default board setup');
+        return false;
+    }
+}
+
+// Load individual board content (folders, files, etc.)
+async function loadBoardContent(boardId) {
+    try {
+        console.log('📥 LOAD BOARD CONTENT: Starting loadBoardContent for boardId:', boardId);
+        const boards = AppState.get('boards');
+        console.log('📋 BOARD STATE:', {
+            totalBoards: boards.length,
+            boardId,
+            allBoards: boards.map(b => ({ stateId: b.stateId, dbId: b.dbId, name: b.name, foldersCount: b.folders?.length || 0 }))
+        });
+
+        const board = boards.find(b => b.stateId === boardId);
+        console.log('🎯 TARGET BOARD:', board);
+
+        if (!board || !board.dbId) {
+            console.warn('⚠️ Board or database ID not found, skipping content loading', {board, boardId});
+            return;
+        }
+
+        console.log('✅ BOARD VALIDATED - Proceeding with content load for board:', {
+            name: board.name,
+            dbId: board.dbId,
+            currentFoldersCount: board.folders?.length || 0
+        });
+
+        console.log(`⏳ Loading content for board "${board.name}"...`);
+
+        // Load folders and their content
+        if (window.appwriteUtils && window.appwriteUtils.getFoldersByBoard_id) {
+            try {
+                const folders = await window.appwriteUtils.getFoldersByBoard_id(board.dbId);
+                board.folders = folders.map(folder => ({
+                    title: folder.title,
+                    position: folder.position,
+                    files: [] // Files will be loaded separately if needed
+                }));
+                console.log(`✅ Loaded ${folders.length} folders for board "${board.name}"`);
+            } catch (folderError) {
+                console.warn('⚠️ Failed to load folders:', folderError);
+            }
+        }
+
+        // Load canvas headers
+        if (window.appwriteUtils && window.appwriteUtils.getCanvasHeadersByBoard_id) {
+            try {
+                const headers = await window.appwriteUtils.getCanvasHeadersByBoard_id(board.dbId);
+                board.canvasHeaders = headers.map(header => ({
+                    id: header.$id,
+                    text: header.title || header.text,
+                    position: header.position
+                }));
+                console.log(`✅ Loaded ${headers.length} canvas headers for board "${board.name}"`);
+            } catch (headerError) {
+                console.warn('⚠️ Failed to load canvas headers:', headerError);
+            }
+        }
+
+        // Load drawing paths
+        if (window.appwriteUtils && window.appwriteUtils.getDrawingPathsByBoard_id) {
+            try {
+                const paths = await window.appwriteUtils.getDrawingPathsByBoard_id(board.dbId);
+                board.drawingPaths = paths.map(path => ({
+                    color: path.color,
+                    points: path.drawing_paths || path.points
+                }));
+                console.log(`✅ Loaded ${paths.length} drawing paths for board "${board.name}"`);
+            } catch (pathError) {
+                console.warn('⚠️ Failed to load drawing paths:', pathError);
+            }
+        }
+
+        // Update the board in AppState
+        console.log('✅ BOARD CONTENT LOADED:', {
+            boardId: boardId,
+            name: board.name,
+            dbId: board.dbId,
+            foldersLoaded: board.folders.length,
+            filesInFolders: board.folders.reduce((total, folder) => total + (folder.files?.length || 0), 0),
+            headersLoaded: board.canvasHeaders.length,
+            pathsLoaded: board.drawingPaths?.length || 0
+        });
+
+        AppState.set('boards', boards);
+
+        console.log('📋 FINAL BOARD LOADED:', AppState.get('boards').map(b => ({
+            id: b.id,
+            name: b.name,
+            dbId: b.dbId,
+            folders: b.folders?.length || 0
+        })));
+
+    } catch (error) {
+        console.error('❌ Failed to load board content:', error);
+        // Continue with whatever content we have - don't let this fail the whole loading process
+    }
+}
+
 // Enhanced whiteboard management with proper Firebase integration
 function initializeBoard() {
+    console.log('🏁 INITIALIZE BOARD: Starting initialization process');
     const boards = AppState.get('boards');
+    console.log('📋 INITIALIZE BOARD: Boards in state:', boards.map(b => ({ id: b.id, name: b.name, dbId: b.dbId, folders: b.folders?.length || 0 })));
+
     if (!boards || boards.length === 0) {
-        Debug.board.error('No boards available');
+        Debug.board.warn('No boards available from AppState');
+        // ONBOARDING DEPRECATED - No longer showing onboarding
+        // showOnboardingIfEmpty();
         return;
     }
-    
+
     // Create canvas element inside grid if it doesn't exist
     const grid = document.getElementById('grid');
     let canvas = document.getElementById('canvas');
@@ -17,7 +177,7 @@ function initializeBoard() {
         canvas.style.height = '100%';
         grid.appendChild(canvas);
     }
-    
+
     // Check if board already has content from cloud or is waiting for sync
     const currentBoard = boards[0];
 
@@ -26,23 +186,20 @@ function initializeBoard() {
     if (user && (!user.labels || !user.labels.includes('anonymous'))) {
         window.Debug?.appwrite?.info('User authenticated - board data will sync automatically');
     }
-    
+
     if (currentBoard.folders && currentBoard.folders.length > 0) {
         Debug.board.detail('Board has existing content - initializing folders');
         // Initialize folders from board data
         initializeFoldersFromBoardData(currentBoard.folders);
         return;
     }
-    
+
     // Reset the first board
     boards[0].folders = [];
     boards[0].canvasHeaders = [];
     AppState.set('boards', boards);
-    
+
     // Start with empty board - let users add their own content
-    
-    // Show onboarding modal for empty boards
-    showOnboardingIfEmpty();
 
     // Setup selection event listeners
     setupSelectionListeners();
@@ -50,7 +207,25 @@ function initializeBoard() {
 
 // Initialize folders from board data
 function initializeFoldersFromBoardData(foldersData) {
+    console.log('🏗️ INITIALIZE FOLDERS: Starting folder restoration from loaded data');
+    console.log('📦 FOLDERS DATA RECEIVED:', {
+        count: foldersData.length,
+        folders: foldersData.map(f => ({
+            title: f.title,
+            position: f.position,
+            filesCount: f.files?.length || 0
+        }))
+    });
+
     foldersData.forEach(folderData => {
+        console.log('📝 CREATING FOLDER:', {
+            title: folderData.title,
+            position: {
+                x: parseInt(folderData.position.left) || 0,
+                y: parseInt(folderData.position.top) || 0
+            },
+            files: folderData.files?.length || 0
+        });
         // Create folder with position
         const folderIndex = createFolder(
             folderData.title,
@@ -97,12 +272,12 @@ async function saveCurrentBoard() {
         return;
     }
 
-    const currentBoard_id = AppState.get('currentBoard_id');
-    let board = boards.find(b => b.id === currentBoard_id);
+    const currentBoard_stateId = AppState.get('currentBoard_stateId');
+    let board = boards.find(b => b.stateId === currentBoard_stateId);
     if (!board) {
         Debug.board.error('Current board not found', {
-            board_id: currentBoard_id,
-            availableBoards: boards.map(b => ({ id: b.id, name: b.name })),
+            board_id: currentBoard_stateId,
+            availableBoards: boards.map(b => ({ stateId: b.stateId, name: b.name })),
             boardsLength: boards.length
         });
         return;
@@ -122,6 +297,16 @@ async function saveCurrentBoard() {
     if (canvas) {
         const folderElements = canvas.querySelectorAll('.folder');
         Debug.board.step(`Folders found: ${folderElements.length}`);
+        Debug.board.detail('📂 FOLDER ELEMENTS FOUND IN SAVE:', {
+            count: folderElements.length,
+            elements: Array.from(folderElements).map(folder => ({
+                id: folder.id,
+                folderId: folder.dataset.folderId,
+                appwriteId: folder.dataset.appwriteId,
+                currentLeft: folder.style.left,
+                currentTop: folder.style.top
+            }))
+        });
 
         // 🎯 EXTENSIVE DOM DEBUGGING - Tell us exactly what's on the canvas
         Debug.board.detail('=== CANVAS DOM ANALYSIS ===');
@@ -134,11 +319,14 @@ async function saveCurrentBoard() {
         }));
         Debug.board.detail('Canvas children details:', childElements);
 
-        // Check for specific classes
+        // Check for specific classes - FIXED SVG SVGAnimatedString compatibility
         const allElements = canvas.querySelectorAll('*');
         const classesFound = Array.from(allElements).reduce((acc, el) => {
-            if (el.className) {
-                const classes = el.className.split(' ');
+            // Handle SVG elements (className is SVGAnimatedString) and HTML elements
+            const className = el.className?.baseVal || el.className || '';
+            const classString = typeof className === 'string' ? className : String(className);
+            if (classString) {
+                const classes = classString.split(' ').filter(cls => cls.trim());
                 classes.forEach(cls => acc.add(cls));
             }
             return acc;
@@ -244,7 +432,7 @@ async function saveCurrentBoard() {
                     if (bookmarks.length === 0 && window.syncService?.lastKnownGoodState) {
                         try {
                             const lastGood = JSON.parse(window.syncService.lastKnownGoodState);
-                            const lastBoard = lastGood.find(b => b.id === currentBoard_id);
+                            const lastBoard = lastGood.find(b => b.stateId === currentBoard_stateId);
                             if (lastBoard?.folders) {
                                 // Try to find this file's bookmarks from last known good state
                                 for (const lastCat of lastBoard.folders) {
@@ -306,6 +494,12 @@ async function saveCurrentBoard() {
                 });
 
                 board.folders.push(folderData);
+                Debug.board.detail(`📂 SAVED FOLDER IN BOARD ARRAY:`, {
+                    folderTitle: folderData.title,
+                    position: folderData.position,
+                    totalFiles: folderData.files.length,
+                    boardFoldersCount: board.folders.length
+                });
             }
 
             // Save canvas headers from DOM
@@ -390,8 +584,7 @@ async function saveCurrentBoard() {
             folders: board.folders,
             canvasHeaders: board.canvasHeaders,
             drawingPaths: board.drawingPaths || [],
-            isDevMode: board.isDevMode || false,
-            onboardingShown: board.onboardingShown || false
+            dev_mode: board.dev_mode || false
         };
 
         Debug.board.detail('Board data to save', {
@@ -406,6 +599,27 @@ async function saveCurrentBoard() {
 
             // Ensure result is always an object with success property
             if (result && typeof result === 'object' && result.success) {
+                // 🔥 CRITICAL FIX: Update board with database ID after successful save
+                if (result.id || result.$id) {
+                    const newBoardId = result.id || result.$id;
+                    console.log(`🔧 BOARD SAVE: Updating board with new database ID: ${newBoardId}`);
+
+                    // Update the board object with the new database ID
+                    board.$id = newBoardId;
+                    board.dbId = newBoardId;
+
+                    // Persist the updated board back to AppState
+                    const boards = AppState.get('boards');
+                    const updatedBoards = boards.map(b => b.id === board.id ? board : b);
+                    AppState.set('boards', updatedBoards);
+
+                    console.log(`✅ BOARD UPDATED: Board "${board.name}" now has dbId: ${newBoardId}`);
+                    Debug.board.info(`Board database ID synchronized: ${newBoardId}`);
+                } else {
+                    console.warn(`⚠️ BOARD SAVE WARNING: Save succeeded but no board ID returned`);
+                    console.log('Board save result:', result);
+                }
+
                 Debug.board.done(`Board "${board.name}" saved to cloud successfully`);
                 return result;
             } else {
@@ -424,56 +638,75 @@ async function saveCurrentBoard() {
     }
 }
 
-function deleteBoard(board_id) {
+async function deleteBoard(board_id) {
     const boards = AppState.get('boards');
     if (boards.length <= 1) {
         alert('Cannot delete the last board');
         return;
     }
     
-    const boardIndex = boards.findIndex(b => b.id === board_id);
+    const boardIndex = boards.findIndex(b => b.stateId === board_id);
     if (boardIndex === -1) return;
     
-    // Get board name for logging
-    const boardName = boards[boardIndex].name;
-    
+    // CRITICAL FIX: Get board data BEFORE array modification!
+    const boardToDelete = boards[boardIndex]; // ✅ Get board BEFORE splice
+    const boardName = boardToDelete.name; // ✅ Get name from captured board
+    const boardDbId = boardToDelete.dbId; // ✅ Get dbId from captured board
+
+    Debug.board.detail(`Preparing to delete board "${boardName}" with dbId: ${boardDbId}`);
+
     // Remove board from array
     boards.splice(boardIndex, 1);
-    
+
     // Reassign IDs to maintain sequential numbering
     boards.forEach((board, index) => {
-        board.id = index;
+        board.stateId = index;
     });
-    
+
     AppState.set('boards', boards);
-    
+
     // Handle current board switching
-    const currentBoard_id = AppState.get('currentBoard_id');
-    if (currentBoard_id === board_id) {
+    const currentBoard_stateId = AppState.get('currentBoard_stateId');
+    if (currentBoard_stateId === board_id) {
         loadBoard(0);
-    } else if (currentBoard_id > board_id) {
-        AppState.set('currentBoard_id', currentBoard_id - 1);
+    } else if (currentBoard_stateId > board_id) {
+        AppState.set('currentBoard_stateId', currentBoard_stateId - 1);
     }
-    
+
     updateBoardDropdown();
-    
+
     Debug.board.info(`Board "${boardName}" deleted locally`);
-    
-    // TODO: Replace with Appwrite board deletion
-    // Original Firebase deletion (commented out):
-    // Delete from cloud if sync service is available
-    // if (window.syncService) {
-    //     window.syncService.deleteBoard(board_id);
-    // }
+
+    // Appwrite board deletion - delete from cloud database
+    Debug.board.detail(`Deleting board "${boardName}" from Appwrite with database ID: ${boardDbId}`);
+    if (boardDbId) {
+        if (window.dbService && window.dbService.deleteBoard) {
+            try {
+                console.log(`🔥 ATTEMPTING DELETE: Board "${boardName}", dbId: ${boardDbId}`);
+                const result = await window.dbService.deleteBoard(boardDbId);
+                Debug.board.info(`✅ Board "${boardName}" deleted from Appwrite database`);
+                console.log(`🎉 SUCCESS: Board "${boardName}" deleted from backend`);
+            } catch (error) {
+                Debug.board.error(`❌ Failed to delete board "${boardName}" from database:`, error);
+                console.error(`💥 DELETE ERROR: Board "${boardName}", dbId: ${boardDbId}`, error);
+                // Continue with local deletion at least
+            }
+        } else {
+            Debug.board.warn('dbService.deleteBoard not available, board deleted locally only');
+            console.warn(`⚠️ NO DELETE SERVICE: dbService.deleteBoard not available for "${boardName}"`);
+        }
+    } else {
+        Debug.board.warn(`Board "${boardName}" has no database ID, skipped database deletion`);
+        console.warn(`⚠️ NO DB ID: Board "${boardName}" missing dbId property`);
+    }
 }
 
-async function loadBoard(board_id) {
-    Debug.board.start(`Loading board ${board_id}`);
+async function loadBoard(dbId) {
+    Debug.board.start(`Loading board with dbId ${dbId}`);
     
     // Save current board state before switching
     try {
         saveCurrentBoard();
-        // Save to cloud if sync service is available
         if (window.syncService && typeof window.syncService.saveCurrentBoard === 'function') {
             await window.syncService.saveCurrentBoard();
         }
@@ -502,22 +735,20 @@ async function loadBoard(board_id) {
     canvas.innerHTML = '';
     AppState.set('folders', []);
     
-    // Find and load the target board
+    // Find and load the target board by dbId
     const boards = AppState.get('boards');
-    let board = boards.find(b => b.id === board_id);
+    let board = boards.find(b => b.dbId === dbId);
     if (!board) {
-        Debug.board.error(`Board with ID ${board_id} not found`);
+        Debug.board.error(`Board with dbId ${dbId} not found`);
         return;
     }
+
+    AppState.set('currentBoard_dbId', dbId);
     
-    AppState.set('currentBoard_id', board_id);
-    
-    // Load board from cloud on demand
     if (window.syncService && typeof window.syncService.loadBoardOnDemand === 'function') {
         Debug.board.step('Loading board from cloud...');
-        await window.syncService.loadBoardOnDemand(board_id);
-        // Re-get board after cloud load
-        board = AppState.get('boards').find(b => b.id === board_id);
+        await window.syncService.loadBoardOnDemand(dbId);
+        board = AppState.get('boards').find(b => b.dbId === dbId);
     }
     
     // Load folders
@@ -592,18 +823,16 @@ async function loadBoard(board_id) {
     }
     
     Debug.board.done(`Board "${board.name}" loaded successfully`);
-    
-    // Show onboarding modal if the loaded board is empty
-    showOnboardingIfEmpty();
-    
-    // LIVE SYNC DISABLED - No longer notifying live sync service
 }
 
 function addWhiteboardWithPaymentCheck() {
     Debug.ui.detail('addWhiteboardWithPaymentCheck called');
-    Debug.ui.detail('isDevMode', { isDevMode: AppState.get('isDevMode') });
     
-    if (!AppState.get('isDevMode')) {
+    // Check dev_mode from cloud
+    const dev_mode = AppState.get('dev_mode');
+    Debug.ui.detail('dev_mode', { dev_mode });
+    
+    if (!dev_mode) {
         Debug.ui.info('Showing payment modal (dev mode disabled)');
         showPaymentModal();
         return;
@@ -624,49 +853,6 @@ function showPaymentModal() {
     }
 }
 
-// Show onboarding modal if board is empty
-function showOnboardingIfEmpty() {
-    const boards = AppState.get('boards');
-    const currentBoard_id = AppState.get('currentBoard_id');
-    const currentBoard = boards.find(b => b.id === currentBoard_id);
-    
-    if (currentBoard && 
-        (!currentBoard.folders || currentBoard.folders.length === 0) &&
-        (!currentBoard.canvasHeaders || currentBoard.canvasHeaders.length === 0) &&
-        !currentBoard.onboardingShown) {
-        
-        const modal = document.getElementById('onboardingModal');
-        if (modal) {
-            modal.style.display = 'flex';
-        }
-    }
-}
-
-// Close onboarding modal
-window.closeOnboardingModal = function() {
-    const modal = document.getElementById('onboardingModal');
-    if (modal) {
-        modal.style.display = 'none';
-    }
-    
-    // Mark onboarding as shown for this board
-    const boards = AppState.get('boards');
-    const currentBoard_id = AppState.get('currentBoard_id');
-    const currentBoard = boards.find(b => b.id === currentBoard_id);
-    
-    if (currentBoard) {
-        currentBoard.onboardingShown = true;
-        AppState.set('boards', boards);
-        
-        // TODO: Replace with Appwrite sync marking
-        // Original Firebase sync marking (commented out):
-        // Mark for sync
-        // if (window.syncService && window.syncService.markPendingChanges) {
-        //     window.syncService.markPendingChanges();
-        // }
-    }
-}
-
 // Make closePaymentModal globally accessible for HTML onclick
 window.closePaymentModal = function() {
     const modal = document.getElementById('paymentModal');
@@ -678,7 +864,7 @@ window.closePaymentModal = function() {
 async function addWhiteboard() {
     const boards = AppState.get('boards');
     const newBoard = {
-        id: boards.length,
+        stateId: boards.length,
         name: `${CONSTANTS.DEFAULT_BOARD_NAME} ${boards.length + 1}`,
         folders: [],
         canvasHeaders: []
@@ -709,7 +895,7 @@ async function addWhiteboard() {
     }
 
     updateBoardDropdown();
-    loadBoard(newBoard.id);
+    loadBoard(newBoard.stateId);
 }
 
 function updateBoardDropdown() {
@@ -722,19 +908,19 @@ function updateBoardDropdown() {
     dropdownList.innerHTML = '';
     
     const boards = AppState.get('boards');
-    const currentBoard_id = AppState.get('currentBoard_id');
+    const currentBoard_stateId = AppState.get('currentBoard_stateId');
     
     // Add existing boards
     boards.forEach(board => {
         const li = document.createElement('li');
-        li.className = 'element' + (board.id === currentBoard_id ? ' active' : '');
+        li.className = 'element' + (board.stateId === currentBoard_stateId ? ' active' : '');
         li.innerHTML = `
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#7e8590" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <rect width="18" height="18" x="3" y="3" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/>
             </svg>
             <p class="label">${board.name}</p>
         `;
-        li.addEventListener('click', () => loadBoard(board.id));
+        li.addEventListener('click', () => loadBoard(board.dbId));
         dropdownList.appendChild(li);
     });
     
@@ -767,21 +953,21 @@ function updateBoardDropdown() {
         `;
         deleteBoardLi.addEventListener('click', () => {
             const boards = AppState.get('boards');
-            const currentBoard_id = AppState.get('currentBoard_id');
-            const currentBoard = boards.find(b => b.id === currentBoard_id);
-            
-            if (currentBoard && typeof showConfirmDialog === 'function') {
-                showConfirmDialog(
-                    'Delete Board',
-                    `Are you sure you want to delete "${currentBoard.name}"?`,
-                    () => deleteBoard(currentBoard_id)
-                );
-            } else {
-                // Fallback confirmation
-                if (confirm(`Are you sure you want to delete "${currentBoard ? currentBoard.name : 'this board'}"?`)) {
-                    deleteBoard(currentBoard_id);
-                }
+        const currentBoard_stateId = AppState.get('currentBoard_stateId');
+        const currentBoard = boards.find(b => b.stateId === currentBoard_stateId);
+        
+        if (currentBoard && typeof showConfirmDialog === 'function') {
+            showConfirmDialog(
+                'Delete Board',
+                `Are you sure you want to delete "${currentBoard.name}"?`,
+                () => deleteBoard(currentBoard.stateId)
+            );
+        } else {
+            // Fallback confirmation
+            if (confirm(`Are you sure you want to delete "${currentBoard ? currentBoard.name : 'this board'}"?`)) {
+                deleteBoard(currentBoard.stateId);
             }
+        }
         });
         dropdownList.appendChild(deleteBoardLi);
     }
@@ -796,11 +982,11 @@ function setupBoardNameEditing() {
     
     boardNameEl.addEventListener('blur', async () => {
         const boards = AppState.get('boards');
-        const currentBoard_id = AppState.get('currentBoard_id');
-        const board = boards.find(b => b.id === currentBoard_id);
+        const currentBoard_stateId = AppState.get('currentBoard_stateId');
+        const board = boards.find(b => b.stateId === currentBoard_stateId);
 
         if (board) {
-            const newName = boardNameEl.textContent.trim() || `${CONSTANTS.DEFAULT_BOARD_NAME} ${currentBoard_id + 1}`;
+            const newName = boardNameEl.textContent.trim() || `${CONSTANTS.DEFAULT_BOARD_NAME} ${currentBoard_stateId + 1}`;
             board.name = newName;
             boardNameEl.textContent = newName;
 
@@ -900,6 +1086,9 @@ async function manualSaveWhiteboard() {
 }
 */
 }
+
+// Make loadBoardsOnSignIn globally available for auth guard
+window.loadBoardsOnSignIn = loadBoardsOnSignIn;
 
 // Initialize board name editing when DOM is ready
 if (document.readyState === 'loading') {

@@ -754,15 +754,15 @@ async function getBookmarks() {
     if (!window.APPWRITE_CONFIG?.databases?.main2) {
         throw new Error('Database configuration not available');
     }
-    
+
     const databaseId = window.APPWRITE_CONFIG.databases.main2;
-    
+
     return withErrorHandling(async () => {
         const result = await enhancedListDocuments(
             databaseId,
             'bookmarks'
         );
-        
+
         return result.documents;
     }, 'getBookmarks');
 }
@@ -774,12 +774,12 @@ async function createBookmark(bookmarkData) {
     if (!window.APPWRITE_CONFIG?.databases?.main2) {
         throw new Error('Database configuration not available');
     }
-    
+
     const databaseId = window.APPWRITE_CONFIG.databases.main2;
-    
+
     // Get proper permissions
     const permissions = getDocumentPermissions();
-    
+
     return withErrorHandling(async () => {
         return enhancedCreateDocument(
             databaseId,
@@ -796,6 +796,110 @@ async function createBookmark(bookmarkData) {
             permissions
         );
     }, 'createBookmark');
+}
+
+// ====================
+// SETTINGS OPERATIONS (for main2 database)
+// ====================
+
+/**
+ * Get settings for current user with enhanced error handling
+ */
+async function getUserSettings() {
+    if (!window.APPWRITE_CONFIG?.databases?.main2) {
+        throw new Error('Database configuration not available');
+    }
+
+    const databaseId = window.APPWRITE_CONFIG.databases.main2;
+
+    return withErrorHandling(async () => {
+        let userEmail = 'anonymous';
+        try {
+            if (window.authService) {
+                const currentUser = window.authService.getCurrentUser();
+                if (currentUser && currentUser.email) {
+                    userEmail = currentUser.email;
+                } else if (currentUser && currentUser.$id) {
+                    userEmail = `user_${currentUser.$id}`;
+                }
+            }
+        } catch (error) {
+            debugUtils.warn('Could not get user for settings lookup', error.message);
+        }
+
+        const result = await enhancedListDocuments(
+            databaseId,
+            'settings',
+            [Appwrite.Query.limit(1)] // Only need the first settings document
+        );
+
+        // Return the first settings document or default values
+        if (result.documents && result.documents.length > 0) {
+            const settings = result.documents[0];
+            debugUtils.detail('Found user settings', settings);
+            return {
+                dev_mode: settings.dev_mode || false,
+                onboarding: settings.onboarding || false
+            };
+        }
+
+        debugUtils.info('No settings found, returning defaults');
+        return {
+            dev_mode: false,
+            onboarding: false
+        };
+    }, 'getUserSettings');
+}
+
+/**
+ * Save settings for current user with enhanced error handling
+ */
+async function saveUserSettings(settingsData) {
+    if (!window.APPWRITE_CONFIG?.databases?.main2) {
+        throw new Error('Database configuration not available');
+    }
+
+    const databaseId = window.APPWRITE_CONFIG.databases.main2;
+
+    // Get proper permissions
+    const permissions = getDocumentPermissions();
+
+    return withErrorHandling(async () => {
+        // First try to get existing settings
+        const existingSettings = await enhancedListDocuments(
+            databaseId,
+            'settings',
+            [Appwrite.Query.limit(1)]
+        );
+
+        // Update existing or create new
+        if (existingSettings.documents && existingSettings.documents.length > 0) {
+            const existingDoc = existingSettings.documents[0];
+            return enhancedUpdateDocument(
+                databaseId,
+                'settings',
+                existingDoc.$id,
+                {
+                    ...existingDoc,
+                    dev_mode: settingsData.dev_mode !== undefined ? settingsData.dev_mode : existingDoc.dev_mode || false,
+                    onboarding: settingsData.onboarding !== undefined ? settingsData.onboarding : existingDoc.onboarding || false,
+                    $updatedAt: new Date().toISOString()
+                },
+                permissions
+            );
+        } else {
+            return enhancedCreateDocument(
+                databaseId,
+                'settings',
+                Appwrite.ID.unique(),
+                {
+                    dev_mode: settingsData.dev_mode !== undefined ? settingsData.dev_mode : false,
+                    onboarding: settingsData.onboarding !== undefined ? settingsData.onboarding : false
+                },
+                permissions
+            );
+        }
+    }, 'saveUserSettings');
 }
 
 // ====================
@@ -909,6 +1013,10 @@ window.appwriteUtils = {
     getFiles,
     createFile,
     
+    // settings operations (main2 database)
+    getUserSettings,
+    saveUserSettings,
+
     // Configuration
     config: UTILS_CONFIG
 };

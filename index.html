@@ -543,6 +543,15 @@
     <script src="appwrite/database-setup.js"></script>
     <script src="appwrite/database-recovery.js"></script>
 
+    <!-- CRITICAL: Load AppState FIRST -->
+    <script src="js/state.js"></script>
+    
+    <!-- Service Initialization - Load all service modules -->
+    <script src="js/services/db-service.js"></script>
+    <script src="js/services/ui-service.js"></script>
+    <script src="js/services/board-service.js"></script>
+    <script src="js/services/init-services.js"></script>
+
     <!-- Authentication-Awareness Initialization -->
     <script>
         // Wait for both DOM ready AND authentication to be determined
@@ -660,7 +669,6 @@
     <!-- Debugging utilities -->
     <script src="js/grid-dots.js"></script>
     <script src="js/theme.js"></script>
-    <script src="js/state.js"></script>
     <script src="js/clear-board.js"></script>
     <script src="js/clear-grid.js"></script>
     <script src="js/dev-overlay.js"></script>
@@ -671,7 +679,12 @@
     <script src="js/utils.js"></script>
     <script src="js/dialogs.js"></script>
     <script src="js/grid-utils.js"></script>
-    <script src="js/files.js"></script>
+    <!-- Modular File Management Scripts -->
+    <script src="js/files/file-helpers.js"></script>
+    <script src="js/files/file-management.js"></script>
+    <script src="js/files/file-document.js"></script>
+    <script src="js/files/file-extensions.js"></script>
+    <script src="js/files/files.js"></script>
     <script src="js/folders.js"></script>
     <script src="js/drag-smoothing.js"></script>
     <script src="js/drag-drop.js"></script>

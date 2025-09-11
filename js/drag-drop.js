@@ -5,9 +5,9 @@ function startFolderDrag(e) {
     const folder = e.currentTarget.parentElement;
     if (!folder) return;
     
-    // Set dragging flag in sync service
-    if (window.syncService) {
-        window.syncService.isDragging = true;
+    // Use drag completion service instead of sync service
+    if (window.dragCompletionService) {
+        window.dragCompletionService.startDrag('folder', folder);
     }
     
     const selectedItems = AppState.get('selectedItems');
@@ -74,11 +74,10 @@ function stopFolderDrag() {
         currentFolder.classList.remove('dragging');
         DragSmoothing.stop(currentFolder);
         AppState.set('currentFolder', null);
-        
-        // Save after folder drag completes
-        if (window.syncService) {
-            window.syncService.isDragging = false;
-            window.syncService.saveAfterAction('folder moved');
+
+        // Use drag completion service instead of sync service
+        if (window.dragCompletionService) {
+            window.dragCompletionService.stopDrag();
         }
     }
     document.removeEventListener('mousemove', dragFolder);
@@ -125,10 +124,9 @@ function stopSuperHeaderDrag() {
         updateSuperHeaderInState(currentSuperHeader);
         AppState.set('currentSuperHeader', null);
         
-        // Save after header drag completes
-        if (window.syncService) {
-            window.syncService.isDragging = false;
-            window.syncService.saveAfterAction('canvas header moved');
+        // Use drag completion service instead of sync service
+        if (window.dragCompletionService) {
+            window.dragCompletionService.stopDrag();
         }
     }
     document.removeEventListener('mousemove', dragSuperHeader);
@@ -140,9 +138,9 @@ function handleDragStart(e) {
     e.target.classList.add('dragging');
     e.stopPropagation();
     
-    // Set dragging flag in sync service
-    if (window.syncService) {
-        window.syncService.isDragging = true;
+    // Use drag completion service instead of sync service
+    if (window.dragCompletionService) {
+        window.dragCompletionService.startDrag('file', e.target);
     }
 }
 
@@ -150,10 +148,9 @@ function handleDragEnd(e) {
     e.target.classList.remove('dragging');
     AppState.set('draggedFile', null);
     
-    // Save after file drag completes
-    if (window.syncService) {
-        window.syncService.isDragging = false;
-        window.syncService.saveAfterAction('file drag');
+    // Use drag completion service instead of sync service
+    if (window.dragCompletionService) {
+        window.dragCompletionService.stopDrag();
     }
 }
 
@@ -233,9 +230,9 @@ function handleDrop(e) {
 function startMultiDrag(e) {
     AppState.set('isDraggingMultiple', true);
     
-    // Set dragging flag in sync service
-    if (window.syncService) {
-        window.syncService.isDragging = true;
+    // Use drag completion service instead of sync service
+    if (window.dragCompletionService) {
+        window.dragCompletionService.startDrag('multi', null);
     }
     
     const multiDragOffsets = [];
@@ -317,9 +314,8 @@ function stopMultiDrag() {
     document.removeEventListener('mousemove', dragMultiple);
     document.removeEventListener('mouseup', stopMultiDrag);
     
-    // Save after multi-drag completes
-    if (window.syncService) {
-        window.syncService.isDragging = false;
-        window.syncService.saveAfterAction('multi-drag');
+    // Use drag completion service instead of sync service
+    if (window.dragCompletionService) {
+        window.dragCompletionService.stopDrag();
     }
 }

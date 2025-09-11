@@ -4,18 +4,20 @@
 
 const APPWRITE_CONFIG = {
     endpoint: 'https://sfo.cloud.appwrite.io/v1',
-    projectId: '68b6ed180029c5632ed3',
+    projectId: '68b6ed180029c5632ed3', // verified project ID
     databases: {
         main: '68b6f1aa003a536da72d',
         main2: '68bd70bc003176578fec'
     },
     collections: {
-        boards: 'boards',
-        bookmarks: 'bookmarks'
+        boards: 'boards',        // aligned to schema: boards collection in main DB
+        folders: 'folders',      // aligned to schema: folders collection in main DB
+        bookmarks: 'bookmarks'   // aligned to schema: bookmarks collection in main-2 DB
     },
     collectionDatabase: {
-        boards: 'main',
-        bookmarks: 'main2'
+        boards: '68b6f1aa003a536da72d',
+        folders: '68b6f1aa003a536da72d',
+        bookmarks: '68bd70bc003176578fec'
     }
 };
 
@@ -73,7 +75,13 @@ if (typeof Appwrite !== 'undefined') {
     window.appwriteAccount = new Appwrite.Account(window.appwriteClient);
     window.appwriteDatabasesMain = new Appwrite.Databases(window.appwriteClient);
     window.appwriteDatabasesMain2 = new Appwrite.Databases(window.appwriteClient);
-    console.log('✅ Appwrite services initialized');
+
+    // Export client + services for other modules
+    window.AppwriteClient = window.appwriteClient;
+    console.log('✅ Appwrite services initialized with endpoint and project ID', {
+        endpoint: APPWRITE_CONFIG.endpoint,
+        projectId: APPWRITE_CONFIG.projectId
+    });
 
     // Try to get authenticated user on startup
     updateAuthenticatedUser();
@@ -92,7 +100,7 @@ const dbService = {
         try {
             const response = await window.appwriteDatabasesMain.getDocument(
                 APPWRITE_CONFIG.databases.main,
-                'boards',
+                APPWRITE_CONFIG.collections.boards,
                 board_id
             );
             return {
@@ -111,7 +119,7 @@ const dbService = {
         try {
             const response = await window.appwriteDatabasesMain.listDocuments(
                 APPWRITE_CONFIG.databases.main,
-                'boards'
+                APPWRITE_CONFIG.collections.boards
             );
             return response.documents.map(board => ({
                 id: board.$id,
@@ -140,7 +148,7 @@ const dbService = {
             try {
                 existingBoards = await window.appwriteDatabasesMain.listDocuments(
                     databaseId,
-                    'boards',
+                    APPWRITE_CONFIG.collections.boards,
                     [
                         window.Appwrite?.Query?.equal('board_name', boardName) || {},
                         userEmail ? (window.Appwrite?.Query?.equal('email', userEmail) || {}) : {}
@@ -186,7 +194,7 @@ const dbService = {
                 // Update existing board
                 const result = await window.appwriteDatabasesMain.updateDocument(
                     databaseId,
-                    'boards',
+                    APPWRITE_CONFIG.collections.boards,
                     existingBoard.$id,
                     {
                         board_name: boardName,
@@ -208,7 +216,7 @@ const dbService = {
                 // Create new board
                 const result = await window.appwriteDatabasesMain.createDocument(
                     databaseId,
-                    'boards',
+                APPWRITE_CONFIG.collections.boards,
                     window.Appwrite?.ID?.unique() || boardData.id || Date.now().toString(),
                     {
                         board_name: boardName,
@@ -295,6 +303,48 @@ const authService = {
             console.error('❌ Failed to get current user:', error);
             return null;
         }
+    }
+};
+
+// Permissions helper function - REQUIRED for folder saving to work
+window.getCurrentUserPermissions = function() {
+    // Return appropriate permissions for folder operations
+    // Based on database schema - Users: Create, Read, Update, Delete as true
+    try {
+        const currentUser = window.authService?.getCurrentUser?.();
+        const currentUserId = currentUser?.$id;
+
+        if (typeof window.Appwrite === 'undefined') {
+            console.warn('❌ Appwrite SDK not available for permissions');
+            return []; // Empty permissions fallback
+        }
+
+        if (!currentUserId) {
+            // Anonymous user - use project-level permissions
+            return [
+                window.Appwrite.Permission.read('any'),
+                window.Appwrite.Permission.update('any'),
+                window.Appwrite.Permission.delete('any')
+            ];
+        } else {
+            // Authenticated user - use user-specific permissions
+            return [
+                window.Appwrite.Permission.read(window.Appwrite.Role.user(currentUserId)),
+                window.Appwrite.Permission.update(window.Appwrite.Role.user(currentUserId)),
+                window.Appwrite.Permission.delete(window.Appwrite.Role.user(currentUserId))
+            ];
+        }
+    } catch (error) {
+        console.warn('❌ Error getting user permissions, using fallback:', error);
+        // Fallback permissions for anonymous users
+        if (typeof window.Appwrite !== 'undefined') {
+            return [
+                window.Appwrite.Permission.read('any'),
+                window.Appwrite.Permission.update('any'),
+                window.Appwrite.Permission.delete('any')
+            ];
+        }
+        return []; // No permissions available
     }
 };
 

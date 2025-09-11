@@ -1,11 +1,11 @@
 // Mode Management
 
 function toggleDevMode() {
-    isDevMode = !isDevMode;
-    AppState.set('isDevMode', isDevMode);
+    dev_mode = !dev_mode;
+    AppState.set('dev_mode', dev_mode);
     const devModeOption = document.getElementById('devModeOption');
     
-    if (isDevMode) {
+    if (dev_mode) {
         devModeOption.textContent = 'Free Mode';
         // Initialize and show dev overlay
         if (window.toggleDevOverlay) {
@@ -110,7 +110,7 @@ function showPaymentModal() {
 
 // Modified addWhiteboard function for free mode
 function addWhiteboardWithPaymentCheck() {
-    if (!isDevMode) {
+    if (!dev_mode) {
         // Always show payment modal in free mode
         showPaymentModal();
         return;
