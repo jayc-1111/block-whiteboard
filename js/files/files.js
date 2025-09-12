@@ -1,8 +1,3 @@
-// Import utilities and functions from modules (restored from old-filesjs-reference.bak)
-import { getFileTitleText, getNewSectionNumber, getNewFileName } from './files/file-helpers.js';
-import { createFileSlot, addFile, addFileToFolder, deleteFile, collapseFile, expandFile } from './files/file-management.js';
-import { createBookmarkFile, removeBookmark, reorderBookmark, createSection, initializeEditorJS } from './files/file-document.js';
-import { handleBookmarkData, processBookmarkOnce } from './files/file-extensions.js';
 
 // File management functions
 window.getFileTitleText = getFileTitleText;

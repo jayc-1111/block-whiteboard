@@ -1,3 +1,4 @@
+
 // Load user boards from database on sign-in
 async function loadBoardsOnSignIn() {
     try {
@@ -638,229 +639,6 @@ async function saveCurrentBoard() {
     }
 }
 
-async function deleteBoard(board_id) {
-    const boards = AppState.get('boards');
-    if (boards.length <= 1) {
-        alert('Cannot delete the last board');
-        return;
-    }
-    
-    const boardIndex = boards.findIndex(b => b.stateId === board_id);
-    if (boardIndex === -1) return;
-    
-    // CRITICAL FIX: Get board data BEFORE array modification!
-    const boardToDelete = boards[boardIndex]; // ✅ Get board BEFORE splice
-    const boardName = boardToDelete.name; // ✅ Get name from captured board
-    const boardDbId = boardToDelete.dbId; // ✅ Get dbId from captured board
-
-    Debug.board.detail(`Preparing to delete board "${boardName}" with dbId: ${boardDbId}`);
-
-    // Remove board from array
-    boards.splice(boardIndex, 1);
-
-    // Reassign IDs to maintain sequential numbering
-    boards.forEach((board, index) => {
-        board.stateId = index;
-    });
-
-    AppState.set('boards', boards);
-
-    // Handle current board switching
-    const currentBoard_stateId = AppState.get('currentBoard_stateId');
-    if (currentBoard_stateId === board_id) {
-        loadBoard(0);
-    } else if (currentBoard_stateId > board_id) {
-        AppState.set('currentBoard_stateId', currentBoard_stateId - 1);
-    }
-
-    updateBoardDropdown();
-
-    Debug.board.info(`Board "${boardName}" deleted locally`);
-
-    // Appwrite board deletion - delete from cloud database
-    Debug.board.detail(`Deleting board "${boardName}" from Appwrite with database ID: ${boardDbId}`);
-    if (boardDbId) {
-        if (window.dbService && window.dbService.deleteBoard) {
-            try {
-                console.log(`🔥 ATTEMPTING DELETE: Board "${boardName}", dbId: ${boardDbId}`);
-                const result = await window.dbService.deleteBoard(boardDbId);
-                Debug.board.info(`✅ Board "${boardName}" deleted from Appwrite database`);
-                console.log(`🎉 SUCCESS: Board "${boardName}" deleted from backend`);
-            } catch (error) {
-                Debug.board.error(`❌ Failed to delete board "${boardName}" from database:`, error);
-                console.error(`💥 DELETE ERROR: Board "${boardName}", dbId: ${boardDbId}`, error);
-                // Continue with local deletion at least
-            }
-        } else {
-            Debug.board.warn('dbService.deleteBoard not available, board deleted locally only');
-            console.warn(`⚠️ NO DELETE SERVICE: dbService.deleteBoard not available for "${boardName}"`);
-        }
-    } else {
-        Debug.board.warn(`Board "${boardName}" has no database ID, skipped database deletion`);
-        console.warn(`⚠️ NO DB ID: Board "${boardName}" missing dbId property`);
-    }
-}
-
-async function loadBoard(dbId) {
-    Debug.board.start(`Loading board with dbId ${dbId}`);
-    
-    // Save current board state before switching
-    try {
-        saveCurrentBoard();
-        if (window.syncService && typeof window.syncService.saveCurrentBoard === 'function') {
-            await window.syncService.saveCurrentBoard();
-        }
-    } catch (error) {
-        Debug.board.error('Failed to save current board before switching', error);
-    }
-    
-    // Ensure canvas exists before clearing
-    let canvas = document.getElementById('canvas');
-    if (!canvas) {
-        // Create canvas if it doesn't exist
-        const grid = document.getElementById('grid');
-        if (grid) {
-            canvas = document.createElement('div');
-            canvas.id = 'canvas';
-            canvas.style.position = 'relative';
-            canvas.style.width = '100%';
-            canvas.style.height = '100%';
-            grid.appendChild(canvas);
-        } else {
-            Debug.board.error('Grid element not found');
-            return;
-        }
-    }
-    // Clear canvas content
-    canvas.innerHTML = '';
-    AppState.set('folders', []);
-    
-    // Find and load the target board by dbId
-    const boards = AppState.get('boards');
-    let board = boards.find(b => b.dbId === dbId);
-    if (!board) {
-        Debug.board.error(`Board with dbId ${dbId} not found`);
-        return;
-    }
-
-    AppState.set('currentBoard_dbId', dbId);
-    
-    if (window.syncService && typeof window.syncService.loadBoardOnDemand === 'function') {
-        Debug.board.step('Loading board from cloud...');
-        await window.syncService.loadBoardOnDemand(dbId);
-        board = AppState.get('boards').find(b => b.dbId === dbId);
-    }
-    
-    // Load folders
-    if (board.folders && board.folders.length > 0) {
-        board.folders.forEach(catData => {
-            const catIndex = createFolder(
-                catData.title, 
-                parseInt(catData.position.left) || 0, 
-                parseInt(catData.position.top) || 0
-            );
-            
-            const folders = AppState.get('folders');
-            const folder = folders[catIndex];
-            if (folder && folder.element) {
-                const grid = folder.element.querySelector('.files-grid');
-                if (grid) {
-                    grid.innerHTML = '';
-                    
-                    // Create file slots
-                    for (let i = 0; i < 4; i++) {
-                        if (typeof createFileSlot === 'function') {
-                            const slot = createFileSlot();
-                            grid.appendChild(slot);
-                        }
-                    }
-                    
-                    // Load files with bookmarks and sections
-                    if (catData.files) {
-                        catData.files.forEach(fileData => {
-                            // Pass bookmarks as fourth parameter and sections as fifth (if needed)
-                            const file = addFileToFolder(catIndex, fileData.title, fileData.content, fileData.bookmarks);
-                            // Restore file ID if it exists
-                            if (file && fileData.id) {
-                                file.id = fileData.id;
-                                file.dataset.fileId = fileData.id;
-                            }
-                            
-                            // Restore sections if they exist
-                            if (file && fileData.sections && Array.isArray(fileData.sections)) {
-                                // Store sections data on the file element for later use
-                                file.sections = fileData.sections;
-                            }
-                        });
-                    }
-                }
-            }
-        });
-    }
-    
-    // Load canvas headers
-    if (board.canvasHeaders && typeof loadCanvasHeaders === 'function') {
-        loadCanvasHeaders(board.canvasHeaders);
-    }
-    
-    // Load drawing paths
-    if (board.drawingPaths && board.drawingPaths.length > 0) {
-        if (window.setDrawingPaths && typeof window.setDrawingPaths === 'function') {
-            window.setDrawingPaths(board.drawingPaths);
-            Debug.board.step(`Loaded ${board.drawingPaths.length} drawing paths`);
-        }
-    }
-    
-    // Update UI elements
-    const boardNameEl = document.getElementById('boardName');
-    if (boardNameEl) {
-        boardNameEl.textContent = board.name;
-    }
-    
-    const selectorText = document.querySelector('.board-selector-text');
-    if (selectorText) {
-        selectorText.textContent = board.name;
-    }
-    
-    Debug.board.done(`Board "${board.name}" loaded successfully`);
-}
-
-function addWhiteboardWithPaymentCheck() {
-    Debug.ui.detail('addWhiteboardWithPaymentCheck called');
-    
-    // Check dev_mode from cloud
-    const dev_mode = AppState.get('dev_mode');
-    Debug.ui.detail('dev_mode', { dev_mode });
-    
-    if (!dev_mode) {
-        Debug.ui.info('Showing payment modal (dev mode disabled)');
-        showPaymentModal();
-        return;
-    }
-    
-    Debug.ui.info('Adding whiteboard (dev mode enabled)');
-    addWhiteboard();
-}
-
-function showPaymentModal() {
-    Debug.ui.detail('showPaymentModal called');
-    const modal = document.getElementById('paymentModal');
-    if (modal) {
-        Debug.ui.info('Displaying payment modal');
-        modal.style.display = 'flex';
-    } else {
-        Debug.ui.error('Payment modal element not found!');
-    }
-}
-
-// Make closePaymentModal globally accessible for HTML onclick
-window.closePaymentModal = function() {
-    const modal = document.getElementById('paymentModal');
-    if (modal) {
-        modal.style.display = 'none';
-    }
-}
-
 async function addWhiteboard() {
     const boards = AppState.get('boards');
     const newBoard = {
@@ -938,7 +716,7 @@ function updateBoardDropdown() {
         </svg>
         <p class="label">Add Board</p>
     `;
-    addBoardLi.addEventListener('click', addWhiteboardWithPaymentCheck);
+    addBoardLi.addEventListener('click', addWhiteboard);
     dropdownList.appendChild(addBoardLi);
     
     // Add "Delete Board" option if more than one board exists
@@ -960,12 +738,60 @@ function updateBoardDropdown() {
             showConfirmDialog(
                 'Delete Board',
                 `Are you sure you want to delete "${currentBoard.name}"?`,
-                () => deleteBoard(currentBoard.stateId)
+                () => {
+                    const boards = AppState.get('boards');
+                    const updatedBoards = boards.filter(b => b.stateId !== currentBoard.stateId);
+                    
+                    // Reassign IDs to maintain sequential numbering
+                    updatedBoards.forEach((board, index) => {
+                        board.stateId = index;
+                    });
+                    
+                    AppState.set('boards', updatedBoards);
+                    
+                    // Handle current board switching
+                    const currentBoard_stateId = AppState.get('currentBoard_stateId');
+                    if (currentBoard_stateId === currentBoard.stateId) {
+                        loadBoard(0);
+                    } else if (currentBoard_stateId > currentBoard.stateId) {
+                        AppState.set('currentBoard_stateId', currentBoard_stateId - 1);
+                    }
+                    
+                    updateBoardDropdown();
+                    
+                    // Delete from Appwrite backend
+                    if (currentBoard.dbId && window.appwriteUtils && window.appwriteUtils.deleteBoard) {
+                        window.appwriteUtils.deleteBoard(currentBoard.dbId);
+                    }
+                }
             );
         } else {
             // Fallback confirmation
             if (confirm(`Are you sure you want to delete "${currentBoard ? currentBoard.name : 'this board'}"?`)) {
-                deleteBoard(currentBoard.stateId);
+                const boards = AppState.get('boards');
+                const updatedBoards = boards.filter(b => b.stateId !== currentBoard.stateId);
+                
+                // Reassign IDs to maintain sequential numbering
+                updatedBoards.forEach((board, index) => {
+                    board.stateId = index;
+                });
+                
+                AppState.set('boards', updatedBoards);
+                
+                // Handle current board switching
+                const currentBoard_stateId = AppState.get('currentBoard_stateId');
+                if (currentBoard_stateId === currentBoard.stateId) {
+                    loadBoard(0);
+                } else if (currentBoard_stateId > currentBoard.stateId) {
+                    AppState.set('currentBoard_stateId', currentBoard_stateId - 1);
+                }
+                
+                updateBoardDropdown();
+                
+                // Delete from Appwrite backend
+                if (currentBoard.dbId && window.appwriteUtils && window.appwriteUtils.deleteBoard) {
+                    window.appwriteUtils.deleteBoard(currentBoard.dbId);
+                }
             }
         }
         });

@@ -238,7 +238,7 @@ function reinitializeModalLenis(file) {
     }
 }
 
-// Export functions for use in other modules
+// Make functions globally available
 window.getFileTitleText = getFileTitleText;
 window.getNewSectionNumber = getNewSectionNumber;
 window.getNewFileName = getNewFileName;

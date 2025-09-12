@@ -1048,7 +1048,7 @@ function collapseFile(file) {
     file.originalNextSibling = null;
 }
 
-// Export functions for use in other modules
+// Make functions globally available
 window.createFileSlot = createFileSlot;
 window.addFile = addFile;
 window.addFileToFolder = addFileToFolder;

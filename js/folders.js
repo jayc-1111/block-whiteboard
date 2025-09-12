@@ -20,7 +20,7 @@ function toggleFolder(folder) {
 }
 
 // Folder management
-function createFolder(title = 'New Folder', x = null, y = null) {
+function createFolder(title = 'New Folder', x = null, y = null, loading = false) {
     try {
         // Expose globally for file tree
         window.createFolder = createFolder;
@@ -535,9 +535,10 @@ function addSuperHeader(x = null, y = null) {
 }
 
 function createFolderFromData(catData) {
-    const catIndex = createFolder(catData.title, 
-        parseInt(catData.position.left), 
-        parseInt(catData.position.top)
+    const catIndex = createFolder(catData.title,
+        parseInt(catData.position.left),
+        parseInt(catData.position.top),
+        true
     );
     
     const folders = AppState.get('folders');
