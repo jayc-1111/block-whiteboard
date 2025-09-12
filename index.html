@@ -525,8 +525,8 @@
     
     
     <!-- Load Debug System First -->
-    <script src="js/constants.js"></script>
-    <script src="js/debug.js"></script>
+    <script src="js/constants/constants.js"></script>
+    <script src="js/constants/debug.js"></script>
     <script>
         // Debug authentication state before loading anything else
         console.log('🔱 Main Index.html Starting...');
@@ -544,13 +544,13 @@
     <script src="appwrite/database-recovery.js"></script>
 
     <!-- CRITICAL: Load AppState FIRST -->
-    <script src="js/state.js"></script>
+    <script src="js/state/state.js"></script>
     
     <!-- Service Initialization - Load all service modules -->
-    <script src="js/services/db-service.js"></script>
-    <script src="js/services/ui-service.js"></script>
-    <script src="js/services/board-service.js"></script>
-    <script src="js/services/init-services.js"></script>
+    <script src="js/appwrite/db-service.js"></script>
+    <script src="js/appwrite/ui-service.js"></script>
+    <script src="js/appwrite/board-service.js"></script>
+    <script src="js/appwrite/init-services.js"></script>
 
     <!-- Authentication-Awareness Initialization -->
     <script>
@@ -667,46 +667,46 @@
     </script>
 
     <!-- Debugging utilities -->
-    <script src="js/grid-dots.js"></script>
-    <script src="js/theme.js"></script>
-    <script src="js/clear-board.js"></script>
-    <script src="js/clear-grid.js"></script>
-    <script src="js/dev-overlay.js"></script>
-    <script src="js/dev-mode-controls.js"></script>
+    <script src="js/ui/grid-dots.js"></script>
+    <script src="js/ui/theme.js"></script>
+    <script src="js/ui/clear-board.js"></script>
+    <script src="js/ui/clear-grid.js"></script>
+    <script src="js/ui/dev-overlay.js"></script>
+    <script src="js/ui/dev-mode-controls.js"></script>
     <!-- REMOVED: <script src="js/live-sync-ui.js"></script> -->
     <!-- REMOVED: <script src="js/backup-recovery-ui.js"></script> -->
-    <script src="js/mode.js"></script>
-    <script src="js/utils.js"></script>
-    <script src="js/dialogs.js"></script>
-    <script src="js/grid-utils.js"></script>
+    <script src="js/ui/mode.js"></script>
+    <script src="js/constants/utils.js"></script>
+    <script src="js/ui/dialogs.js"></script>
+    <script src="js/ui/grid-utils.js"></script>
     <!-- Modular File Management Scripts -->
-    <script src="js/files/file-helpers.js"></script>
-    <script src="js/files/file-management.js"></script>
-    <script src="js/files/file-document.js"></script>
-    <script src="js/files/file-extensions.js"></script>
-    <script src="js/files/files.js"></script>
-    <script src="js/folders.js"></script>
-    <script src="js/drag-smoothing.js"></script>
-    <script src="js/drag-drop.js"></script>
-    <script src="js/selection.js"></script>
-    <script src="js/canvas-headers.js"></script>
-    <script src="js/context-menu.js"></script>
-    <script src="js/ui-controls.js"></script>
-    <script src="js/smooth-scroll.js"></script>
-    <script src="js/pan.js"></script>
-    <script src="js/boards.js"></script>
-    <script src="js/bookmarks-modal.js"></script>
-    <script src="js/bookmark-destination-selector.js"></script>
-    <script src="js/bookmark-move-modal.js"></script>
-    <script src="js/file-tree.js"></script>
-    <script src="js/extension-bridge.js"></script>
-    <script src="js/sidebar-menu.js"></script>
-    <script src="js/sidebar-switcher.js"></script>
-    <script src="js/payment-modal-handler.js"></script>
-    <script src="js/simple-notifications.js"></script>
+    <script src="js/ui/file-helpers.js"></script>
+    <script src="js/ui/file-management.js"></script>
+    <script src="js/ui/file-document.js"></script>
+    <script src="js/ui/file-extensions.js"></script>
+    <script src="js/ui/files.js"></script>
+    <script src="js/ui/folders.js"></script>
+    <script src="js/ui/drag-smoothing.js"></script>
+    <script src="js/ui/drag-drop.js"></script>
+    <script src="js/ui/selection.js"></script>
+    <script src="js/ui/canvas-headers.js"></script>
+    <script src="js/ui/context-menu.js"></script>
+    <script src="js/ui/ui-controls.js"></script>
+    <script src="js/ui/smooth-scroll.js"></script>
+    <script src="js/ui/pan.js"></script>
+    <script src="js/ui/boards.js"></script>
+    <script src="js/ui/bookmarks-modal.js"></script>
+    <script src="js/ui/bookmark-destination-selector.js"></script>
+    <script src="js/ui/bookmark-move-modal.js"></script>
+    <script src="js/ui/file-tree.js"></script>
+    <script src="js/ui/extension-bridge.js"></script>
+    <script src="js/ui/sidebar-menu.js"></script>
+    <script src="js/ui/sidebar-switcher.js"></script>
+    <script src="js/ui/payment-modal-handler.js"></script>
+    <script src="js/ui/simple-notifications.js"></script>
     
-    <script type="module" src="js/drawing/canvas-drawing.js"></script>
-    <script src="js/init.js"></script>
+    <script src="js/drawing/canvas-drawing.js"></script>
+    <script src="js/ui/init.js"></script>
     <!--
     BOARD DATA MIGRATION TO REALTIME COMPLETE ✅
 

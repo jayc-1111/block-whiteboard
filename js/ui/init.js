@@ -48,7 +48,13 @@ function setupKeyboardShortcuts() {
                 switch(e.key) {
                     case 'ArrowLeft':
                         // First button: Add Whiteboard
-                        addWhiteboardWithPaymentCheck();
+                        if (typeof addWhiteboardWithPaymentCheck === 'function') {
+                            addWhiteboardWithPaymentCheck();
+                        } else if (typeof addWhiteboard === 'function') {
+                            addWhiteboard();
+                        } else {
+                            console.error('❌ No addWhiteboard function found');
+                        }
                         break;
                     case 'ArrowUp':
                         // Second button: Add Canvas Header
@@ -130,6 +136,22 @@ function setupBoardNameEditing() {
 function setupEventBindings() {
     // Setup Add dropdown
     const addDropdownContainer = document.querySelector('.add-dropdown-container');
+    const addButton = addDropdownContainer?.querySelector('.add-button');
+    const addDropdownMenu = addDropdownContainer?.querySelector('.add-dropdown-menu');
+
+    if (addButton && addDropdownMenu) {
+        addButton.addEventListener('click', (e) => {
+            e.stopPropagation();
+            addDropdownMenu.classList.toggle('show');
+        });
+
+        // Close on outside click
+        document.addEventListener('click', (e) => {
+            if (!addDropdownContainer.contains(e.target)) {
+                addDropdownMenu.classList.remove('show');
+            }
+        });
+    }
     
     // Toolbar buttons in dropdown
     const addWhiteboardBtn = document.getElementById('addWhiteboardBtn');
@@ -142,7 +164,13 @@ function setupEventBindings() {
     Debug.init.detail('Payment check function', { type: typeof addWhiteboardWithPaymentCheck });
     
     if (addWhiteboardBtn) {
-        addWhiteboardBtn.addEventListener('click', addWhiteboardWithPaymentCheck);
+        if (typeof addWhiteboardWithPaymentCheck === 'function') {
+            addWhiteboardBtn.addEventListener('click', addWhiteboardWithPaymentCheck);
+        } else if (typeof addWhiteboard === 'function') {
+            addWhiteboardBtn.addEventListener('click', addWhiteboard);
+        } else {
+            addWhiteboardBtn.addEventListener('click', () => console.error('❌ Add Whiteboard function missing'));
+        }
         Debug.init.step('Add Whiteboard listener attached');
     } else {
         Debug.init.stepError('Add Whiteboard button not found');

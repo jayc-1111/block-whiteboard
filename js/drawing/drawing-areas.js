@@ -1,8 +1,8 @@
 // Drawing areas management - uses perfect-freehand for smooth strokes
 import { createDrawingArea } from './drawing-area-factory.js';
-import { AppState } from '../state.js';
-import { makeDraggable } from '../drag-drop.js';
-import { Debug } from '../debug.js';
+import { AppState } from '../state/state.js';
+import { makeDraggable } from '../ui/drag-drop.js';
+import { Debug } from '../constants/debug.js';
 
 let drawingAreaIdCounter = 1;
 
