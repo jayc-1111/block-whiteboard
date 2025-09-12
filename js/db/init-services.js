@@ -6,6 +6,14 @@
  * functions to verify that all required functions are available.
  */
 
+/**
+ * ====================
+ *  DB Service Bridge
+ * ====================
+ * Modernized initialization of UI, Board, and DB services.
+ * This file replaces legacy "syncService" usage.
+ */
+
 console.log('🚀 Initializing services...');
 
 // Debug utilities
@@ -174,20 +182,38 @@ async function initializeServices() {
         // Wait for AppState and then test all functions
         await waitForAppState();
         const testResults = testRequiredFunctions();
-        
+
+        // 🚀 CLEAN SLATE FIX:
+        // Replace legacy syncService with dbService wrapper
+        window.syncService = {
+            saveAfterAction: async (reason) => {
+                try {
+                    initDebug.detail(`SyncService.saveAfterAction called`, { reason });
+                    if (window.dbService && typeof window.dbService.saveCurrentBoard === 'function') {
+                        await window.dbService.saveCurrentBoard(reason);
+                        initDebug.done(`Board saved [${reason}]`);
+                    } else {
+                        initDebug.warn('dbService.saveCurrentBoard not available');
+                    }
+                } catch (err) {
+                    initDebug.error('SyncService.saveAfterAction failed', err);
+                }
+            }
+        };
+
         // Update service initialization status
         if (window.uiService) window.uiService.config.initialized = true;
         if (window.boardService) window.boardService.config.initialized = true;
         if (window.dbService) window.dbService.config.initialized = true;
-        
+
         initDebug.done('All services initialized successfully');
-        
+
         return {
             success: true,
             testResults: testResults,
-            message: `Services initialized with ${testResults.available}/${testResults.total} functions available (${testResults.successRate}% success rate)`
+            message: `Services initialized with ${testResults.available}/${testResults.total} functions available`
         };
-        
+
     } catch (error) {
         initDebug.error('Failed to initialize services', error);
         return {

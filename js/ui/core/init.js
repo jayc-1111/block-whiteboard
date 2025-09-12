@@ -1,4 +1,10 @@
-// Initialize the whiteboard application
+/**
+ * ==================
+ *  UI Initialization
+ * ==================
+ * Clean entrypoint for bootstrapping UI.
+ * Handles bindings, shortcuts, zoom, board name editing, etc.
+ */
 function setupZoomAndPan() {
     const whiteboard = document.getElementById('whiteboard');
     if (!whiteboard) {

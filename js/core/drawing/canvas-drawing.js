@@ -39,7 +39,7 @@ const settings = {
 /**
  * Initialize the drawing layer
  */
-export function initDrawingLayer() {
+function initDrawingLayer() {
     const grid = document.getElementById('grid');
     if (!grid) return;
     
@@ -95,7 +95,7 @@ function resizeCanvas() {
 /**
  * Toggle drawing mode on/off
  */
-export function toggleDrawingMode() {
+function toggleDrawingMode() {
     isDrawingMode = !isDrawingMode;
     
     const drawingBtn = document.getElementById('drawingModeBtn');
@@ -277,7 +277,7 @@ function redrawCanvas() {
 /**
  * Clear all drawings
  */
-export function clearDrawing() {
+function clearDrawing() {
     paths = [];
     if (ctx) {
         ctx.clearRect(0, 0, drawingCanvas.width, drawingCanvas.height);
@@ -308,7 +308,7 @@ function saveDrawingState() {
 /**
  * Load drawing paths for current board
  */
-export function loadDrawingPaths(newPaths) {
+function loadDrawingPaths(newPaths) {
     if (!newPaths || !Array.isArray(newPaths)) return;
     
     paths = newPaths;
@@ -319,7 +319,7 @@ export function loadDrawingPaths(newPaths) {
 /**
  * Toggle eraser mode
  */
-export function toggleEraserMode() {
+function toggleEraserMode() {
     isEraserMode = !isEraserMode;
     
     const eraserBtn = document.getElementById('eraserModeBtn');

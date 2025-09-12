@@ -1,5 +1,10 @@
-// Enhanced state management module with proper synchronization
-// CRITICAL: Make AppState available globally immediately after creation
+/**
+ * =========================
+ *  BoardManager / AppState
+ * =========================
+ * Modernized centralized state manager for Zenban.
+ * Keeps UI, Core, and DB in sync while eliminating globals.
+ */
 const AppState = (() => {
     // Private state
     const state = {
