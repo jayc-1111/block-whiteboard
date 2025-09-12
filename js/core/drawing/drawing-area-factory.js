@@ -1,5 +1,5 @@
 // Drawing area factory - handles canvas drawing with perfect-freehand
-import { Debug } from '../constants/debug.js';
+import { Debug } from '../debug.js';
 
 // We'll load perfect-freehand from CDN in index.html
 // This function creates the drawing functionality for a canvas

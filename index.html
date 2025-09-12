@@ -525,8 +525,8 @@
     
     
     <!-- Load Debug System First -->
-    <script src="js/constants/constants.js"></script>
-    <script src="js/constants/debug.js"></script>
+    <script src="js/core/constants.js"></script>
+    <script src="js/core/debug.js"></script>
     <script>
         // Debug authentication state before loading anything else
         console.log('🔱 Main Index.html Starting...');
@@ -547,10 +547,10 @@
     <script src="js/state/state.js"></script>
     
     <!-- Service Initialization - Load all service modules -->
-    <script src="js/appwrite/db-service.js"></script>
-    <script src="js/appwrite/ui-service.js"></script>
-    <script src="js/appwrite/board-service.js"></script>
-    <script src="js/appwrite/init-services.js"></script>
+<script src="js/db/db-service.js"></script>
+<script src="js/db/ui-service.js"></script>
+<script src="js/db/board-service.js"></script>
+<script src="js/db/init-services.js"></script>
 
     <!-- Authentication-Awareness Initialization -->
     <script>
@@ -676,7 +676,7 @@
     <!-- REMOVED: <script src="js/live-sync-ui.js"></script> -->
     <!-- REMOVED: <script src="js/backup-recovery-ui.js"></script> -->
     <script src="js/ui/mode.js"></script>
-    <script src="js/constants/utils.js"></script>
+    <script src="js/core/utils.js"></script>
     <script src="js/ui/dialogs.js"></script>
     <script src="js/ui/grid-utils.js"></script>
     <!-- Modular File Management Scripts -->
@@ -705,7 +705,7 @@
     <script src="js/ui/payment-modal-handler.js"></script>
     <script src="js/ui/simple-notifications.js"></script>
     
-    <script src="js/drawing/canvas-drawing.js"></script>
+<script src="js/core/drawing/canvas-drawing.js"></script>
     <script src="js/ui/init.js"></script>
     <!--
     BOARD DATA MIGRATION TO REALTIME COMPLETE ✅
